@@ -1,0 +1,64 @@
+{
+  "categories": [
+    {
+      "name": "Banking Services",
+      "slug": "banking-services",
+      "icon": "Banknote",
+      "order": 1
+    },
+    {
+      "name": "Telecom Services",
+      "slug": "telecom-services",
+      "icon": "Smartphone",
+      "order": 2
+    },
+    {
+      "name": "Ecommerce Platforms",
+      "slug": "ecommerce-platforms",
+      "icon": "ShoppingBag",
+      "order": 3
+    },
+    {
+      "name": "Insurance Companies",
+      "slug": "insurance-companies",
+      "icon": "HeartPulse",
+      "order": 4
+    },
+    {
+      "name": "Digital Payment",
+      "slug": "digital-payment",
+      "icon": "Wallet",
+      "order": 5
+    },
+    {
+      "name": "Payment Gateway",
+      "slug": "payment-gateway",
+      "icon": "Landmark",
+      "order": 6
+    },
+    {
+      "name": "Electronics Appliance",
+      "slug": "electronics-appliance",
+      "icon": "MonitorSmartphone",
+      "order": 7
+    },
+    {
+      "name": "Stock and Trading",
+      "slug": "stock-and-trading",
+      "icon": "Briefcase",
+      "order": 8
+    },
+    {
+      "name": "Online Betting Apps",
+      "slug": "online-betting-apps",
+      "icon": "Gamepad2",
+      "order": 9
+    },
+    {
+      "name": "Mobile Phone & Accessories",
+      "slug": "mobile-phone-accessories",
+      "icon": "Smartphone",
+      "order": 10
+    }
+  ]
+} 

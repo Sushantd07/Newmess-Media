@@ -1,0 +1,357 @@
+{
+  "tabTitle": "HDFC Bank Contact Numbers",
+  "tabDescription": "All toll-free numbers, helpline details, SMS services, and quick links for HDFC Bank customer support",
+  "topContactCards": {
+    "heading": {
+      "key": "topContactCards",
+      "text": "Quick Contact",
+      "subText": "Get instant support for your banking needs"
+    },
+    "cards": [
+      {
+        "title": "HDFC Phone Banking",
+        "number": "1800 2600",
+        "subtitle": "Toll-free • 24x7",
+        "icon": "PhoneCall",
+        "colors": {
+          "cardBg": "#D0E7FF",
+          "iconBg": "#A8D8FF",
+          "textColor": "#16a34a"
+        }
+      },
+      {
+        "title": "Alternate Phone Banking",
+        "number": "1800 1600",
+        "subtitle": "Block instantly • 24x7",
+        "icon": "AlertCircle",
+        "colors": {
+          "cardBg": "#FFEAEA",
+          "iconBg": "#FFCCCC",
+          "textColor": "#e11d48"
+        }
+      },
+      {
+        "title": "Account/Loan Assistance",
+        "number": "1800 266 3310",
+        "subtitle": "Support • 10 AM – 5 PM",
+        "icon": "CreditCard",
+        "colors": {
+          "cardBg": "#F5E9FF",
+          "iconBg": "#E6D7FF",
+          "textColor": "#9333ea"
+        }
+      },
+      {
+        "title": "WhatsApp Banking",
+        "number": "70700 22222",
+        "subtitle": "Report fraud • 24x7",
+        "icon": "Shield",
+        "colors": {
+          "cardBg": "#FFF9E5",
+          "iconBg": "#FFF2B8",
+          "textColor": "#ca8a04"
+        }
+      }
+    ]
+  },
+  "nationalNumbersSection": {
+    "heading": {
+      "key": "nationalNumbersSection",
+      "text": "National Contact Numbers",
+      "subText": "Toll-free numbers available across India"
+    },
+    "items": [
+      {
+        "type": "Customer Care",
+        "number": "1800-258-6161",
+        "description": "General banking support and account inquiries",
+        "available": "24x7",
+        "languages": ["Hindi", "English", "Regional Languages"],
+        "avgWaitTime": "1-2 minutes"
+      },
+      {
+        "type": "Credit Card Support",
+        "number": "1800-266-4332",
+        "description": "Credit card related queries and support",
+        "available": "24x7",
+        "languages": ["Hindi", "English"],
+        "avgWaitTime": "2-3 minutes"
+      },
+      {
+        "type": "NRI Services",
+        "number": "1800-425-4332",
+        "description": "NRI account and remittance support",
+        "available": "24x7",
+        "languages": ["Hindi", "English"],
+        "avgWaitTime": "2-3 minutes"
+      }
+    ]
+  },
+  "helplineNumbersSection": {
+    "heading": {
+      "key": "helplineNumbersSection",
+      "text": "Helpline Numbers",
+      "subText": "Department-specific support numbers"
+    },
+    "table": {
+      "headers": ["Service", "Number"],
+      "rows": [
+        ["Personal Banking", "1800-266-4332"],
+        ["Business Banking", "1800-266-4332"],
+        ["NRI Services", "1800-425-4332"],
+        ["Investment Services", "1800-266-4332"],
+        ["Loan Services", "1800-266-4332"],
+        ["Credit Card Support", "1800-266-4332"],
+        ["Debit Card Support", "1800-266-4332"],
+        ["Internet Banking", "1800-266-4332"],
+        ["Mobile Banking", "1800-266-4332"]
+      ]
+    }
+  },
+  "allIndiaNumbersSection": {
+    "heading": {
+      "key": "allIndiaNumbersSection",
+      "text": "All India Numbers",
+      "subText": "Numbers accessible from anywhere in India"
+    },
+    "table": {
+      "headers": ["Number", "Description"],
+      "rows": [
+        ["1800-266-4332", "General banking information and support"],
+        ["1800-258-6161", "Customer care and complaint registration"],
+        ["1800-425-4332", "NRI services and remittance support"],
+        ["1800-266-3310", "Account and loan assistance"],
+        ["1800-1600", "Alternate phone banking"],
+        ["1800-2600", "Primary phone banking"],
+        ["70700 22222", "WhatsApp banking support"],
+        ["92237 66666", "Missed call for balance enquiry"],
+        ["92238 66666", "Missed call for mini statement"]
+      ]
+    }
+  },
+  "stateWiseNumbersSection": {
+    "heading": {
+      "key": "stateWiseNumbersSection",
+      "text": "State-wise Contact Numbers",
+      "subText": "Regional office numbers for specific states"
+    },
+    "states": [
+      {
+        "state": "Maharashtra",
+        "city": "Mumbai",
+        "type": "Head Office",
+        "number": "022-6652-1000"
+      },
+      {
+        "state": "Maharashtra",
+        "city": "Pune",
+        "type": "Regional Office",
+        "number": "020-6601-1000"
+      },
+      {
+        "state": "Delhi",
+        "city": "New Delhi",
+        "type": "Regional Office",
+        "number": "011-6652-1000"
+      },
+      {
+        "state": "Karnataka",
+        "city": "Bangalore",
+        "type": "Regional Office",
+        "number": "080-6652-1000"
+      },
+      {
+        "state": "Tamil Nadu",
+        "city": "Chennai",
+        "type": "Regional Office",
+        "number": "044-6652-1000"
+      },
+      {
+        "state": "West Bengal",
+        "city": "Kolkata",
+        "type": "Regional Office",
+        "number": "033-6652-1000"
+      },
+      {
+        "state": "Gujarat",
+        "city": "Ahmedabad",
+        "type": "Regional Office",
+        "number": "079-6652-1000"
+      },
+      {
+        "state": "Uttar Pradesh",
+        "city": "Lucknow",
+        "type": "Regional Office",
+        "number": "0522-6652-1000"
+      }
+    ]
+  },
+  "smsServicesSection": {
+    "heading": {
+      "key": "smsServicesSection",
+      "text": "SMS & WhatsApp Services",
+      "subText": "Quick banking services via SMS"
+    },
+    "services": [
+      {
+        "code": "BAL",
+        "description": "Check your account balance",
+        "number": "5676712"
+      },
+      {
+        "code": "MINI",
+        "description": "Get mini statement",
+        "number": "5676712"
+      },
+      {
+        "code": "CHQBOOK",
+        "description": "Request cheque book",
+        "number": "5676712"
+      },
+      {
+        "code": "STOP",
+        "description": "Stop cheque payment",
+        "number": "5676712"
+      },
+      {
+        "code": "BLOCK",
+        "description": "Block ATM/Debit card",
+        "number": "5676712"
+      },
+      {
+        "code": "UNBLOCK",
+        "description": "Unblock ATM/Debit card",
+        "number": "5676712"
+      }
+    ]
+  },
+  "ivrMenuSection": {
+    "heading": {
+      "key": "ivrMenuSection",
+      "text": "IVR Menu Options",
+      "subText": "Interactive Voice Response menu for quick access"
+    },
+    "description": "When you call HDFC Bank customer care, follow these IVR options for faster service",
+    "menus": [
+      {
+        "title": "Main Menu",
+        "options": [
+          {
+            "option": "1",
+            "description": "Account Balance & Mini Statement"
+          },
+          {
+            "option": "2",
+            "description": "Credit Card Services"
+          },
+          {
+            "option": "3",
+            "description": "ATM Card Services"
+          },
+          {
+            "option": "4",
+            "description": "Internet Banking"
+          },
+          {
+            "option": "5",
+            "description": "Loan Services"
+          },
+          {
+            "option": "6",
+            "description": "Investment Services"
+          },
+          {
+            "option": "7",
+            "description": "NRI Services"
+          },
+          {
+            "option": "0",
+            "description": "Speak to Customer Care"
+          }
+        ]
+      }
+    ]
+  },
+  "emailSupportSection": {
+    "heading": {
+      "key": "emailSupportSection",
+      "text": "Email Support",
+      "subText": "Contact HDFC Bank via email for written complaints"
+    },
+    "table": {
+      "headers": ["Service", "Email"],
+      "rows": [
+        ["General Support", "support@hdfcbank.com"],
+        ["Credit Card Support", "cardservices@hdfcbank.com"],
+        ["NRI Services", "nri@hdfcbank.com"],
+        ["Investment Services", "investments@hdfcbank.com"],
+        ["Grievance Redressal", "grievance.redressal@hdfcbank.com"],
+        ["Principal Nodal Officer", "pnohdfcbank@hdfcbank.com"]
+      ]
+    }
+  },
+  "nriPhoneBankingSection": {
+    "heading": {
+      "key": "nriPhoneBankingSection",
+      "text": "NRI Phone Banking Support",
+      "subText": "Specialized support for NRI customers"
+    },
+    "subsections": [
+      {
+        "title": "NRI Services",
+        "table": {
+          "headers": ["Service", "Number", "Available"],
+          "rows": [
+            ["NRI Account Support", "1800-425-4332", "24x7"],
+            ["Remittance Support", "1800-425-4332", "24x7"],
+            ["NRI Credit Card", "1800-266-4332", "24x7"]
+          ]
+        }
+      }
+    ]
+  },
+  "missedCallServiceSection": {
+    "heading": {
+      "key": "missedCallServiceSection",
+      "text": "Missed Call Service",
+      "subText": "Get banking information via missed calls"
+    },
+    "table": {
+      "headers": ["Service", "Number", "Missed Call Number"],
+      "rows": [
+        ["Balance Enquiry", "SMS with balance", "92237 66666"],
+        ["Mini Statement", "SMS with transactions", "92238 66666"],
+        ["Account Statement", "SMS with statement", "92239 66666"]
+      ]
+    }
+  },
+  "customerCareListSection": {
+    "heading": {
+      "key": "customerCareListSection",
+      "text": "Customer Care List",
+      "subText": "Quick access to other bank customer care numbers"
+    },
+    "links": [
+      {
+        "name": "SBI Bank Customer Care",
+        "href": "/category/banking/public-sector-banks/sbi-bank"
+      },
+      {
+        "name": "ICICI Bank Customer Care",
+        "href": "/category/banking/private-banks/icici-bank"
+      },
+      {
+        "name": "Axis Bank Customer Care",
+        "href": "/category/banking/private-banks/axis-bank"
+      },
+      {
+        "name": "Kotak Bank Customer Care",
+        "href": "/category/banking/private-banks/kotak-bank"
+      },
+      {
+        "name": "Yes Bank Customer Care",
+        "href": "/category/banking/private-banks/yes-bank"
+      }
+    ]
+  }
+} 

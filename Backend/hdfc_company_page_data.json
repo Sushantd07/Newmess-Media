@@ -1,0 +1,119 @@
+{
+  "id": "hdfc-bank",
+  "name": "HDFC Bank",
+  "slug": "hdfc-bank",
+  "phone": "1800-258-6161",
+  "logo": "/company-logos/Bank/hdfc_bank.svg",
+  "verified": true,
+  "isActive": true,
+  "tags": ["Banking", "Private Sector", "Digital Banking"],
+  "address": "All India",
+  "timing": "24x7",
+  "parentCategory": "688c959dd075053079a897cd",
+  "order": 1,
+  
+  "description": "India's leading private sector bank offering comprehensive banking and financial services including savings accounts, loans, credit cards, and digital banking solutions.",
+  "companyName": "HDFC Bank",
+  "mainPhone": "1800-258-6161",
+  "website": "https://www.hdfcbank.com",
+  "founded": "1994",
+  "headquarters": "Mumbai, Maharashtra",
+  "parentCompany": "HDFC Limited",
+  "rating": 4.8,
+  "totalReviews": 3245,
+  "monthlySearches": "48K",
+  "services": [
+    "Savings & Current Accounts",
+    "Credit Cards",
+    "Personal & Home Loans",
+    "Investment Services",
+    "Digital Banking",
+    "NRI Services",
+    "Business Banking"
+  ],
+  "nationalNumbers": [
+    {
+      "type": "Customer Care",
+      "number": "1800-258-6161",
+      "description": "General banking support and account inquiries",
+      "available": "24x7",
+      "languages": ["Hindi", "English", "Regional Languages"],
+      "avgWaitTime": "1-2 minutes"
+    },
+    {
+      "type": "Credit Card Support",
+      "number": "1800-266-4332",
+      "description": "Credit card related queries and support",
+      "available": "24x7",
+      "languages": ["Hindi", "English"],
+      "avgWaitTime": "2-3 minutes"
+    },
+    {
+      "type": "NRI Services",
+      "number": "1800-425-4332",
+      "description": "NRI account and remittance support",
+      "available": "24x7",
+      "languages": ["Hindi", "English"],
+      "avgWaitTime": "2-3 minutes"
+    }
+  ],
+  "stateWiseNumbers": {
+    "Maharashtra": [
+      { "city": "Mumbai", "number": "022-6652-1000", "type": "Head Office" }
+    ],
+    "Delhi": [
+      { "city": "New Delhi", "number": "011-6652-1000", "type": "Regional Office" }
+    ],
+    "Karnataka": [
+      { "city": "Bangalore", "number": "080-6652-1000", "type": "Regional Office" }
+    ],
+    "Tamil Nadu": [
+      { "city": "Chennai", "number": "044-6652-1000", "type": "Regional Office" }
+    ],
+    "West Bengal": [
+      { "city": "Kolkata", "number": "033-6652-1000", "type": "Regional Office" }
+    ]
+  },
+  "smsServices": [
+    { "code": "BAL", "description": "Check your account balance", "number": "5676712" },
+    { "code": "MINI", "description": "Get mini statement", "number": "5676712" },
+    { "code": "CHQBOOK", "description": "Request cheque book", "number": "5676712" },
+    { "code": "STOP", "description": "Stop cheque payment", "number": "5676712" },
+    { "code": "BLOCK", "description": "Block ATM/Debit card", "number": "5676712" },
+    { "code": "UNBLOCK", "description": "Unblock ATM/Debit card", "number": "5676712" }
+  ],
+  "ivrMenu": {
+    "mainMenu": [
+      { "option": "1", "description": "Account Balance & Mini Statement" },
+      { "option": "2", "description": "Credit Card Services" },
+      { "option": "3", "description": "ATM Card Services" },
+      { "option": "4", "description": "Internet Banking" },
+      { "option": "5", "description": "Loan Services" },
+      { "option": "6", "description": "Investment Services" },
+      { "option": "7", "description": "NRI Services" },
+      { "option": "0", "description": "Speak to Customer Care" }
+    ]
+  },
+  "complaintSteps": [
+    {
+      "step": 1,
+      "title": "Call Customer Care",
+      "description": "Call the dedicated customer care number for your service.",
+      "icon": "Phone"
+    },
+    {
+      "step": 2,
+      "title": "Visit Branch",
+      "description": "Visit your nearest HDFC Bank branch for assistance.",
+      "icon": "Building2"
+    }
+  ],
+  "videoGuide": {
+    "title": "HDFC Bank Customer Support Guide",
+    "videoId": "dQw4w9WgXcQ",
+    "thumbnail": "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+    "duration": "6:20",
+    "views": "1.5M",
+    "description": "Complete guide to HDFC Bank customer support services."
+  }
+} 

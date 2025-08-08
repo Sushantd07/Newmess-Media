@@ -1,0 +1,94 @@
+{
+  "description": "API JSON format for creating HDFC Bank subcategory",
+  "endpoint": "POST /api/subcategories/create-company-page",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "request_body": {
+    "comment": "=== HOME PAGE DATA (for CategoryGrid) ===",
+    "id": "hdfc-bank",
+    "name": "HDFC Bank",
+    "slug": "hdfc-bank",
+    "phone": "1800-266-4332",
+    "logo": "/company-logos/Bank/hdfc_bank.svg",
+    "verified": true,
+    "isActive": true,
+    "tags": ["Banking", "Private", "Finance", "Credit Cards"],
+    "address": "All India",
+    "timing": "Mon - Sat, 9 AM - 6 PM",
+    "parentCategory": "YOUR_BANKING_CATEGORY_ID",
+    "order": 2,
+    
+    "comment2": "=== COMPANY PAGE DATA (for detailed pages) ===",
+    "description": "HDFC Bank is India's leading private sector bank, offering a wide range of banking and financial services including personal banking, business banking, credit cards, loans, and investment services. Known for its innovative digital banking solutions and excellent customer service.",
+    "companyName": "HDFC Bank Limited",
+    "mainPhone": "1800-266-4332",
+    "website": "https://www.hdfcbank.com",
+    "founded": "1994",
+    "headquarters": "Mumbai, Maharashtra",
+    "parentCompany": "HDFC Group",
+    "rating": 4.3,
+    "totalReviews": 3200,
+    
+    "comment3": "=== LINK TO EXISTING CONTACT TAB (optional) ===",
+    "contactTabId": null
+  },
+  
+  "example_curl": {
+    "command": "curl -X POST http://localhost:5000/api/subcategories/create-company-page \\\n  -H \"Content-Type: application/json\" \\\n  -d @hdfc_bank_subcategory_api.json"
+  },
+  
+  "response_format": {
+    "success": true,
+    "message": "Company page created successfully",
+    "data": {
+      "_id": "generated_object_id",
+      "id": "hdfc-bank",
+      "name": "HDFC Bank",
+      "slug": "hdfc-bank",
+      "phone": "1800-266-4332",
+      "logo": "/company-logos/Bank/hdfc_bank.svg",
+      "verified": true,
+      "isActive": true,
+      "tags": ["Banking", "Private", "Finance", "Credit Cards"],
+      "address": "All India",
+      "timing": "Mon - Sat, 9 AM - 6 PM",
+      "parentCategory": "banking_category_object_id",
+      "order": 2,
+      "description": "HDFC Bank is India's leading private sector bank...",
+      "companyName": "HDFC Bank Limited",
+      "mainPhone": "1800-266-4332",
+      "website": "https://www.hdfcbank.com",
+      "founded": "1994",
+      "headquarters": "Mumbai, Maharashtra",
+      "parentCompany": "HDFC Group",
+      "rating": 4.3,
+      "totalReviews": 3200,
+      "tabs": {
+        "numbers": null,
+        "complaints": null,
+        "quickhelp": null,
+        "video": null,
+        "overview": null
+      },
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  },
+  
+  "next_steps": {
+    "step1": "Create the HDFC Bank subcategory using this API",
+    "step2": "Create contact numbers data using the hdfc_contact_numbers_template.json",
+    "step3": "Link the contact numbers to the subcategory using /api/subcategories/link-contact-tab",
+    "step4": "Access the company page at /category/banking/private-banks/hdfc-bank"
+  },
+  
+  "notes": {
+    "parentCategory": "Replace 'YOUR_BANKING_CATEGORY_ID' with the actual ObjectId of your banking category",
+    "logo": "The logo path assumes you have the HDFC Bank logo in your public assets",
+    "contactTabId": "Set to null initially, will be linked after creating contact numbers data",
+    "tags": "Customize tags based on your category structure",
+    "order": "Set order based on how you want HDFC Bank to appear in the list"
+  }
+} 

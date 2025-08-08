@@ -1,0 +1,96 @@
+{
+  "description": "Template for creating company pages with the consolidated subcategory model",
+  "endpoint": "POST /api/subcategories/create-company-page",
+  "template": {
+    "comment": "=== HOME PAGE DATA (for CategoryGrid) ===",
+    "id": "company-unique-id",
+    "name": "Company Name",
+    "slug": "company-slug",
+    "phone": "1800-XXX-XXXX",
+    "logo": "https://example.com/logo.png",
+    "verified": true,
+    "isActive": true,
+    "tags": ["Banking", "Finance"],
+    "address": "All India",
+    "timing": "Mon - Sat, 9 AM - 5 PM",
+    "parentCategory": "category-object-id",
+    "order": 1,
+    
+    "comment2": "=== COMPANY PAGE DATA (for detailed pages) ===",
+    "description": "Company description for detailed page",
+    "companyName": "Full Company Name",
+    "mainPhone": "1800-XXX-XXXX",
+    "website": "https://company.com",
+    "founded": "1994",
+    "headquarters": "Mumbai, Maharashtra",
+    "parentCompany": "Parent Company Name",
+    "rating": 4.5,
+    "totalReviews": 1000,
+    
+    "comment3": "=== LINK TO EXISTING CONTACT TAB (optional) ===",
+    "contactTabId": "existing-contact-tab-object-id"
+  },
+  
+  "examples": {
+    "sbi_bank": {
+      "id": "sbi-bank",
+      "name": "SBI Bank",
+      "slug": "sbi-bank",
+      "phone": "1800-111-111",
+      "logo": "https://example.com/sbi-logo.png",
+      "verified": true,
+      "isActive": true,
+      "tags": ["Banking", "Government"],
+      "address": "All India",
+      "timing": "Mon - Sat, 9 AM - 5 PM",
+      "parentCategory": "banking-category-id",
+      "order": 1,
+      "description": "India's largest public sector bank offering comprehensive banking services",
+      "companyName": "State Bank of India",
+      "mainPhone": "1800-111-111",
+      "website": "https://sbi.co.in",
+      "founded": "1955",
+      "headquarters": "Mumbai, Maharashtra",
+      "parentCompany": "Government of India",
+      "rating": 4.2,
+      "totalReviews": 2500
+    },
+    
+    "icici_bank": {
+      "id": "icici-bank",
+      "name": "ICICI Bank",
+      "slug": "icici-bank",
+      "phone": "1800-222-3333",
+      "logo": "https://example.com/icici-logo.png",
+      "verified": true,
+      "isActive": true,
+      "tags": ["Banking", "Private"],
+      "address": "All India",
+      "timing": "Mon - Sat, 9 AM - 6 PM",
+      "parentCategory": "banking-category-id",
+      "order": 2,
+      "description": "Leading private sector bank with innovative digital solutions",
+      "companyName": "ICICI Bank Limited",
+      "mainPhone": "1800-222-3333",
+      "website": "https://icicibank.com",
+      "founded": "1994",
+      "headquarters": "Mumbai, Maharashtra",
+      "parentCompany": "ICICI Group",
+      "rating": 4.3,
+      "totalReviews": 1800
+    }
+  },
+  
+  "usage": {
+    "step1": "Create company page with basic data",
+    "step2": "If you have existing contact tab data, link it using the contactTabId field",
+    "step3": "Or create contact tab separately and link later using /link-contact-tab endpoint",
+    "step4": "Fetch company page data using /company/:companyId endpoint"
+  },
+  
+  "endpoints": {
+    "create_company": "POST /api/subcategories/create-company-page",
+    "link_contact": "POST /api/subcategories/link-contact-tab",
+    "get_company": "GET /api/subcategories/company/:companyId"
+  }
+} 

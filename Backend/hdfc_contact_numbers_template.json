@@ -1,0 +1,297 @@
+{
+  "subcategoryId": "hdfc-bank",
+  "tabTitle": "HDFC Contact Numbers",
+  "tabDescription": "All toll-free numbers, helpline details, SMS services, and quick links for HDFC Bank",
+  "topContactCards": {
+    "heading": {
+      "key": "topContactCards",
+      "text": "Quick Contact",
+      "subText": "Get instant support for your banking needs"
+    },
+    "cards": [
+      {
+        "title": "HDFC Customer Care",
+        "number": "1800-266-4332",
+        "subtitle": "General banking support and account inquiries",
+        "icon": "phone"
+      },
+      {
+        "title": "HDFC Credit Card Support",
+        "number": "1800-266-4332",
+        "subtitle": "Credit card related queries and support",
+        "icon": "credit-card"
+      }
+    ]
+  },
+  "nationalNumbersSection": {
+    "heading": {
+      "key": "nationalNumbersSection",
+      "text": "National Helpline Numbers",
+      "subText": "Toll-free numbers available across India"
+    },
+    "items": [
+      {
+        "type": "Customer Care",
+        "number": "1800-266-4332",
+        "description": "General banking support and account inquiries",
+        "available": "24x7",
+        "languages": ["Hindi", "English", "Regional Languages"],
+        "avgWaitTime": "1-2 minutes"
+      },
+      {
+        "type": "Credit Card Support",
+        "number": "1800-266-4332",
+        "description": "Credit card related queries and support",
+        "available": "24x7",
+        "languages": ["Hindi", "English"],
+        "avgWaitTime": "2-3 minutes"
+      },
+      {
+        "type": "NRI Services",
+        "number": "1800-425-4332",
+        "description": "NRI account and remittance support",
+        "available": "24x7",
+        "languages": ["Hindi", "English"],
+        "avgWaitTime": "2-3 minutes"
+      }
+    ]
+  },
+  "helplineNumbersSection": {
+    "heading": {
+      "key": "helplineNumbersSection",
+      "text": "Specialized Helpline Numbers",
+      "subText": "Department-specific support numbers"
+    },
+    "table": {
+      "heading": {
+        "key": "helplineNumbersTable",
+        "text": "Helpline Numbers",
+        "subText": "Department-specific support"
+      },
+      "headers": ["Type", "Number", "Description", "Available"],
+      "rows": [
+        ["Personal Banking", "1800-266-4332", "Savings account, current account support", "24x7"],
+        ["Business Banking", "1800-266-4332", "Business account and loan support", "Mon-Sat, 9 AM - 6 PM"],
+        ["NRI Services", "1800-425-4332", "NRI account and remittance support", "24x7"],
+        ["Investment Services", "1800-266-4332", "Mutual funds and investment support", "Mon-Sat, 9 AM - 6 PM"],
+        ["Loan Services", "1800-266-4332", "Personal, home, and business loans", "Mon-Sat, 9 AM - 6 PM"]
+      ]
+    }
+  },
+  "allIndiaNumbersSection": {
+    "heading": {
+      "key": "allIndiaNumbersSection",
+      "text": "All India Numbers",
+      "subText": "Numbers accessible from anywhere in India"
+    },
+    "table": {
+      "heading": {
+        "key": "allIndiaNumbersTable",
+        "text": "All India Numbers",
+        "subText": "Nationwide support"
+      },
+      "headers": ["Type", "Number", "Description", "Available"],
+      "rows": [
+        ["General Enquiry", "1800-266-4332", "General banking information", "24x7"],
+        ["Complaint Registration", "1800-266-4332", "Register complaints and grievances", "24x7"],
+        ["ATM Card Blocking", "1800-266-4332", "Block lost or stolen ATM cards", "24x7"],
+        ["Internet Banking", "1800-266-4332", "Online banking support", "24x7"]
+      ]
+    }
+  },
+  "stateWiseNumbersSection": {
+    "heading": {
+      "key": "stateWiseNumbersSection",
+      "text": "State-wise Contact Numbers",
+      "subText": "Regional office numbers for specific states"
+    },
+    "states": [
+      {
+        "state": "Maharashtra",
+        "city": "Mumbai",
+        "type": "Head Office",
+        "number": "022-6652-1000"
+      },
+      {
+        "state": "Maharashtra",
+        "city": "Pune",
+        "type": "Regional Office",
+        "number": "020-6601-1000"
+      },
+      {
+        "state": "Delhi",
+        "city": "New Delhi",
+        "type": "Regional Office",
+        "number": "011-6652-1000"
+      },
+      {
+        "state": "Karnataka",
+        "city": "Bangalore",
+        "type": "Regional Office",
+        "number": "080-6652-1000"
+      },
+      {
+        "state": "Tamil Nadu",
+        "city": "Chennai",
+        "type": "Regional Office",
+        "number": "044-6652-1000"
+      }
+    ]
+  },
+  "smsServicesSection": {
+    "heading": {
+      "key": "smsServicesSection",
+      "text": "SMS Banking Services",
+      "subText": "Quick banking services via SMS"
+    },
+    "services": [
+      {
+        "service": "Balance Enquiry",
+        "number": "5676712",
+        "format": "BAL <Account Number>",
+        "description": "Check account balance"
+      },
+      {
+        "service": "Mini Statement",
+        "number": "5676712",
+        "format": "MSTMT <Account Number>",
+        "description": "Get last 5 transactions"
+      },
+      {
+        "service": "Cheque Status",
+        "number": "5676712",
+        "format": "CHQ <Cheque Number>",
+        "description": "Check cheque status"
+      },
+      {
+        "service": "ATM Card Blocking",
+        "number": "5676712",
+        "format": "BLOCK <Card Number>",
+        "description": "Block ATM card immediately"
+      }
+    ]
+  },
+  "ivrMenuSection": {
+    "heading": {
+      "key": "ivrMenuSection",
+      "text": "IVR Menu Options",
+      "subText": "Interactive Voice Response menu for quick access"
+    },
+    "menu": [
+      {
+        "option": "1",
+        "action": "Account Balance & Mini Statement",
+        "description": "Check balance and recent transactions"
+      },
+      {
+        "option": "2",
+        "action": "Credit Card Services",
+        "description": "Credit card related services"
+      },
+      {
+        "option": "3",
+        "action": "ATM Card Services",
+        "description": "ATM card blocking and support"
+      },
+      {
+        "option": "4",
+        "action": "Internet Banking",
+        "description": "Online banking support"
+      },
+      {
+        "option": "5",
+        "action": "Loan Services",
+        "description": "Personal, home, and business loans"
+      },
+      {
+        "option": "6",
+        "action": "Investment Services",
+        "description": "Mutual funds and investment support"
+      },
+      {
+        "option": "7",
+        "action": "NRI Services",
+        "description": "NRI account and remittance support"
+      },
+      {
+        "option": "8",
+        "action": "Speak to Customer Care",
+        "description": "Connect to customer care executive"
+      }
+    ]
+  },
+  "quickLinksSection": {
+    "heading": {
+      "key": "quickLinksSection",
+      "text": "Quick Links",
+      "subText": "Important links for HDFC Bank services"
+    },
+    "links": [
+      {
+        "title": "Internet Banking",
+        "url": "https://netbanking.hdfcbank.com",
+        "description": "Access your account online"
+      },
+      {
+        "title": "Mobile Banking",
+        "url": "https://play.google.com/store/apps/details?id=com.snapwork.hdfc",
+        "description": "HDFC Bank MobileBanking app"
+      },
+      {
+        "title": "Branch Locator",
+        "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/credit-card-services/branch-locator",
+        "description": "Find nearest HDFC Bank branch"
+      },
+      {
+        "title": "ATM Locator",
+        "url": "https://www.hdfcbank.com/personal/pay/cards/credit-cards/credit-card-services/atm-locator",
+        "description": "Find nearest HDFC Bank ATM"
+      }
+    ]
+  },
+  "emailSupportSection": {
+    "heading": {
+      "key": "emailSupportSection",
+      "text": "Email Support",
+      "subText": "Contact HDFC Bank via email for written complaints"
+    },
+    "table": {
+      "heading": {
+        "key": "emailSupportTable",
+        "text": "Email Support",
+        "subText": "Written complaint support"
+      },
+      "headers": ["Type", "Email", "Description", "Response Time"],
+      "rows": [
+        ["General Support", "support@hdfcbank.com", "General banking queries", "24-48 hours"],
+        ["Credit Card Support", "cardservices@hdfcbank.com", "Credit card related issues", "24-48 hours"],
+        ["NRI Services", "nri@hdfcbank.com", "NRI account and remittance support", "24-48 hours"],
+        ["Investment Services", "investments@hdfcbank.com", "Mutual funds and investment queries", "24-48 hours"]
+      ]
+    }
+  },
+  "customerCareListSection": {
+    "heading": {
+      "key": "customerCareListSection",
+      "text": "Other Bank Customer Care",
+      "subText": "Quick access to other bank customer care numbers"
+    },
+    "links": [
+      {
+        "name": "SBI Bank Customer Care",
+        "url": "/category/banking/public-sector-banks/sbi-bank",
+        "description": "SBI Bank toll-free numbers and support"
+      },
+      {
+        "name": "ICICI Bank Customer Care",
+        "url": "/category/banking/private-banks/icici-bank",
+        "description": "ICICI Bank customer care numbers"
+      },
+      {
+        "name": "Axis Bank Customer Care",
+        "url": "/category/banking/private-banks/axis-bank",
+        "description": "Axis Bank support numbers"
+      }
+    ]
+  }
+} 

@@ -1,0 +1,239 @@
+{
+  "subcategoryId": "sbi-bank",
+  "tabTitle": "SBI Contact Numbers",
+  "tabDescription": "All toll-free numbers, helpline details, SMS services, and quick links for State Bank of India",
+  "topContactCards": {
+    "heading": {
+      "key": "topContactCards",
+      "text": "Quick Contact",
+      "subText": "Get instant support for your banking needs"
+    },
+    "cards": [
+      {
+        "title": "SBI Customer Care",
+        "number": "1800-111-111",
+        "subtitle": "General banking support and account inquiries",
+        "icon": "phone"
+      },
+      {
+        "title": "SBI Credit Card Support",
+        "number": "1800-266-4332",
+        "subtitle": "Credit card related queries and support",
+        "icon": "credit-card"
+      }
+    ]
+  },
+  "nationalNumbersSection": {
+    "heading": {
+      "key": "nationalNumbersSection",
+      "text": "National Helpline Numbers",
+      "subText": "Toll-free numbers available across India"
+    },
+    "items": [
+      {
+        "type": "Customer Care",
+        "number": "1800-111-111",
+        "description": "General banking support and account inquiries",
+        "available": "24x7",
+        "languages": ["Hindi", "English", "Regional Languages"],
+        "avgWaitTime": "1-2 minutes"
+      },
+      {
+        "type": "Credit Card Support",
+        "number": "1800-266-4332",
+        "description": "Credit card related queries and support",
+        "available": "24x7",
+        "languages": ["Hindi", "English"],
+        "avgWaitTime": "2-3 minutes"
+      }
+    ]
+  },
+  "helplineNumbersSection": {
+    "heading": {
+      "key": "helplineNumbersSection",
+      "text": "Specialized Helpline Numbers",
+      "subText": "Department-specific support numbers"
+    },
+    "table": {
+      "heading": {
+        "key": "helplineNumbersTable",
+        "text": "Helpline Numbers",
+        "subText": "Department-specific support"
+      },
+      "headers": ["Type", "Number", "Description", "Available"],
+      "rows": [
+        ["Personal Banking", "1800-111-111", "Savings account, current account support", "24x7"],
+        ["Business Banking", "1800-266-4332", "Business account and loan support", "Mon-Sat, 9 AM - 6 PM"],
+        ["NRI Services", "1800-425-3800", "NRI account and remittance support", "24x7"]
+      ]
+    }
+  },
+  "allIndiaNumbersSection": {
+    "heading": {
+      "key": "allIndiaNumbersSection",
+      "text": "All India Numbers",
+      "subText": "Numbers accessible from anywhere in India"
+    },
+    "table": {
+      "heading": {
+        "key": "allIndiaNumbersTable",
+        "text": "All India Numbers",
+        "subText": "Nationwide support"
+      },
+      "headers": ["Type", "Number", "Description", "Available"],
+      "rows": [
+        ["General Enquiry", "1800-111-111", "General banking information", "24x7"],
+        ["Complaint Registration", "1800-266-4332", "Register complaints and grievances", "24x7"]
+      ]
+    }
+  },
+  "stateWiseNumbersSection": {
+    "heading": {
+      "key": "stateWiseNumbersSection",
+      "text": "State-wise Contact Numbers",
+      "subText": "Regional office numbers for specific states"
+    },
+    "states": [
+      {
+        "state": "Maharashtra",
+        "city": "Mumbai",
+        "type": "Head Office",
+        "number": "022-6171-2000"
+      },
+      {
+        "state": "Maharashtra",
+        "city": "Pune",
+        "type": "Regional Office",
+        "number": "020-2605-2000"
+      },
+      {
+        "state": "Delhi",
+        "city": "New Delhi",
+        "type": "Regional Office",
+        "number": "011-2331-2000"
+      }
+    ]
+  },
+  "smsServicesSection": {
+    "heading": {
+      "key": "smsServicesSection",
+      "text": "SMS Banking Services",
+      "subText": "Quick banking services via SMS"
+    },
+    "services": [
+      {
+        "service": "Balance Enquiry",
+        "number": "9223766666",
+        "format": "BAL <Account Number>",
+        "description": "Check account balance"
+      },
+      {
+        "service": "Mini Statement",
+        "number": "9223766666",
+        "format": "MSTMT <Account Number>",
+        "description": "Get last 5 transactions"
+      }
+    ]
+  },
+  "ivrMenuSection": {
+    "heading": {
+      "key": "ivrMenuSection",
+      "text": "IVR Menu Options",
+      "subText": "Interactive Voice Response menu for quick access"
+    },
+    "menu": [
+      {
+        "option": "1",
+        "action": "Account Balance & Mini Statement",
+        "description": "Check balance and recent transactions"
+      },
+      {
+        "option": "2",
+        "action": "Credit Card Services",
+        "description": "Credit card related services"
+      },
+      {
+        "option": "3",
+        "action": "ATM Card Services",
+        "description": "ATM card blocking and support"
+      },
+      {
+        "option": "4",
+        "action": "Internet Banking",
+        "description": "Online banking support"
+      },
+      {
+        "option": "5",
+        "action": "Speak to Customer Care",
+        "description": "Connect to customer care executive"
+      }
+    ]
+  },
+  "quickLinksSection": {
+    "heading": {
+      "key": "quickLinksSection",
+      "text": "Quick Links",
+      "subText": "Important links for SBI services"
+    },
+    "links": [
+      {
+        "title": "Internet Banking",
+        "url": "https://retail.onlinesbi.com",
+        "description": "Access your account online"
+      },
+      {
+        "title": "Mobile Banking",
+        "url": "https://play.google.com/store/apps/details?id=com.sbi.SBIFreedomPlus",
+        "description": "SBI YONO mobile app"
+      },
+      {
+        "title": "Branch Locator",
+        "url": "https://www.sbi.co.in/web/home/locator/branch",
+        "description": "Find nearest SBI branch"
+      }
+    ]
+  },
+  "emailSupportSection": {
+    "heading": {
+      "key": "emailSupportSection",
+      "text": "Email Support",
+      "subText": "Contact SBI via email for written complaints"
+    },
+    "table": {
+      "heading": {
+        "key": "emailSupportTable",
+        "text": "Email Support",
+        "subText": "Written complaint support"
+      },
+      "headers": ["Type", "Email", "Description", "Response Time"],
+      "rows": [
+        ["General Support", "customercare@sbi.co.in", "General banking queries", "24-48 hours"],
+        ["Credit Card Support", "sbi.card@sbi.co.in", "Credit card related issues", "24-48 hours"]
+      ]
+    }
+  },
+  "customerCareListSection": {
+    "heading": {
+      "key": "customerCareListSection",
+      "text": "Other Bank Customer Care",
+      "subText": "Quick access to other bank customer care numbers"
+    },
+    "links": [
+      {
+        "name": "HDFC Bank Customer Care",
+        "url": "/category/banking/private-banks/hdfc-bank",
+        "description": "HDFC Bank toll-free numbers and support"
+      },
+      {
+        "name": "ICICI Bank Customer Care",
+        "url": "/category/banking/private-banks/icici-bank",
+        "description": "ICICI Bank customer care numbers"
+      },
+      {
+        "name": "Axis Bank Customer Care",
+        "url": "/category/banking/private-banks/axis-bank",
+        "description": "Axis Bank support numbers"
+      }
+    ]
+  }
+} 
