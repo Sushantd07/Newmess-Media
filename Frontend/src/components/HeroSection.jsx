@@ -441,19 +441,19 @@ const HeroSection = () => {
 
           {/* Quick Actions (removed in mobile view as requested) */}
 
-          {/* Category Chips */}
-          <div className="overflow-x-auto no-scrollbar -mx-1 px-1">
-            <div className="flex items-center gap-2 py-1">
+          {/* Category Dropdown */}
+          <div className="px-2 flex justify-center">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-[70%] max-w-md min-w-[220px] px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white"
+            >
               {Object.entries(helplineCategories).map(([key, category]) => (
-                <button
-                  key={key}
-                  onClick={() => setSelectedCategory(key)}
-                  className={`whitespace-nowrap px-3 py-1.5 rounded-full border text-xs font-semibold shadow-sm flex-shrink-0 ${selectedCategory===key ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-gray-700 border-gray-200'}`}
-                >
+                <option key={key} value={key}>
                   {category.title}
-                </button>
+                </option>
               ))}
-            </div>
+            </select>
           </div>
 
           {/* Dynamic Helpline Directory */}
@@ -464,29 +464,22 @@ const HeroSection = () => {
               <h3 className={`font-semibold text-sm`}>{currentCategory.title}</h3>
               <p className="text-xs opacity-90">{currentCategory.services.length} services available</p>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1.5">
               {displayedServices.map((service, index) => {
                 const Icon = service.icon;
                 return (
                   <button
                     key={index}
                     onClick={() => handleCall(service.title, service.number)}
-                    className="text-left rounded-lg border border-gray-100 shadow-sm p-2.5 hover:bg-orange-50 active:scale-[0.98]"
+                    className="w-full flex items-center justify-between rounded-lg border border-gray-100 shadow-sm px-2.5 py-1.5 hover:bg-orange-50 active:scale-[0.98]"
                   >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`w-9 h-9 rounded-full flex items-center justify-center text-white bg-gradient-to-r ${currentCategory.color} shadow`}>
+                    <div className="flex items-center gap-2.5">
+                      <span className={`w-8 h-8 rounded-full flex items-center justify-center text-white bg-gradient-to-r ${currentCategory.color} shadow`}>
                         <Icon className="h-4 w-4" />
                       </span>
-                      <div className="font-semibold text-gray-800 text-xs leading-tight">{service.title}</div>
+                      <div className="font-semibold text-gray-800 text-[13px] leading-tight">{service.title}</div>
                     </div>
-                    <div className="text-blue-700 font-mono text-xs">{service.number}</div>
-                    <div className="mt-1">
-                      {service.available24x7 ? (
-                        <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full">24x7</span>
-                      ) : (
-                        <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">Limited</span>
-                      )}
-                    </div>
+                    <div className="text-blue-700 font-mono text-[13px] font-semibold tracking-wide">{service.number}</div>
                   </button>
                 );
               })}
@@ -650,48 +643,32 @@ const HeroSection = () => {
             </div>
 
             {/* Current Category Title */}
-            <div className={`mb-4 p-3 rounded-lg bg-gradient-to-r ${currentCategory.color} text-white text-center`}>
+            <div className={`mb-3 p-2 rounded-lg bg-gradient-to-r ${currentCategory.color} text-white text-center`}>
               <h3 className="font-semibold text-sm">{currentCategory.title}</h3>
-              <p className="text-xs opacity-90">{currentCategory.services.length} services available</p>
+              <p className="text-[11px] opacity-90">{currentCategory.services.length} services available</p>
             </div>
 
-            {/* Circular Services Grid */}
+            {/* Services List */}
             <div className="flex-1 overflow-y-auto">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="space-y-2">
                 {displayedServices.map((service, index) => {
                   const Icon = service.icon;
-                return (
-                  <div
-                    key={index}
+                  return (
+                    <button
+                      key={index}
                       onClick={() => handleCall(service.title, service.number)}
-                      className="cursor-pointer hover:bg-orange-50 transition-all duration-200 hover:scale-[1.02] p-2 rounded-lg text-center shadow-sm hover:shadow-md border border-gray-100 hover:border-orange-200 group"
+                      className="w-full flex items-center justify-between text-left hover:bg-orange-50 transition-colors px-3 py-2 rounded-lg shadow-sm border border-gray-100"
                     >
-                      {/* Circular Icon */}
-                      <div className={`w-12 h-12 bg-gradient-to-r ${currentCategory.color} rounded-full flex items-center justify-center mb-2 mx-auto shadow-lg group-hover:shadow-xl transition-shadow`}>
-                        <Icon className="h-6 w-6 text-white" style={{ background: 'none' }} />
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 bg-gradient-to-r ${currentCategory.color} rounded-full flex items-center justify-center shadow-md`}>
+                          <Icon className="h-4 w-4 text-white" style={{ background: 'none' }} />
+                        </div>
+                        <div className="font-semibold text-gray-800 text-sm leading-tight">{service.title}</div>
                       </div>
-                      
-                      {/* Service Name */}
-                      <div className="font-semibold text-gray-800 text-xs leading-tight mb-1 group-hover:text-orange-600 transition-colors">
-                        {service.title}
-                      </div>
-                      
-                      {/* Phone Number */}
-                      <div className="text-blue-600 font-mono text-xs mb-1">
-                        {service.number}
-                      </div>
-                      
-                      {/* 24x7 Badge */}
-                      <div className="flex justify-center">
-                        {service.available24x7 ? (
-                          <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">24x7</span>
-                        ) : (
-                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Limited</span>
-                        )}
-                      </div>
-                  </div>
-                );
-              })}
+                      <div className="text-blue-600 font-mono text-sm font-semibold tracking-wide">{service.number}</div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -734,3 +711,4 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
+ 
