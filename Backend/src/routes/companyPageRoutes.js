@@ -1,4 +1,6 @@
 import express from "express";
+import logoUpload from "../middleware/logoUpload.js";
+import compressLogo from "../middleware/logoCompression.js";
 import {
   createCompanyPage,
   createCompanyPageWithContactNumbers,
@@ -12,7 +14,9 @@ import {
   searchCompanyPages,
   getCompanyPageTab,
   updateContactNumbersTab,
-  saveDynamicComponents
+  saveDynamicComponents,
+  uploadCompanyLogo,
+  deleteCompanyLogo
 } from "../controllers/companyPageController.js";
 
 const router = express.Router();
@@ -40,5 +44,13 @@ router.put("/:slug/contact-numbers", updateContactNumbersTab);
 
 // 🟢 Dynamic Components Routes
 router.post("/save-component", saveDynamicComponents);
+
+// 🟢 Logo Upload Routes
+router.post("/:slug/upload-logo", 
+  logoUpload.single('logo'), 
+  compressLogo, 
+  uploadCompanyLogo
+);
+router.delete("/:slug/delete-logo", deleteCompanyLogo);
 
 export default router; 

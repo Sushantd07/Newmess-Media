@@ -1,64 +1,60 @@
-import express from "express";
+// routes/tabRoutes.js
+import express from 'express';
 import {
-  // Contact Numbers Tab
-  createContactNumbersTab,
-  getAllContactNumbersTab,
-  getContactNumbersTab,
-  updateContactNumbersTab,
-  
-  // Complaints Tab
-  createComplaintsTab,
-  getComplaintsTab,
-  updateComplaintsTab,
-  
-  // Quick Help Tab
-  createQuickHelpTab,
-  getQuickHelpTab,
-  updateQuickHelpTab,
-  
-  // Overview Tab
+  getCompanyTabs,
+  createTab,
+  updateTab,
+  deleteTab,
+  reorderTabs,
+  bulkUpdateTabs,
+  getAllTabs,
   createOverviewTab,
-  getOverviewTab,
-  updateOverviewTab,
-  
-  // Video Guide Tab
+  createContactNumbersTab,
+  createComplaintsTab,
+  createQuickHelpTab,
   createVideoGuideTab,
-  getVideoGuideTab,
-  updateVideoGuideTab,
-  
-  // Generic Delete
-  deleteTab
-} from "../controllers/tabControllers.js";
+  updateOverviewTab,
+  updateContactNumbersTab,
+  updateComplaintsTab,
+  updateQuickHelpTab,
+  updateVideoGuideTab
+} from '../controllers/tabController.js';
 
 const router = express.Router();
 
-// ==================== CONTACT NUMBERS TAB ROUTES ====================
-router.post("/contact-numbers", createContactNumbersTab);
-router.get("/contact-numbers", getAllContactNumbersTab); // New route for getting all contact numbers
-router.get("/contact-numbers/:id", getContactNumbersTab);
-router.put("/contact-numbers/:id", updateContactNumbersTab);
+// Get all tabs for a specific company
+router.get('/company/:companyId', getCompanyTabs);
 
-// ==================== COMPLAINTS TAB ROUTES ====================
-router.post("/complaints", createComplaintsTab);
-router.get("/complaints/:id", getComplaintsTab);
-router.put("/complaints/:id", updateComplaintsTab);
+// Create a new tab for a company
+router.post('/company/:companyId', createTab);
 
-// ==================== QUICK HELP TAB ROUTES ====================
-router.post("/quick-help", createQuickHelpTab);
-router.get("/quick-help/:id", getQuickHelpTab);
-router.put("/quick-help/:id", updateQuickHelpTab);
+// Update a specific tab for a company
+router.put('/company/:companyId/:tabId', updateTab);
 
-// ==================== OVERVIEW TAB ROUTES ====================
-router.post("/overview", createOverviewTab);
-router.get("/overview/:id", getOverviewTab);
-router.put("/overview/:id", updateOverviewTab);
+// Delete a tab for a specific company
+router.delete('/company/:companyId/:tabId', deleteTab);
 
-// ==================== VIDEO GUIDE TAB ROUTES ====================
-router.post("/video-guide", createVideoGuideTab);
-router.get("/video-guide/:id", getVideoGuideTab);
-router.put("/video-guide/:id", updateVideoGuideTab);
+// Reorder tabs for a company
+router.put('/company/:companyId/reorder', reorderTabs);
 
-// ==================== GENERIC DELETE ROUTE ====================
-router.delete("/:tabType/:id", deleteTab);
+// Bulk update tabs for a company
+router.post('/company/:companyId/bulk', bulkUpdateTabs);
 
-export default router; 
+// Get all available tabs (admin endpoint)
+router.get('/all', getAllTabs);
+
+// Create specific tab types
+router.post('/overview', createOverviewTab);
+router.post('/contact-numbers', createContactNumbersTab);
+router.post('/complaints', createComplaintsTab);
+router.post('/quick-help', createQuickHelpTab);
+router.post('/video-guide', createVideoGuideTab);
+
+// Update specific tab types
+router.put('/overview/:tabId', updateOverviewTab);
+router.put('/contact-numbers/:tabId', updateContactNumbersTab);
+router.put('/complaints/:tabId', updateComplaintsTab);
+router.put('/quick-help/:tabId', updateQuickHelpTab);
+router.put('/video-guide/:tabId', updateVideoGuideTab);
+
+export default router;

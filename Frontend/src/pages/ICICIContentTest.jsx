@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import TinyMCEEditor from '../components/admin/TinyMCEEditor';
 import structuredComplaintsService from '../services/structuredComplaintsService';
+import TinyMCEEditor from '../components/admin/TinyMCEEditor.jsx';
 
 const ICICIContentTest = () => {
   const [testContent, setTestContent] = useState('');

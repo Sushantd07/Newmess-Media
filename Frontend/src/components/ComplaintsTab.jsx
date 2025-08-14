@@ -5,6 +5,17 @@ import ComplaintsSidebar from './admin/ComplaintsSidebar';
 
 const ComplaintsTab = ({ complaintsData, loading, error, complaintContent, isAdminMode = false, onSaveComplaints, onSaveStructuredComplaints, companyName = 'Company' }) => {
   const editorRef = useRef(null);
+  
+  // Debug logging
+  console.log('🔍 ComplaintsTab Component Debug:');
+  console.log('🔍 isAdminMode:', isAdminMode);
+  console.log('🔍 companyName:', companyName);
+  console.log('🔍 onSaveComplaints:', typeof onSaveComplaints);
+  console.log('🔍 onSaveStructuredComplaints:', typeof onSaveStructuredComplaints);
+  console.log('🔍 editorRef.current:', editorRef.current);
+  console.log('🔍 complaintContent length:', complaintContent?.length || 0);
+  console.log('🔍 complaintContent preview:', complaintContent?.substring(0, 200));
+  
   if (loading) {
     return (
       <div className="w-full bg-[#F4F8FF] px-2 md:px-4">
@@ -41,15 +52,11 @@ const ComplaintsTab = ({ complaintsData, loading, error, complaintContent, isAdm
       <div className="w-full bg-[#F4F8FF] px-2 md:px-4">
         <div className="max-w-6xl mx-auto">
           <div className="bg-white border border-blue-200 rounded-2xl shadow-lg p-6">
-            {/* Rich Text Complaint Content */}
+            {/* Rich Text Complaint Content (SEO-visible in DOM) */}
             <div className="mb-6 p-4 border border-blue-100 rounded-lg bg-blue-50">
-              <div 
-                className="text-sm text-gray-700 leading-relaxed prose prose-sm max-w-none"
+              <div
+                className="max-w-none rich-html"
                 dangerouslySetInnerHTML={{ __html: complaintContent }}
-                style={{
-                  lineHeight: '1.6',
-                  fontSize: '14px'
-                }}
               />
             </div>
           </div>
@@ -103,6 +110,44 @@ const ComplaintsTab = ({ complaintsData, loading, error, complaintContent, isAdm
                   </div>
                 </div>
                 
+                {/* PROMINENT SAVE BUTTON ABOVE TEXT EDITOR - ALWAYS VISIBLE */}
+                <div className="mb-6 p-6 bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-xl shadow-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <Save className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-green-800 mb-1">Save Rich Text Editor Content</h3>
+                        <p className="text-sm text-green-700">
+                          💾 Saves to <strong>structuredComplaints</strong> collection via <strong>/api/structured-complaints/company/{companyName}</strong>
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      className="px-10 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 text-lg font-bold shadow-xl transition-all duration-200 flex items-center gap-3 hover:scale-105 border-2 border-green-500 transform hover:shadow-2xl"
+                      onClick={() => {
+                        console.log('🔘 PROMINENT SAVE BUTTON ABOVE TEXT EDITOR Clicked');
+                        console.log('📍 Route: /api/structured-complaints/company/{companySlug}');
+                        console.log('🗄️ Collection: structuredComplaints');
+                        if (editorRef.current) {
+                          const content = editorRef.current.getContent();
+                          console.log('📝 Content to save:', content.substring(0, 100) + '...');
+                          if (onSaveComplaints) {
+                            onSaveComplaints(content);
+                          }
+                        } else {
+                          console.error('❌ Editor ref not available');
+                        }
+                      }}
+                      type="button"
+                    >
+                      <Save className="w-6 h-6" />
+                      Save Content to Backend
+                    </button>
+                  </div>
+                </div>
+
                 {/* Inline TinyMCE Editor */}
                 <ComplaintsTabEditor
                   ref={editorRef}
@@ -117,13 +162,19 @@ const ComplaintsTab = ({ complaintsData, loading, error, complaintContent, isAdm
                 {isAdminMode && (
                   <div className="fixed bottom-6 right-6 z-[9999]">
                     <button
-                      className="px-8 py-4 bg-green-600 text-white rounded-full hover:bg-green-700 text-base font-bold shadow-2xl transition-all duration-200 flex items-center gap-3 hover:scale-110 border-2 border-white"
+                      className="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-full hover:from-green-700 hover:to-green-800 text-base font-bold shadow-2xl transition-all duration-200 flex items-center gap-3 hover:scale-110 border-2 border-white transform hover:shadow-2xl"
                       onClick={() => {
+                        console.log('🔘 Floating Save Button Clicked');
+                        console.log('📍 Route: /api/structured-complaints/company/{companySlug}');
+                        console.log('🗄️ Collection: structuredComplaints');
                         if (editorRef.current) {
                           const content = editorRef.current.getContent();
+                          console.log('📝 Content to save:', content.substring(0, 100) + '...');
                           if (onSaveComplaints) {
                             onSaveComplaints(content);
                           }
+                        } else {
+                          console.error('❌ Editor ref not available');
                         }
                       }}
                       title="Save Content to Database"
@@ -149,19 +200,15 @@ const ComplaintsTab = ({ complaintsData, loading, error, complaintContent, isAdm
             ) : (
               /* Regular Content Display for Non-Admin Users */
               <>
-                {/* Rich Text Complaint Content */}
+                {/* Rich Text Complaint Content (render exactly as saved) */}
                 {complaintContent && (
                   <div className="mb-6">
                     <h3 className="font-bold text-blue-700 text-lg mb-3">
                       Complaint Redressal Process
                     </h3>
-                    <div 
-                      className="text-sm text-gray-700 leading-relaxed prose prose-sm max-w-none"
+                    <div
+                      className="max-w-none rich-html"
                       dangerouslySetInnerHTML={{ __html: complaintContent }}
-                      style={{
-                        lineHeight: '1.6',
-                        fontSize: '14px'
-                      }}
                     />
                   </div>
                 )}
@@ -328,6 +375,67 @@ const ComplaintsTab = ({ complaintsData, loading, error, complaintContent, isAdm
                     <p className="text-sm text-yellow-700">{complaintsData.note}</p>
                   </div>
                     )}
+
+                {/* Debug Info - Only show in Admin Mode */}
+                {isAdminMode && (
+                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="font-semibold text-blue-900 mb-2">ComplaintsTab Debug Info:</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-blue-800"><strong>Admin Mode:</strong> {isAdminMode ? '✅ ON' : '❌ OFF'}</p>
+                        <p className="text-blue-800"><strong>Company Name:</strong> {companyName}</p>
+                        <p className="text-blue-800"><strong>Editor Ref:</strong> {editorRef.current ? '✅ Available' : '❌ Not Available'}</p>
+                        <p className="text-blue-800"><strong>Complaints Data:</strong> {complaintsData ? '✅ Available' : '❌ Not Available'}</p>
+                      </div>
+                      <div>
+                        <p className="text-blue-800"><strong>onSaveComplaints:</strong> {onSaveComplaints ? '✅ Available' : '❌ Not Available'}</p>
+                        <p className="text-blue-800"><strong>onSaveStructuredComplaints:</strong> {onSaveStructuredComplaints ? '✅ Available' : '❌ Not Available'}</p>
+                        <p className="text-blue-800"><strong>API Endpoint:</strong> /api/structured-complaints/company/{companyName}</p>
+                        <p className="text-blue-800"><strong>Database:</strong> structuredComplaints collection</p>
+                      </div>
+                    </div>
+                    
+                    {/* Test Save Button */}
+                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <h5 className="font-semibold text-green-900 mb-2">Test Save Functionality:</h5>
+                      <div className="flex gap-2">
+                        <button
+                          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
+                          onClick={() => {
+                            console.log('🧪 Test Save Button Clicked');
+                            const testContent = '<h1>Test Content</h1><p>This is a test save from ComplaintsTab component.</p>';
+                            if (onSaveComplaints) {
+                              console.log('🧪 Calling onSaveComplaints with test content');
+                              onSaveComplaints({ richTextContent: testContent });
+                            } else {
+                              console.error('❌ onSaveComplaints not available');
+                            }
+                          }}
+                        >
+                          Test Save (onSaveComplaints)
+                        </button>
+                        <button
+                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium"
+                          onClick={() => {
+                            console.log('🧪 Test Structured Save Button Clicked');
+                            const testData = {
+                              richTextContent: '<h1>Test Structured Content</h1><p>This is a test save from ComplaintsTab component.</p>',
+                              mainHeading: { title: 'Test Heading', description: 'Test Description' }
+                            };
+                            if (onSaveStructuredComplaints) {
+                              console.log('🧪 Calling onSaveStructuredComplaints with test data');
+                              onSaveStructuredComplaints(testData);
+                            } else {
+                              console.error('❌ onSaveStructuredComplaints not available');
+                            }
+                          }}
+                        >
+                          Test Save (onSaveStructuredComplaints)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>

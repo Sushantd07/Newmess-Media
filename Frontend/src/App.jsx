@@ -27,6 +27,7 @@ import LivePageDebugTest from './pages/LivePageDebugTest.jsx';
 import ErrorTestPage from './pages/ErrorTestPage.jsx';
 import TinyMCETest from './pages/TinyMCETest.jsx';
 import ICICIContentTest from './pages/ICICIContentTest.jsx';
+import LiveTabEditingDemo from './pages/LiveTabEditingDemo.jsx';
 
 function App() {
   return (
@@ -83,6 +84,9 @@ function App() {
 
         {/* ICICI Content Test Page */}
         <Route path="/icici-content-test" element={<ICICIContentTest />} />
+
+        {/* Live Tab Editing Demo */}
+        <Route path="/live-tab-editing-demo" element={<LiveTabEditingDemo />} />
 
         {/* All Categories Page */}
         <Route path="/category" element={

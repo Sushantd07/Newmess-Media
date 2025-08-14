@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, Filter, ChevronRight,
+  Search, Filter, ChevronRight, Settings,
   CreditCard, Wallet, Smartphone, Phone, Package, ShoppingCart,
   Utensils, Car, Plane, Train, Bus, Building2, Tv, Tv2, Wifi,
   GraduationCap, FileText, Landmark, Calculator, Shield, TrendingUp,
@@ -10,6 +10,7 @@ import {
   Scale, Fuel, DollarSign, Globe, Navigation, Newspaper,
   Activity, Heart, Shirt
 } from 'lucide-react';
+import CategoryArrangementModal from '../components/admin/CategoryArrangementModal.jsx';
 
 const iconMap = {
   CreditCard, Wallet, Smartphone, Phone, Package, ShoppingCart,
@@ -28,6 +29,9 @@ const AllCategories = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [sortBy, setSortBy] = useState('name');
+  
+  // Category arrangement modal state
+  const [showArrangementModal, setShowArrangementModal] = useState(false);
 
 useEffect(() => {
   const fetchCategories = async () => {
@@ -83,6 +87,31 @@ const sortedCategories = [...filteredCategories].sort((a, b) => {
 
   const handleSearch = (e) => {
     e.preventDefault();
+  };
+
+  const handleOpenArrangementModal = () => {
+    setShowArrangementModal(true);
+  };
+
+  const handleCategoriesChange = () => {
+    // Refresh categories data
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/categories');
+        const data = await response.json();
+        
+        if (data.success) {
+          console.log('Categories from API:', data.data);
+          console.log("Sample Category Object:", data.data[0]);
+          setCategories(data.data);
+        } else {
+          console.error('Failed to fetch categories:', data.message);
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+    fetchCategories();
   };
 
   return (
@@ -149,6 +178,14 @@ const sortedCategories = [...filteredCategories].sort((a, b) => {
               <Filter className="h-4 w-4" />
               <span>Filter</span>
             </button>
+            <button
+              onClick={handleOpenArrangementModal}
+              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-blue-500 hover:text-blue-600 transition-colors"
+              title="Arrange Category Order"
+            >
+              <Settings className="h-4 w-4" />
+              <span>Arrange</span>
+            </button>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -200,6 +237,14 @@ const sortedCategories = [...filteredCategories].sort((a, b) => {
           })}
         </div>
       </div>
+
+      {/* Category Arrangement Modal */}
+      <CategoryArrangementModal
+        isOpen={showArrangementModal}
+        onClose={() => setShowArrangementModal(false)}
+        categories={categories}
+        onCategoriesChange={handleCategoriesChange}
+      />
     </div>
   );
 };

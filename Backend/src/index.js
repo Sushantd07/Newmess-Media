@@ -14,7 +14,12 @@ import structuredComplaintsRoutes from './routes/structuredComplaintsRoutes.js';
 // Import all models to register them with Mongoose
 import './models/Category.js';
 import './models/Subcategory.js';
+import './models/CompanyPage.js';
 import './models/tabs/ContactNumbers.tabs.js';
+import './models/tabs/Complaint.tabs.js';
+import './models/tabs/QuickHelp.tabs.js';
+import './models/tabs/VideoGuide.tabs.js';
+import './models/tabs/OverviewTabs.js';
 
   import cors from 'cors';
   import bodyParser from 'body-parser';
@@ -28,7 +33,8 @@ import './models/tabs/ContactNumbers.tabs.js';
     "http://127.0.0.1:5173",
     "https://localhost:5173",
     "https://localhost:3000",
-    "https://127.0.0.1:5173"
+    "https://127.0.0.1:5173",
+      "https://gzd2rl1g-5173.inc1.devtunnels.ms"
   ];
 
   // Add ngrok domains to allowed origins
@@ -88,6 +94,10 @@ import './models/tabs/ContactNumbers.tabs.js';
       ngrok: !!req.headers['x-forwarded-proto']
     });
   });
+
+  // ✅ Static file serving for public assets
+  app.use('/category-icons', express.static('./public/category-icons'));
+  app.use('/company-logos', express.static('./public/company-logos'));
 
   // ✅ Routes
   app.use('/api/categories', categoryRoutes);

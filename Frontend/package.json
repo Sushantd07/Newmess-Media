@@ -21,7 +21,6 @@
     "axios": "^1.11.0",
     "framer-motion": "^12.23.5",
     "lucide-react": "^0.522.0",
-    "mongoose": "^8.17.0",
     "react": "^19.1.0",
     "react-countup": "^6.5.3",
     "react-dom": "^19.1.0",

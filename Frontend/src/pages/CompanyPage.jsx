@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageThumbnail from "../components/ImageThumbnail";
 import CompanyPageService from "../services/companyPageService";
+import { structuredComplaintsService } from "../services/structuredComplaintsService";
 import {
   Phone,
   Star,
@@ -458,14 +459,113 @@ const CompanyPage = () => {
   const [showLivePageEditor, setShowLivePageEditor] = useState(false);
 
 
-  // Define tabs structure
-  const tabs = [
-    { id: "overview", label: "Overview" },
-    { id: "contact-numbers", label: "Contact Numbers" },
-    { id: "complaints", label: "Complaints" },
-    { id: "quick-help", label: "Quick Help" },
-    { id: "video-guide", label: "Video Guide" }
+  // Build tabs dynamically instead of hardcoding 5 tabs
+  const allTabLabels = {
+    "overview": "Overview",
+    "numbers": "Contact Numbers",
+    "complaints": "Complaints",
+    "quickhelp": "Quick Help",
+    "video": "Video Guide",
+  };
+
+  // Determine what tabs are enabled for this company
+  const selectedTabIdsFromCompany = (() => {
+    const tabs = companyData?.tabs;
+    const selectedTabs = companyData?.selectedTabs;
+    
+    // Ensure we have an array before calling filter
+    if (Array.isArray(tabs)) {
+      return tabs.filter(Boolean);
+    } else if (Array.isArray(selectedTabs)) {
+      return selectedTabs.filter(Boolean);
+    }
+    
+    // Additional safety: if companyData exists but doesn't have the expected structure
+    if (companyData && typeof companyData === 'object') {
+      console.warn('companyData exists but tabs/selectedTabs are not arrays:', {
+        tabs: tabs,
+        selectedTabs: selectedTabs,
+        companyDataKeys: Object.keys(companyData)
+      });
+    }
+    
+    return [];
+  })();
+
+  // Fallback to presence in API payload (contactNumbersData.tabs has keys when available)
+  // BUT only if we don't have selectedTabs from company data
+  const selectedTabsFromData = (() => {
+    // If we already have selectedTabs from company data, don't override it
+    if (companyData?.selectedTabs && Array.isArray(companyData.selectedTabs) && companyData.selectedTabs.length > 0) {
+      return [];
+    }
+    
+    const data = contactNumbersData?.tabs;
+    if (!data || typeof data !== 'object') return [];
+    
+    const presence = [];
+    // Only check for tabs that are actually selected (if we have that info)
+    const selectedTabs = companyData?.selectedTabs || [];
+    
+    if (selectedTabs.length > 0) {
+      // Only check selected tabs
+      selectedTabs.forEach(tabId => {
+        if (data[tabId] && data[tabId] !== null && data[tabId] !== undefined) {
+          presence.push(tabId);
+        }
+      });
+    } else {
+      // Fallback: check all tabs only if no selection is specified
+      if (data.overview && data.overview !== null && data.overview !== undefined) presence.push("overview");
+      if (data.numbers && data.numbers !== null && data.numbers !== undefined) presence.push("numbers");
+      if (data.complaints && data.complaints !== null && data.complaints !== undefined) presence.push("complaints");
+      if (data.quickhelp && data.quickhelp !== null && data.quickhelp !== undefined) presence.push("quickhelp");
+      if (data.video && data.video !== null && data.video !== undefined) presence.push("video");
+    }
+    
+    return presence;
+  })();
+
+  const defaultOrder = [
+    "overview",
+    "numbers",
+    "complaints",
+    "quickhelp",
+    "video",
   ];
+
+  const effectiveTabIds = (() => {
+    if (selectedTabIdsFromCompany.length > 0) {
+      return selectedTabIdsFromCompany;
+    } else if (selectedTabsFromData.length > 0) {
+      return selectedTabsFromData;
+    } else {
+      // Don't show any tabs by default - only show tabs that actually have content
+      return [];
+    }
+  })();
+
+  const tabs = (() => {
+    // Ensure effectiveTabIds is an array before calling filter
+    if (!Array.isArray(effectiveTabIds)) {
+      console.warn('effectiveTabIds is not an array:', effectiveTabIds);
+      return [];
+    }
+    
+    const filteredTabs = effectiveTabIds
+      .filter((id) => allTabLabels[id])
+      .map((id) => ({ id, label: allTabLabels[id] }));
+    
+    console.log('🔍 Tab selection debug:', {
+      selectedTabIdsFromCompany,
+      selectedTabsFromData,
+      effectiveTabIds,
+      filteredTabs,
+      companyData: companyData ? { hasData: true, keys: Object.keys(companyData) } : null
+    });
+    
+    return filteredTabs;
+  })();
 
   // Fetch company page data from API
   const fetchCompanyPageData = async (isManualRefresh = false) => {
@@ -483,10 +583,45 @@ const CompanyPage = () => {
         throw new Error('Failed to fetch company page data');
       }
       const result = await response.json();
+      
       if (result.success) {
-        setContactNumbersData(result.data);
-        setCompanyData(result.data);
+        let combinedData = result.data;
+        
+        // Also fetch structured complaints data
+        try {
+          console.log('🔄 Fetching structured complaints data for:', companyIdentifier);
+          const structuredComplaintsResult = await structuredComplaintsService.getStructuredComplaints(companyIdentifier);
+          console.log('📊 Structured complaints result:', structuredComplaintsResult);
+          
+          if (structuredComplaintsResult.success && structuredComplaintsResult.data) {
+            // Combine the data, prioritizing structured complaints content
+            // The backend returns richTextContent as the main content field
+            const structuredContent = structuredComplaintsResult.data.richTextContent || structuredComplaintsResult.data.content || '';
+            combinedData = {
+              ...combinedData,
+              complaintContent: structuredContent || combinedData.complaintContent || ''
+            };
+            console.log('✅ Combined data with structured complaints:', combinedData);
+            console.log('📝 Structured content length:', structuredContent.length);
+            console.log('📝 Structured content preview:', structuredContent.substring(0, 200));
+            console.log('🔍 Final complaintContent in combinedData:', combinedData.complaintContent?.substring(0, 200));
+          } else {
+            console.log('⚠️ No structured complaints data found or success is false');
+            console.log('📊 Result success:', structuredComplaintsResult.success);
+            console.log('📊 Result data:', structuredComplaintsResult.data);
+          }
+        } catch (structuredError) {
+          console.warn('⚠️ Could not fetch structured complaints data:', structuredError);
+          // Continue with original data if structured complaints fetch fails
+        }
+        
+        setContactNumbersData(combinedData);
+        setCompanyData(combinedData);
         setLastUpdated(new Date());
+        
+        // Force a re-render by updating a state variable
+        console.log('🔄 Forcing re-render with updated data');
+        console.log('📝 Final complaintContent length:', combinedData.complaintContent?.length || 0);
       } else {
         throw new Error(result.message || 'Failed to fetch data');
       }
@@ -511,8 +646,35 @@ const CompanyPage = () => {
     try {
       // Use the CompanyPageService to fetch data by slug
       const companyData = await CompanyPageService.getCompanyPageBySlug(companySlug);
+      
+      // Also fetch structured complaints data for dynamic company data
+      try {
+        console.log('🔄 Fetching structured complaints data for dynamic company:', companySlug);
+        const structuredComplaintsResult = await structuredComplaintsService.getStructuredComplaints(companySlug);
+        console.log('📊 Structured complaints result for dynamic company:', structuredComplaintsResult);
+        
+        if (structuredComplaintsResult.success && structuredComplaintsResult.data) {
+          // Combine the data, prioritizing structured complaints content
+          // The backend returns richTextContent as the main content field
+          const structuredContent = structuredComplaintsResult.data.richTextContent || structuredComplaintsResult.data.content || '';
+          const combinedData = {
+            ...companyData,
+            complaintContent: structuredContent || companyData.complaintContent || ''
+          };
+          console.log('✅ Combined data with structured complaints for dynamic company:', combinedData);
+          console.log('📝 Structured content length:', structuredContent.length);
+          setContactNumbersData(combinedData);
+          setCompanyData(combinedData);
+        } else {
       setContactNumbersData(companyData);
       setCompanyData(companyData);
+        }
+      } catch (structuredError) {
+        console.warn('⚠️ Could not fetch structured complaints data for dynamic company:', structuredError);
+        setContactNumbersData(companyData);
+        setCompanyData(companyData);
+      }
+      
           setLastUpdated(new Date());
     } catch (error) {
       console.error('Error fetching dynamic company data:', error);
@@ -542,7 +704,32 @@ const CompanyPage = () => {
         
         // Use the CompanyPageService to fetch data by slug
         const companyData = await CompanyPageService.getCompanyPageBySlug(companySlug);
+        
+        // Also fetch structured complaints data for slug-based routes
+        try {
+          console.log('🔄 Fetching structured complaints data for slug:', companySlug);
+          const structuredComplaintsResult = await structuredComplaintsService.getStructuredComplaints(companySlug);
+          console.log('📊 Structured complaints result for slug:', structuredComplaintsResult);
+          
+          if (structuredComplaintsResult.success && structuredComplaintsResult.data) {
+            // Combine the data, prioritizing structured complaints content
+            // The backend returns richTextContent as the main content field
+            const structuredContent = structuredComplaintsResult.data.richTextContent || structuredComplaintsResult.data.content || '';
+            const combinedData = {
+              ...companyData,
+              complaintContent: structuredContent || companyData.complaintContent || ''
+            };
+            console.log('✅ Combined data with structured complaints for slug:', combinedData);
+            console.log('📝 Structured content length:', structuredContent.length);
+            setContactNumbersData(combinedData);
+          } else {
         setContactNumbersData(companyData);
+          }
+        } catch (structuredError) {
+          console.warn('⚠️ Could not fetch structured complaints data for slug:', structuredError);
+          setContactNumbersData(companyData);
+        }
+        
             setLastUpdated(new Date());
       } catch (err) {
         setError(err.message);
@@ -568,6 +755,12 @@ const CompanyPage = () => {
     }
   }, [activeTab, companyIdentifier, companySlug, isObjectIdRoute]);
 
+  // Debug useEffect to monitor state changes
+  useEffect(() => {
+    console.log('🔄 State changed - contactNumbersData.complaintContent length:', contactNumbersData?.complaintContent?.length || 0);
+    console.log('🔄 State changed - contactNumbersData.complaintContent preview:', contactNumbersData?.complaintContent?.substring(0, 100) || 'No content');
+  }, [contactNumbersData?.complaintContent]);
+
   // Redirect to /contactnumber if no tab is present in the URL
   useEffect(() => {
     const pathSegments = location.pathname.split("/");
@@ -586,6 +779,7 @@ const CompanyPage = () => {
   // Create unified data structure for rendering
   const unifiedData = {
     _id: displayData?._id || contactNumbersData?._id,
+    slug: companySlug || companyId, // Add the slug property
     name: displayData?.name || displayData?.companyName || 'Company',
     logo: displayData?.logo || '/company-logos/default.svg',
     description: displayData?.description || 'Company description',
@@ -666,19 +860,59 @@ const CompanyPage = () => {
         return;
       }
       
-      // Optimize the data before sending
+      // First, save complaint content to structuredComplaints collection if it exists
+      if (updatedData.complaintContent && updatedData.complaintContent.trim() !== '') {
+        console.log('🚀 CompanyPage handleSaveCompanyData - Saving complaint content to structuredComplaints');
+        console.log('📍 Route: /api/structured-complaints/company/{companySlug}');
+        console.log('🗄️ Collection: structuredComplaints');
+        console.log('💾 Action: POST request to save rich text content');
+        
+        try {
+          // Prepare structured data for complaints
+          const structuredData = {
+            richTextContent: updatedData.complaintContent,
+            mainHeading: {
+              title: 'Complaint Redressal Process',
+              description: `Complaint redressal process for ${updatedData.name || updatedData.companyName || 'Company'}`
+            },
+            processingStatus: 'completed',
+            lastProcessed: new Date()
+          };
+          
+          console.log('📤 Sending structuredData to structuredComplaints:', structuredData);
+          console.log('🌐 API Endpoint: http://localhost:3000/api/structured-complaints/company/' + companySlug);
+          console.log('📊 Database Collection: structuredComplaints');
+          
+          // Save to structuredComplaints collection
+          const response = await fetch(`http://localhost:3000/api/structured-complaints/company/${companySlug}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(structuredData)
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          const result = await response.json();
+          console.log('✅ Complaint content saved to structuredComplaints collection');
+          console.log('📊 Result:', result);
+          
+        } catch (error) {
+          console.error('❌ Error saving complaint content to structuredComplaints:', error);
+          showToast(`Error saving complaint content: ${error.message}`, 'error');
+          return;
+        }
+      }
+      
+      // Then, save other company data to subcategories collection (excluding complaintContent)
       const optimizedData = {
         ...updatedData,
-        // Only send essential fields to reduce payload size
-        name: updatedData.name,
-        description: updatedData.description,
-        founded: updatedData.founded,
-        headquarters: updatedData.headquarters,
-        rating: updatedData.rating,
-        website: updatedData.website,
-        phone: updatedData.phone,
-        complaintContent: updatedData.complaintContent
+        // Remove complaintContent from subcategories save since it's now in structuredComplaints
+        complaintContent: undefined
       };
+      
+      console.log('📝 Saving other company data to subcategories collection');
       
       // Make API call to save the data
       const response = await fetch(`http://localhost:3000/api/subcategories/company-page/${unifiedData._id}`, {
@@ -695,7 +929,7 @@ const CompanyPage = () => {
       const result = await response.json();
       
       if (result.success) {
-        showToast('Company data saved successfully!', 'success');
+        showToast('Company data saved successfully! Complaint content saved to structuredComplaints collection, other data saved to subcategories collection.', 'success');
         
         // Update the local state with the new data
         if (result.data) {
@@ -732,7 +966,63 @@ const CompanyPage = () => {
         return;
       }
 
-      // Create update data with only the changed field
+      // If the field is complaintContent, save to structuredComplaints collection
+      if (field === 'complaintContent') {
+        console.log('🚀 CompanyPage handleInlineSave - Saving complaint content to structuredComplaints');
+        console.log('📍 Route: /api/structured-complaints/company/{companySlug}');
+        console.log('🗄️ Collection: structuredComplaints');
+        console.log('💾 Action: POST request to save rich text content');
+        
+        try {
+          // Prepare structured data for complaints
+          const structuredData = {
+            richTextContent: value,
+            mainHeading: {
+              title: 'Complaint Redressal Process',
+              description: `Complaint redressal process for ${unifiedData.name || unifiedData.companyName || 'Company'}`
+            },
+            processingStatus: 'completed',
+            lastProcessed: new Date()
+          };
+          
+          console.log('📤 Sending structuredData to structuredComplaints:', structuredData);
+          console.log('🌐 API Endpoint: http://localhost:3000/api/structured-complaints/company/' + companySlug);
+          console.log('📊 Database Collection: structuredComplaints');
+          
+          // Save to structuredComplaints collection
+          const response = await fetch(`http://localhost:3000/api/structured-complaints/company/${companySlug}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(structuredData)
+          });
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          const result = await response.json();
+          console.log('✅ Complaint content saved to structuredComplaints collection');
+          console.log('📊 Result:', result);
+          
+          showToast('Complaint content saved successfully to structuredComplaints collection!', 'success');
+          
+          // Immediately update the state with the saved content
+          setContactNumbersData(prevData => ({
+            ...prevData,
+            complaintContent: value
+          }));
+          
+          // Force refresh
+          await fetchCompanyPageData(true);
+          setLastUpdated(new Date());
+          
+        } catch (error) {
+          console.error('❌ Error saving complaint content to structuredComplaints:', error);
+          showToast(`Error saving complaint content: ${error.message}`, 'error');
+          return;
+        }
+      } else {
+        // For other fields, save to subcategories collection
       const updateData = {
         [field]: value
       };
@@ -764,6 +1054,7 @@ const CompanyPage = () => {
         setLastUpdated(new Date());
       } else {
         showToast(result.message || 'Error updating field', 'error');
+        }
       }
 
     } catch (error) {
@@ -892,12 +1183,82 @@ const CompanyPage = () => {
   };
 
   // Handle structured complaints data save
+  // Debug function to test data fetching
+  const debugFetchStructuredComplaints = async () => {
+    try {
+      console.log('🔍 Debug: Testing structured complaints fetch for:', companySlug || companyIdentifier);
+      
+      const result = await structuredComplaintsService.getStructuredComplaints(companySlug || companyIdentifier);
+      console.log('📊 Debug: Structured complaints result:', result);
+      
+      if (result.success && result.data) {
+        console.log('📝 Debug: richTextContent length:', result.data.richTextContent?.length || 0);
+        console.log('📝 Debug: richTextContent preview:', result.data.richTextContent?.substring(0, 200) || 'No content');
+      }
+    } catch (error) {
+      console.error('❌ Debug: Error fetching structured complaints:', error);
+    }
+  };
+
+  // Test function to save and immediately fetch data
+  const testSaveAndFetch = async () => {
+    try {
+      console.log('🧪 Test: Saving test content...');
+      
+      const testData = {
+        richTextContent: '<h1>Test Content</h1><p>This is a test content saved at ' + new Date().toISOString() + '</p>',
+        mainHeading: {
+          title: 'Test Complaint Process',
+          description: 'Test complaint process for debugging'
+        },
+        processingStatus: 'completed',
+        lastProcessed: new Date()
+      };
+      
+      // Save test data
+      const saveResult = await structuredComplaintsService.saveStructuredComplaints(companySlug || companyIdentifier, testData);
+      console.log('✅ Test: Save result:', saveResult);
+      
+      // Wait a moment
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Fetch the data back
+      const fetchResult = await structuredComplaintsService.getStructuredComplaints(companySlug || companyIdentifier);
+      console.log('📊 Test: Fetch result:', fetchResult);
+      
+      if (fetchResult.success && fetchResult.data) {
+        console.log('📝 Test: Retrieved content length:', fetchResult.data.richTextContent?.length || 0);
+        console.log('📝 Test: Retrieved content:', fetchResult.data.richTextContent);
+        
+        // Update the state immediately
+        setContactNumbersData(prevData => ({
+          ...prevData,
+          complaintContent: fetchResult.data.richTextContent
+        }));
+        
+        console.log('🔄 Test: Updated state with test content');
+      }
+    } catch (error) {
+      console.error('❌ Test: Error in save and fetch test:', error);
+    }
+  };
+
   const handleSaveStructuredComplaintsData = async (structuredData) => {
+    console.log('🚀 CompanyPage handleSaveStructuredComplaintsData STARTED');
+    console.log('📍 Route: /api/structured-complaints/company/{companySlug}');
+    console.log('🗄️ Collection: structuredComplaints');
+    console.log('💾 Action: POST request to save rich text content');
+    
     try {
       if (!companySlug) {
+        console.error('❌ Company slug not found');
         showToast('Error: Company slug not found', 'error');
         return;
       }
+
+      console.log('🔍 Company slug:', companySlug);
+      console.log('🔍 Structured data received:', structuredData);
+      console.log('🌐 Making API call to: http://localhost:3000/api/structured-complaints/company/' + companySlug);
 
       // Make API call to save the structured complaints data using company slug
       const response = await fetch(`http://localhost:3000/api/structured-complaints/company/${companySlug}`, {
@@ -906,26 +1267,44 @@ const CompanyPage = () => {
         body: JSON.stringify(structuredData)
       });
 
+      console.log('📡 API Response status:', response.status);
+      console.log('📡 API Response ok:', response.ok);
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result = await response.json();
+      console.log('📊 API Response data:', result);
 
       if (result.success) {
+        console.log('✅ Data saved successfully to structuredComplaints collection');
         showToast('Structured complaints data saved successfully!', 'success');
+
+        // Immediately update the state with the saved content
+        if (structuredData.richTextContent) {
+          setContactNumbersData(prevData => ({
+            ...prevData,
+            complaintContent: structuredData.richTextContent
+          }));
+          console.log('🔄 Immediately updated state with saved content');
+        }
 
         // Force refresh
         await fetchCompanyPageData(true);
         setLastUpdated(new Date());
       } else {
+        console.error('❌ API returned error:', result.message);
         showToast(result.message || 'Error saving structured complaints data', 'error');
       }
 
     } catch (error) {
-      console.error('Error saving structured complaints data:', error);
+      console.error('❌ Error saving structured complaints data:', error);
+      console.error('🚫 Failed to save to structuredComplaints collection');
       showToast(`Error saving structured complaints data: ${error.message}`, 'error');
     }
+    
+    console.log('🏁 CompanyPage handleSaveStructuredComplaintsData FINISHED');
   };
 
   const states = Object.keys(unifiedData.stateWiseNumbers);
@@ -1022,8 +1401,26 @@ const CompanyPage = () => {
         isAdminMode={isAdminMode}
         setIsAdminMode={setIsAdminMode}
         onOpenCanvaEditor={() => setShowLivePageEditor(true)}
+        onRefresh={() => fetchCompanyPageData(true)}
       />
 
+      {/* Debug Button - Only show in admin mode */}
+      {isAdminMode && (
+        <div className="fixed top-20 right-4 z-50 space-y-2">
+          <button
+            onClick={debugFetchStructuredComplaints}
+            className="bg-purple-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-purple-700 transition-colors block w-full"
+          >
+            🔍 Debug Fetch
+          </button>
+          <button
+            onClick={testSaveAndFetch}
+            className="bg-orange-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-orange-700 transition-colors block w-full"
+          >
+            🧪 Test Save & Fetch
+          </button>
+        </div>
+      )}
 
       
 
@@ -1277,22 +1674,40 @@ const CompanyPage = () => {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
-            {[
-              { id: "numbers", label: "Contact Numbers", icon: Phone },
-              { id: "complaints", label: "Complaint Redressal Process", icon: FileText },
-              { id: "quickhelp", label: "Quick Help", icon: HelpCircle },
-              { id: "video", label: "Video Guide", icon: PlayCircle },
-              { id: "overview", label: "Overview", icon: Building2 },
-            ].map((tab) => {
-              const Icon = tab.icon;
+            {tabs.map((tab) => {
+              // Map the tab id to the correct icon and ensure it exists in tabIdToUrl
+              const iconMap = {
+                "overview": Building2,
+                "numbers": Phone,
+                "complaints": FileText,
+                "quickhelp": HelpCircle,
+                "video": PlayCircle
+              };
+              
+              const Icon = iconMap[tab.id] || Building2;
+              
+              // Map the tab id to the internal tab id used for content rendering
+              const internalTabIdMap = {
+                "overview": "overview",
+                "numbers": "numbers",
+                "complaints": "complaints",
+                "quickhelp": "quickhelp",
+                "video": "video"
+              };
+              
+              const internalTabId = internalTabIdMap[tab.id];
+              if (!internalTabId || !tabIdToUrl[internalTabId]) {
+                return null;
+              }
+              
               return (
                 <button
                   key={tab.id}
                   onClick={() => {
-                    navigate(`/category/${categoryId}/${companySlug}/${tabIdToUrl[tab.id]}`);
+                    navigate(`/category/${categoryId}/${companySlug}/${tabIdToUrl[internalTabId]}`);
                   }}
                   className={`flex items-center gap-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                    activeTab === tab.id
+                    activeTab === internalTabId
                       ? "border-blue-500 text-blue-600"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   }`}

@@ -318,32 +318,53 @@ export const getCompanyPageData = async (req, res) => {
     const { subcategoryId } = req.params;
     
     // Find subcategory by ID or slug
-    const subcategory = await Subcategory.findOne({
+    const query = {
       $or: [
         { _id: subcategoryId },
         { id: subcategoryId },
         { slug: subcategoryId }
       ]
-    }).populate([
+    };
+
+    const companyPage = await Subcategory.findOne(query).populate([
       { path: 'parentCategory', select: 'name slug' },
       { path: 'tabs.numbers', model: 'ContactNumbersTab' },
-              { path: 'tabs.complaints', model: 'ComplaintsTab' },
-      { path: 'tabs.quickhelp', model: 'QuickHelp' },
-      { path: 'tabs.video', model: 'VideoGuide' },
-      { path: 'tabs.overview', model: 'OverviewTabs' }
+      { path: 'tabs.complaints', model: 'ComplaintsTab' },
+      { path: 'tabs.quickhelp', model: 'QuickHelpTab' },
+      { path: 'tabs.video', model: 'VideoGuideTab' },
+      { path: 'tabs.overview', model: 'OverviewTab' }
     ]);
     
-    if (!subcategory) {
+    if (!companyPage) {
       return res.status(404).json({ 
         success: false, 
         message: 'Company page not found' 
       });
     }
 
+    // Determine which tabs are enabled based on actual content
+    // Use stored selectedTabs from admin panel if available, otherwise detect dynamically
+    let selectedTabs = companyPage.selectedTabs || [];
+    
+    // If no stored selectedTabs, detect dynamically based on content
+    if (selectedTabs.length === 0) {
+      if (companyPage.tabs.overview) selectedTabs.push("overview");
+      if (companyPage.tabs.numbers) selectedTabs.push("numbers");
+      if (companyPage.tabs.complaints) selectedTabs.push("complaints");
+      if (companyPage.tabs.quickhelp) selectedTabs.push("quickhelp");
+      if (companyPage.tabs.video) selectedTabs.push("video");
+    }
+
+    // Add selectedTabs to the response
+    const subcategoryDataWithSelectedTabs = {
+      ...companyPage.toObject(),
+      selectedTabs
+    };
+
     res.status(200).json({
       success: true,
       message: 'Company page data fetched successfully',
-      data: subcategory
+      data: subcategoryDataWithSelectedTabs
     });
   } catch (err) {
     res.status(500).json({ 
@@ -408,6 +429,98 @@ export const deleteCategory = async (req, res) => {
       success: false, 
       message: 'Error deleting category',
       error: err.message 
+    });
+  }
+};
+
+// Update Category Display Limit
+export const updateCategoryDisplayLimit = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { displayLimit } = req.body;
+    
+    // Validate display limit
+    if (!displayLimit || displayLimit < 1) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Display limit must be a positive number' 
+      });
+    }
+
+    const category = await Category.findById(id);
+    
+    if (!category) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Category not found' 
+      });
+    }
+
+    // Update the display limit
+    category.displayLimit = displayLimit;
+    await category.save();
+
+    res.json({
+      success: true,
+      message: 'Category display limit updated successfully',
+      data: {
+        _id: category._id,
+        name: category.name,
+        displayLimit: category.displayLimit
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error updating category display limit',
+      error: err.message 
+    });
+  }
+};
+
+// Upload Category Icon
+export const uploadCategoryIcon = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No icon file provided'
+      });
+    }
+
+    // Validate file type
+    if (!req.file.mimetype.includes('svg')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Only SVG files are allowed for category icons'
+      });
+    }
+
+    // Validate file size (100KB limit)
+    if (req.file.size > 100 * 1024) {
+      return res.status(400).json({
+        success: false,
+        message: 'Icon file size must be less than 100KB'
+      });
+    }
+
+    // Generate the public URL path for the uploaded icon
+    const iconPath = `/category-icons/${req.file.filename}`;
+
+    res.status(200).json({
+      success: true,
+      message: 'Category icon uploaded successfully',
+      iconPath: iconPath,
+      filename: req.file.filename,
+      size: req.file.size
+    });
+
+  } catch (err) {
+    console.error('Error uploading category icon:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Error uploading category icon',
+      error: err.message
     });
   }
 };

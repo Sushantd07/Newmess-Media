@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Settings, Save, X, Edit3, Eye, Layout, Type } from 'lucide-react';
 import CompanyPageEditor from './CompanyPageEditor';
 
-const AdminToggle = ({ companyData, onSave, onInlineSave, isAdminMode, setIsAdminMode, onOpenCanvaEditor }) => {
+const AdminToggle = ({ companyData, onSave, onInlineSave, isAdminMode, setIsAdminMode, onOpenCanvaEditor, onRefresh }) => {
   const [showEditor, setShowEditor] = useState(false);
   const [showInlineMode, setShowInlineMode] = useState(false);
   const [showAutoConvert, setShowAutoConvert] = useState(false);
@@ -55,45 +55,26 @@ const AdminToggle = ({ companyData, onSave, onInlineSave, isAdminMode, setIsAdmi
       }
     });
     
-    // Method 2: Try to find TinyMCE editors and trigger their auto-convert function
-    const editors = document.querySelectorAll('.tox-tinymce');
-    editors.forEach(editor => {
-      const iframe = editor.querySelector('iframe');
-      if (iframe && iframe.contentWindow) {
-        try {
-          const editorInstance = iframe.contentWindow.tinymce.get(editor.id);
-          if (editorInstance) {
-            // Get current content
-            let html = editorInstance.getContent();
-            
-            // Apply auto-convert logic (same as in TinyMCEEditor)
-            html = html.replace(/<p[^>]*style="[^"]*font-size:\s*(2[0-9]|[3-9][0-9])px[^"]*"[^>]*>(.*?)<\/p>/gi, '<h1>$2</h1>');
-            html = html.replace(/<p[^>]*style="[^"]*font-size:\s*1[6-9]px[^"]*"[^>]*>(.*?)<\/p>/gi, '<h2>$2</h2>');
-            html = html.replace(/<p[^>]*style="[^"]*font-size:\s*1[4-5]px[^"]*"[^>]*>(.*?)<\/p>/gi, '<h3>$2</h3>');
-            html = html.replace(/<p[^>]*style="[^"]*font-size:\s*(2[0-9]|[3-9][0-9])pt[^"]*"[^>]*>(.*?)<\/p>/gi, '<h1>$2</h1>');
-            html = html.replace(/<p[^>]*style="[^"]*font-size:\s*1[6-9]pt[^"]*"[^>]*>(.*?)<\/p>/gi, '<h2>$2</h2>');
-            html = html.replace(/<p[^>]*style="[^"]*font-size:\s*1[4-5]pt[^"]*"[^>]*>(.*?)<\/p>/gi, '<h3>$2</h3>');
-            
-            // Convert <p><b>...</b></p> and <p><strong>...</strong></p> to <h2>...</h2>
-            html = html.replace(/<p[^>]*>\s*<b>(.*?)<\/b>\s*<\/p>/gi, '<h2>$1</h2>');
-            html = html.replace(/<p[^>]*>\s*<strong>(.*?)<\/strong>\s*<\/p>/gi, '<h2>$1</h2>');
-            
-            // Convert <p><b><u>...</u></b></p> to <h1>...</h1>
-            html = html.replace(/<p[^>]*>\s*<b>\s*<u>(.*?)<\/u>\s*<\/b>\s*<\/p>/gi, '<h1>$1</h1>');
-            
-            // Convert all-caps lines to h2 (if not already a heading)
-            html = html.replace(/<p[^>]*>([A-Z\s\d\-\.,:;!?]{8,})<\/p>/g, '<h2>$1</h2>');
-            
-            // Remove duplicate headings
-            html = html.replace(/<h([1-6])>\s*<h[1-6]>(.*?)<\/h[1-6]>\s*<\/h[1-6]>/gi, '<h$1>$2</h$1>');
-            
-            // Set the converted content back
-            editorInstance.setContent(html);
-            convertedCount++;
-          }
-        } catch (error) {
-          console.log('Editor not ready or auto-convert not available:', error);
-        }
+    // Method 2: Try to find textarea editors and apply auto-convert logic
+    const textareas = document.querySelectorAll('textarea[data-auto-convert="true"]');
+    textareas.forEach(textarea => {
+      try {
+        let content = textarea.value;
+        
+        // Apply auto-convert logic for plain text
+        // Convert lines starting with numbers to headings
+        content = content.replace(/^(\d+\.\s*)(.+)$/gm, '<h2>$2</h2>');
+        
+        // Convert all-caps lines to h2
+        content = content.replace(/^([A-Z\s\d\-\.,:;!?]{8,})$/gm, '<h2>$1</h2>');
+        
+        // Convert lines with ** to h2
+        content = content.replace(/^\*\*(.+?)\*\*$/gm, '<h2>$1</h2>');
+        
+        textarea.value = content;
+        convertedCount++;
+      } catch (error) {
+        console.log('Could not convert textarea content:', error);
       }
     });
     
@@ -219,6 +200,7 @@ const AdminToggle = ({ companyData, onSave, onInlineSave, isAdminMode, setIsAdmi
         companyData={companyData}
         onSave={handleSave}
         onCancel={() => setShowEditor(false)}
+        onRefresh={onRefresh}
         isVisible={showEditor}
       />
     </>

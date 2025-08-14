@@ -40,6 +40,13 @@ const CategorySchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    // Frontend display control
+    displayLimit: {
+      type: Number,
+      default: 6,
+      min: 1,
+      max: 50,
+    },
     // SEO fields
     metaTitle: String,
     metaDescription: String,

@@ -1,5 +1,7 @@
 import express from "express";
 import Subcategory from "../models/Subcategory.js";
+import logoUpload from "../middleware/logoUpload.js";
+import compressLogo from "../middleware/logoCompression.js";
 import {
   createSubcategory,
   bulkCreateSubcategories,
@@ -16,6 +18,7 @@ import {
   addContactNumbersToCompanyBySlug,
   addComplaintsToCompanyBySlug,
   updateCompanyPage,
+  createDefaultTabsForCompany,
 } from "../controllers/subcategoryController.js";
 
 const router = express.Router();
@@ -38,11 +41,16 @@ router.put("/:id", updateSubcategory);
 router.delete("/:id", deleteSubcategory);
 
 // Company Page Routes
-router.post("/create-company-page", createCompanyPage);
+router.post("/create-company-page", 
+  logoUpload.single('logo'), 
+  compressLogo, 
+  createCompanyPage
+);
 router.post("/link-contact-tab", linkContactTabToCompany);
 router.post("/create-contact-numbers", createContactNumbersData);
 router.post("/company/:slug/add-contact-numbers", addContactNumbersToCompanyBySlug);
 router.post("/company/:slug/add-complaints", addComplaintsToCompanyBySlug);
+router.post("/company/:slug/create-default-tabs", createDefaultTabsForCompany);
 router.get("/company/:companyId", getCompanyPageData);
 
 

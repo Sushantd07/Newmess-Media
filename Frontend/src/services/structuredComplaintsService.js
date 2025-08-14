@@ -20,6 +20,10 @@ export const structuredComplaintsService = {
   // Create or update structured complaints data
   async saveStructuredComplaints(companyId, data) {
     try {
+      console.log('🚀 structuredComplaintsService.saveStructuredComplaints STARTED');
+      console.log('🌐 API URL:', `${API_BASE_URL}/company/${companyId}`);
+      console.log('📤 Request data:', data);
+      
       const response = await fetch(`${API_BASE_URL}/company/${companyId}`, {
         method: 'POST',
         headers: {
@@ -28,13 +32,22 @@ export const structuredComplaintsService = {
         body: JSON.stringify(data),
       });
       
+      console.log('📊 Response status:', response.status);
+      console.log('📊 Response ok:', response.ok);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ Response error text:', errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
       
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ structuredComplaintsService.saveStructuredComplaints SUCCESS');
+      console.log('📊 Response result:', result);
+      
+      return result;
     } catch (error) {
-      console.error('Error saving structured complaints:', error);
+      console.error('❌ Error saving structured complaints:', error);
       throw error;
     }
   },

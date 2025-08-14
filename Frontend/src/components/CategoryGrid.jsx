@@ -30,9 +30,11 @@ import {
   Shirt,
   Zap,
   Wallet,
+  Settings,
 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import CategoryService from '../services/categoryService.js';
+import CategoryArrangementModal from './admin/CategoryArrangementModal.jsx';
 
 // Icon mapping for dynamic icon rendering
 const ICON_MAP = {
@@ -104,6 +106,28 @@ const CategoryGridCompanyList = () => {
     );
   };
 
+  const handleOpenArrangementModal = () => {
+    setShowArrangementModal(true);
+  };
+
+  const handleCategoriesChange = () => {
+    // Refresh categories data
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        CategoryService.clearCacheKey('categoryGridData');
+        const data = await CategoryService.getCategoryGridData();
+        setCategoryData(data);
+      } catch (err) {
+        console.error('Error refreshing category data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  };
+
   // Voice search logic for right container
   const handleMicClick = () => {
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
@@ -134,8 +158,21 @@ const CategoryGridCompanyList = () => {
   };
 
   const [selectedCategoryIdx, setSelectedCategoryIdx] = useState(0);
-  const selectedCategory = categoryData[selectedCategoryIdx];
+  // Apply front page category limit and ordering (stored by admin arrangement)
+  const frontPageLimit = (() => {
+    const stored = Number(localStorage.getItem('frontPageCategoryLimit'));
+    return Number.isFinite(stored) && stored > 0 ? stored : 8;
+  })();
+  const categoriesForLeftPanel = (categoryData || [])
+    .slice() // copy
+    .sort((a, b) => (a.order || 0) - (b.order || 0))
+    .slice(0, frontPageLimit);
+
+  const selectedCategory = categoriesForLeftPanel[selectedCategoryIdx] || categoriesForLeftPanel[0];
   const subcategoryContacts = selectedCategory?.subcategories || [];
+  
+  // Category arrangement modal state
+  const [showArrangementModal, setShowArrangementModal] = useState(false);
   
 
 
@@ -218,9 +255,18 @@ const CategoryGridCompanyList = () => {
           {/* Left: Top Categories */}
           <div className="w-full md:w-[32%] flex flex-col p-6 pt-8 md:pt-8 border-b md:border-b-0 md:border-r border-gray-100">
             <div>
-              <h2 className="text-xl font-bold text-gray-800 mb-2 mt-0">Top Categories</h2>
-              <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-3 gap-4 mb-0 mt-10">
-                {categoryData.map((cat, idx) => {
+              <div className="flex items-center justify-between mb-2 mt-0">
+                <h2 className="text-xl font-bold text-gray-800">Top Categories</h2>
+                <button
+                  onClick={handleOpenArrangementModal}
+                  className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  title="Arrange Category Order"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+              </div>
+                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-3 gap-4 mb-0 mt-10">
+                {categoriesForLeftPanel.map((cat, idx) => {
                   const IconComponent = ICON_MAP[cat.icon] || Smartphone; // Default to Smartphone if icon not found
                   return (
                     <button
@@ -403,6 +449,14 @@ const CategoryGridCompanyList = () => {
           </div>
         </div>
       </div>
+
+      {/* Category Arrangement Modal */}
+      <CategoryArrangementModal
+        isOpen={showArrangementModal}
+        onClose={() => setShowArrangementModal(false)}
+        categories={categoryData}
+        onCategoriesChange={handleCategoriesChange}
+      />
     </section>
   );
 };

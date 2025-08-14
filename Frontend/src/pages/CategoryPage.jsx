@@ -5,10 +5,12 @@ import {
   TrendingUp, Building2, Shield, Clock, Users, ArrowRight, ArrowLeft, 
   MapPin, Globe, Award, Target, Zap, Eye, CheckCircle, ExternalLink,
   Heart, Share2, Bookmark, PhoneCall, Mail, MessageCircle, ThumbsUp,
-  Calendar, Clock as ClockIcon, UserCheck, Verified, Sparkles, Copy, PlayCircle
+  Calendar, Clock as ClockIcon, UserCheck, Verified, Sparkles, Copy, PlayCircle,
+  Settings
 } from 'lucide-react';
 import CategoryService from '../services/categoryService';
 import { motion, AnimatePresence } from 'framer-motion';
+import CategoryArrangementModal from '../components/admin/CategoryArrangementModal.jsx';
 
 const CategoryPage = () => {
   const { categoryId } = useParams();
@@ -24,6 +26,9 @@ const CategoryPage = () => {
   const [videoInfo, setVideoInfo] = useState(null);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isVideoLoading, setIsVideoLoading] = useState(false);
+  
+  // Category arrangement modal state
+  const [showArrangementModal, setShowArrangementModal] = useState(false);
 
   // Multiple YouTube videos for slider
   const videos = [
@@ -291,6 +296,28 @@ const CategoryPage = () => {
     navigate(`/category/${categoryId}/${subcategoryId}/${companySlug}`);
   };
 
+  const handleOpenArrangementModal = () => {
+    setShowArrangementModal(true);
+  };
+
+  const handleCategoriesChange = () => {
+    // Refresh category data
+    const fetchCategoryData = async () => {
+      try {
+        setLoading(true);
+        const data = await CategoryService.getCategoryWithSubcategories(categoryId);
+        setCategoryData(data);
+        setCurrentCategory(data);
+      } catch (err) {
+        console.error('Error refreshing category data:', err);
+        setError('Failed to load category data. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategoryData();
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -549,6 +576,18 @@ const CategoryPage = () => {
                   <List className="h-5 w-5" />
                 </motion.button>
               </div>
+
+              {/* Category Arrangement Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleOpenArrangementModal}
+                className="p-4 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2"
+                title="Arrange Category Order"
+              >
+                <Settings className="h-5 w-5" />
+                <span className="hidden sm:inline">Arrange</span>
+              </motion.button>
             </div>
           </motion.div>
         </div>
@@ -731,6 +770,14 @@ const CategoryPage = () => {
 
 
       </div>
+
+      {/* Category Arrangement Modal */}
+      <CategoryArrangementModal
+        isOpen={showArrangementModal}
+        onClose={() => setShowArrangementModal(false)}
+        categories={[currentCategory]} // Pass current category as array for consistency
+        onCategoriesChange={handleCategoriesChange}
+      />
     </div>
   );
 };
