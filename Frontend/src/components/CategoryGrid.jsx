@@ -234,22 +234,6 @@ const CategoryGridCompanyList = () => {
       {/* Decorative abstract background shape */}
       <div className="absolute -top-24 -left-32 w-[480px] h-[480px] bg-gradient-to-tr from-orange-200 via-orange-100 to-white rounded-full blur-3xl opacity-60 z-0"></div>
       <div className="max-w-8xl mx-auto px-2 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-4xl font-extrabold mb-4 tracking-tight text-gray-900 leading-tight">
-            Discover <span className="text-orange-600 bg-orange-100 px-2 rounded">Top Categories</span> & Trusted Contacts
-          </h1>
-          <p className="text-lg md:text-lg text-gray-600 max-w-2xl mx-auto mb-6">
-            Instantly access verified support and essential services for banking, telecom, shopping, healthcare, and more—all in one place.
-          </p>
-          <div className="flex justify-center">
-            <button className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold px-7 py-3 rounded-full shadow-lg hover:from-orange-600 hover:to-orange-700 transition-all text-base"
-              onClick={() => navigate('/category')}
-            >
-              Explore All Categories
-              <ArrowRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
 
         <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 flex flex-col md:flex-row items-start gap-0 overflow-hidden">
           {/* Left: Top Categories */}
@@ -288,7 +272,7 @@ const CategoryGridCompanyList = () => {
                 })}
               </div>
             </div>
-            <div className="flex justify-end mt-8">
+            <div className="flex justify-centre mt-6">
               <button className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all text-base"
                 onClick={() => navigate('/category')}
               >
