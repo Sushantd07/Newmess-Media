@@ -233,21 +233,21 @@ const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white text-gray-800  h-[74px]  transition-shadow duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-3">
+      <header className="sticky top-0 z-50 bg-white text-gray-800  h-[74px] max-[400px]:h-auto transition-shadow duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 max-[400px]:px-2">
+          <div className="flex items-center justify-between py-3 max-[400px]:py-2">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-3 group">
+            <Link to="/" className="flex items-center space-x-3 max-[400px]:space-x-2 group flex-1 min-w-0">
               <img
                 src="/logo3-Photoroom.png"
                 alt="ICH logo"
-                className="w-15 h-15 object-contain"
+                className="w-15 h-15 max-[400px]:w-10 max-[400px]:h-10 object-contain shrink-0"
               />
-              <div>
-                <h1 className="text-2xl font-bold text-orange-600 tracking-tight leading-tight">
+              <div className="min-w-0">
+                <h1 className="text-2xl max-[400px]:text-lg font-bold text-orange-600 tracking-tight leading-tight">
                   India Customer Help
                 </h1>
-                <p className="text-sm text-slate-500 font-medium">
+                <p className="text-sm text-slate-500 font-medium max-[400px]:hidden">
                   India's Trusted Business Directory
                 </p>
               </div>
@@ -435,7 +435,7 @@ const Header = () => {
             </nav>
 
             {/* Mobile Toggle */}
-            <div className="flex items-center lg:hidden">
+            <div className="flex items-center lg:hidden shrink-0">
               <button
                 className="p-2 rounded-full bg-gray-100 text-gray-800 mr-3"
                 onClick={() => setIsDarkMode(!isDarkMode)}

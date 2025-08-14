@@ -339,7 +339,7 @@ const HeroSection = () => {
     .map(({ topic }) => topic);
 
   return (
-    <div className="relative overflow-hidden border-amber-800 b-[10px] w-full h-[542px] bg-gradient-to-b from-[#F28C28] via-[#FDFDFC] to-[#1D8052] px-1 sm:px-6 lg:px-12 py-8 flex items-center justify-center shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+    <div className="relative overflow-hidden border-amber-800 b-[10px] w-full min-h-[400px] sm:min-h-[500px] lg:h-[542px] bg-gradient-to-b from-[#F28C28] via-[#FDFDFC] to-[#1D8052] px-1 sm:px-6 lg:px-12 py-6 sm:py-8 flex items-center justify-center shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
 
       {/* Premium Top Shadow */}
       <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-black/10 to-transparent pointer-events-none z-10"></div>
@@ -369,7 +369,7 @@ const HeroSection = () => {
             <button
               type="button"
               onClick={handleHelpMicClick}
-              className={`absolute right-5.5 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full transition-colors ${isHelpListening ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'} focus:outline-none`}
+              className={`absolute right-4 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full transition-colors ${isHelpListening ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'} focus:outline-none`}
               aria-label="Voice Search"
               tabIndex={0}
             >
@@ -390,65 +390,132 @@ const HeroSection = () => {
             </ul>
           </div>
         </div>
-        {/* Mobile horizontal scrollable bar */}
-        <div className="md:hidden w-full mb-3">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent px-1 py-2 bg-white rounded-xl shadow-md border border-gray-100 mb-3">
-            {helpTopics.slice(0, 15).map((topic, idx) => (
-              <button
-                key={idx}
-                className="whitespace-nowrap px-4 py-2 rounded-full bg-orange-50 text-orange-700 text-xs font-semibold border border-orange-100 hover:bg-orange-100 hover:text-orange-800 transition-colors shadow-sm"
-                style={{ minWidth: 'max-content' }}
+        {/* Mobile horizontal scrollable bar (removed for mobile view as requested) */}
+        {/* Main Content for Mobile */}
+        <div className="md:hidden w-full flex flex-col gap-3">
+          {/* Mobile hero heading + about text (matches requested design) */}
+          <div className="px-2 text-center">
+            <h1 className="text-[22px] leading-snug font-extrabold text-white">
+              India's Most Trusted <span className="text-orange-200">Toll-Free Directory</span>
+            </h1>
+            <p className="mt-1 text-[13px] text-white/90">
+              Get quick access to verified toll-free numbers for essential services and top businesses across India.
+            </p>
+            <div className="mt-2 mx-auto h-1 w-16 bg-orange-400 rounded-full"></div>
+          </div>
+          {/* Compact Search Bar - single rounded bar layout as per reference */}
+          <div className="rounded-2xl shadow-md bg-white px-2 py-2">
+            <form onSubmit={handleSearch} className="flex items-stretch gap-2">
+              {/* Location */}
+              <div className="relative flex-1 max-w-[38%]">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-600">
+                  <Globe className="h-4 w-4" />
+                </div>
+                <input
+                  type="text"
+                  value={userState}
+                  readOnly
+                  className="w-full h-12 pl-8 pr-2 rounded-xl bg-white border border-orange-400 text-orange-700 font-medium shadow-sm cursor-default text-sm"
+                />
+              </div>
+              {/* Search */}
+              <div className="relative flex-[1.6]">
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder={`Find your service (e.g., ${placeholderText})`}
+                  value={business}
+                  onChange={(e) => setBusiness(e.target.value)}
+                  className="w-full h-12 pl-9 pr-10 rounded-xl bg-white border border-gray-300 focus:ring-2 focus:ring-orange-400 outline-none text-sm shadow-sm"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-full bg-orange-500 text-white shadow-sm hover:bg-orange-600 focus:outline-none"
+                  aria-label="Search"
+                >
+                  <Search className="h-4 w-4" />
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* Top Row: Left label box + Right dropdown (mobile only) */}
+          <div className="px-3 flex items-center justify-between gap-3">
+            <div className="w-[26%] min-w-[130px]">
+              <div className="w-full px-4 py-2 text-sm border border-gray-200 rounded-full bg-white shadow-sm text-gray-800 font-medium text-center">
+                Helpline Number
+              </div>
+            </div>
+            <div className="w-[70%] min-w-[180px]">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-4 py-2 text-sm border border-gray-200 rounded-full focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white shadow-sm"
               >
-                {topic}
-              </button>
-            ))}
-            {helpTopics.length > 15 && (
-              <span className="px-3 text-gray-400 text-xs">+{helpTopics.length - 15} more</span>
+                {Object.entries(helplineCategories).map(([key, category]) => (
+                  <option key={key} value={key}>
+                    {category.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Dynamic Helpline Directory */}
+          <div className="rounded-xl shadow-md bg-white px-4 py-4">
+            <div className="mb-3 p-3 rounded-lg text-balck text-center bg-gradient-to-r "
+                 style={{ backgroundImage: `linear-gradient(to right, var(--tw-gradient-from), var(--tw-gradient-to))` }}>
+              <div className={`hidden`}></div>
+              <h3 className={`font-semibold text-sm`}>{currentCategory.title}</h3>
+              <p className="text-xs opacity-90">{currentCategory.services.length} services available</p>
+            </div>
+            <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+              {displayedServices.map((service, index) => {
+                const Icon = service.icon;
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleCall(service.title, service.number)}
+                    className="w-full flex items-center justify-between rounded-xl border border-gray-100 shadow-md px-3 py-2 bg-white hover:bg-orange-50 active:scale-[0.98]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={`w-9 h-9 rounded-full flex items-center justify-center text-white bg-gradient-to-r ${currentCategory.color} shadow`}>
+                        <Icon className="h-4 w-4" />
+                      </span>
+                      <div className="font-semibold text-gray-800 text-[14px] leading-tight">{service.title}</div>
+                    </div>
+                    <div className="text-blue-600 font-mono text-[14px] font-semibold tracking-wide">{service.number}</div>
+                  </button>
+                );
+              })}
+            </div>
+            {currentCategory.services.length > 6 && (
+              <div className="mt-3 pt-2 border-t border-gray-200">
+                <button
+                  onClick={() => setShowAll(!showAll)}
+                  className="w-full flex items-center justify-center gap-2 py-2 px-4 text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-colors font-medium"
+                >
+                  {showAll ? (
+                    <>
+                      Show Less
+                      <ChevronUp className="h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      +{currentCategory.services.length - 6} More
+                      <ChevronDown className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              </div>
             )}
           </div>
         </div>
-        {/* Main Content for Mobile */}
-        <div className="md:hidden w-full flex flex-col gap-3">
-          {/* Main Hero Card */}
-          <div className="rounded-xl shadow-md bg-white px-4 py-4 mb-3">
-            <div className="text-lg font-bold text-orange-700 mb-1">Find Help Instantly</div>
-            <div className="text-base font-semibold text-gray-800 mb-2">India's Most Trusted <span className="text-orange-600">Toll-Free Directory</span></div>
-            <div className="text-gray-600 text-sm mb-3">Get quick access to verified toll-free numbers for essential services and top businesses across India.</div>
-            <div className="flex gap-2 mb-2">
-              <span className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold">Verified Data</span>
-              <span className="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold">Updated Daily</span>
-            </div>
-          </div>
-          {/* Helpline Directory Card */}
-          <div className="rounded-xl shadow-md bg-white px-4 py-4 mb-3">
-            <div className="text-base font-bold text-orange-700 mb-2">India Helpline Directory</div>
-            <select className="w-full px-3 py-2 mb-2 rounded-lg border border-orange-200 focus:ring-2 focus:ring-orange-400 text-sm font-semibold bg-orange-50 text-orange-700">
-              <option>Emergency</option>
-              <option>Health & Medical</option>
-              <option>Women & Children</option>
-              <option>Senior Citizens</option>
-              <option>Cyber & Financial</option>
-              <option>Transport & Travel</option>
-              <option>Civic Services</option>
-              <option>Govt & Legal</option>
-            </select>
-            <button className="w-full py-2 rounded-lg bg-orange-500 text-white font-bold shadow hover:bg-orange-600 transition mb-2">Emergency</button>
-            {/* Example helpline numbers, replace with your dynamic content */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="rounded-lg bg-orange-50 p-2 text-center">
-                <div className="text-orange-700 font-bold text-sm">Police</div>
-                <div className="text-blue-700 font-mono text-xs">100</div>
-              </div>
-              <div className="rounded-lg bg-orange-50 p-2 text-center">
-                <div className="text-orange-700 font-bold text-sm">Fire</div>
-                <div className="text-blue-700 font-mono text-xs">101</div>
-              </div>
-            </div>
-          </div>
-        </div>
 
+        {/* Desktop layout container (hidden on mobile) */}
+        <div className="hidden md:flex flex-1 flex-row gap-6">
         {/* Left Box */}
-        <div className="w-full md:w-[65%] bg-[#fff] rounded-xl shadow-xl p-4 md:p-6 border border-orange-100/70 overflow-hidden mb-4 md:mb-0">
+        <div className="w-full md:w-[65%] bg-[#fff] rounded-xl shadow-xl p-4 md:p-6 border border-orange-100/70 overflow-hidden">
 
           <p className="text-sm font-medium text-orange-600 uppercase mb-2 tracking-wide">
             Find Help Instantly — No More Scams or Fake Numbers
@@ -581,48 +648,32 @@ const HeroSection = () => {
             </div>
 
             {/* Current Category Title */}
-            <div className={`mb-4 p-3 rounded-lg bg-gradient-to-r ${currentCategory.color} text-white text-center`}>
+            <div className={`mb-3 p-2 rounded-lg bg-gradient-to-r ${currentCategory.color} text-white text-center`}>
               <h3 className="font-semibold text-sm">{currentCategory.title}</h3>
-              <p className="text-xs opacity-90">{currentCategory.services.length} services available</p>
+              <p className="text-[11px] opacity-90">{currentCategory.services.length} services available</p>
             </div>
 
-            {/* Circular Services Grid */}
+            {/* Services List */}
             <div className="flex-1 overflow-y-auto">
-              <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-2">
                 {displayedServices.map((service, index) => {
                   const Icon = service.icon;
-                return (
-                  <div
-                    key={index}
+                  return (
+                    <button
+                      key={index}
                       onClick={() => handleCall(service.title, service.number)}
-                      className="cursor-pointer hover:bg-orange-50 transition-all duration-200 hover:scale-[1.02] p-2 rounded-lg text-center shadow-sm hover:shadow-md border border-gray-100 hover:border-orange-200 group"
+                      className="w-full flex items-center justify-between text-left hover:bg-orange-50 transition-colors px-3 py-2 rounded-lg shadow-sm border border-gray-100"
                     >
-                      {/* Circular Icon */}
-                      <div className={`w-12 h-12 bg-gradient-to-r ${currentCategory.color} rounded-full flex items-center justify-center mb-2 mx-auto shadow-lg group-hover:shadow-xl transition-shadow`}>
-                        <Icon className="h-6 w-6 text-white" style={{ background: 'none' }} />
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 bg-gradient-to-r ${currentCategory.color} rounded-full flex items-center justify-center shadow-md`}>
+                          <Icon className="h-4 w-4 text-white" style={{ background: 'none' }} />
+                        </div>
+                        <div className="font-semibold text-gray-800 text-sm leading-tight">{service.title}</div>
                       </div>
-                      
-                      {/* Service Name */}
-                      <div className="font-semibold text-gray-800 text-xs leading-tight mb-1 group-hover:text-orange-600 transition-colors">
-                        {service.title}
-                      </div>
-                      
-                      {/* Phone Number */}
-                      <div className="text-blue-600 font-mono text-xs mb-1">
-                        {service.number}
-                      </div>
-                      
-                      {/* 24x7 Badge */}
-                      <div className="flex justify-center">
-                        {service.available24x7 ? (
-                          <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">24x7</span>
-                        ) : (
-                          <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Limited</span>
-                        )}
-                      </div>
-                  </div>
-                );
-              })}
+                      <div className="text-blue-600 font-mono text-sm font-semibold tracking-wide">{service.number}</div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -647,7 +698,7 @@ const HeroSection = () => {
               </button>
               </div>
             )}
-
+ 
             {/* Emergency Notice */}
             {/* <div className="mt-3 pt-3 border-t border-gray-200">
               <div className="bg-red-50 border border-red-200 rounded-lg p-2">
@@ -658,9 +709,11 @@ const HeroSection = () => {
             </div> */}
           </div>
         </div>
+        </div>
       </div>
     </div>
   );
 };
 
 export default HeroSection;
+ 
