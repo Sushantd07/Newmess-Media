@@ -439,21 +439,26 @@ const HeroSection = () => {
             </form>
           </div>
 
-          {/* Quick Actions (removed in mobile view as requested) */}
-
-          {/* Category Dropdown */}
-          <div className="px-2 flex justify-center">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-[70%] max-w-md min-w-[220px] px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white"
-            >
-              {Object.entries(helplineCategories).map(([key, category]) => (
-                <option key={key} value={key}>
-                  {category.title}
-                </option>
-              ))}
-            </select>
+          {/* Top Row: Left label box + Right dropdown (mobile only) */}
+          <div className="px-3 flex items-center justify-between gap-3">
+            <div className="w-[26%] min-w-[130px]">
+              <div className="w-full px-4 py-2 text-sm border border-gray-200 rounded-full bg-white shadow-sm text-gray-800 font-medium text-center">
+                Helpline Number
+              </div>
+            </div>
+            <div className="w-[70%] min-w-[180px]">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-4 py-2 text-sm border border-gray-200 rounded-full focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white shadow-sm"
+              >
+                {Object.entries(helplineCategories).map(([key, category]) => (
+                  <option key={key} value={key}>
+                    {category.title}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Dynamic Helpline Directory */}
@@ -464,22 +469,22 @@ const HeroSection = () => {
               <h3 className={`font-semibold text-sm`}>{currentCategory.title}</h3>
               <p className="text-xs opacity-90">{currentCategory.services.length} services available</p>
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
               {displayedServices.map((service, index) => {
                 const Icon = service.icon;
                 return (
                   <button
                     key={index}
                     onClick={() => handleCall(service.title, service.number)}
-                    className="w-full flex items-center justify-between rounded-lg border border-gray-100 shadow-sm px-2.5 py-1.5 hover:bg-orange-50 active:scale-[0.98]"
+                    className="w-full flex items-center justify-between rounded-xl border border-gray-100 shadow-md px-3 py-2 bg-white hover:bg-orange-50 active:scale-[0.98]"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <span className={`w-8 h-8 rounded-full flex items-center justify-center text-white bg-gradient-to-r ${currentCategory.color} shadow`}>
+                    <div className="flex items-center gap-3">
+                      <span className={`w-9 h-9 rounded-full flex items-center justify-center text-white bg-gradient-to-r ${currentCategory.color} shadow`}>
                         <Icon className="h-4 w-4" />
                       </span>
-                      <div className="font-semibold text-gray-800 text-[13px] leading-tight">{service.title}</div>
+                      <div className="font-semibold text-gray-800 text-[14px] leading-tight">{service.title}</div>
                     </div>
-                    <div className="text-blue-700 font-mono text-[13px] font-semibold tracking-wide">{service.number}</div>
+                    <div className="text-blue-600 font-mono text-[14px] font-semibold tracking-wide">{service.number}</div>
                   </button>
                 );
               })}
