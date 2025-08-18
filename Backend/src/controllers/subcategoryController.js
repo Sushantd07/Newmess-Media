@@ -41,18 +41,23 @@ export const createCompanyPage = async (req, res) => {
     // Handle logo upload if file is present
     if (req.file) {
       console.log('Processing logo file:', req.file.originalname);
-      try {
-        const cloudinaryResponse = await uploadLogoToCloudinary(req.file.path);
-        if (cloudinaryResponse) {
-          logoUrl = cloudinaryResponse.secure_url;
-          console.log('Logo uploaded to Cloudinary:', logoUrl);
-        } else {
-          console.log('Failed to upload logo to Cloudinary');
-        }
-      } catch (logoError) {
-        console.error('Error uploading logo:', logoError);
-        // Continue without logo if upload fails
+      console.log('Logo saved to frontend public folder:', req.file.path);
+      
+      // Generate public URL path for the uploaded logo
+      let categoryName = req.body.categoryName || req.body.parentCategoryName || 'general';
+      
+      // If we got a category ID instead of name, use a default folder
+      if (categoryName && categoryName.length > 20) {
+        // This looks like an ObjectId, use a default folder
+        categoryName = 'general';
       }
+      
+      const categoryFolder = categoryName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const filename = req.file.filename;
+      
+      logoUrl = `/company-logos/${categoryFolder}/${filename}`;
+      console.log('Logo URL generated (frontend public):', logoUrl);
+      console.log('📁 Category folder used:', categoryFolder);
     }
 
     // Handle logo field from FormData

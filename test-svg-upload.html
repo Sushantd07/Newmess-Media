@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+        .upload-area.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+        .file-input {
+            display: none;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .preview {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .preview svg {
+            width: 64px;
+            height: 64px;
+            display: block;
+            margin: 0 auto;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #fecaca;
+            margin: 10px 0;
+        }
+        .success {
+            color: #059669;
+            background: #f0fdf4;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #bbf7d0;
+            margin: 10px 0;
+        }
+        .info {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #bfdbfe;
+            margin: 20px 0;
+        }
+        .sample-svg {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SVG Upload Test for Categories</h1>
+        
+        <div class="info">
+            <h3>📋 Test Instructions</h3>
+            <p>This page helps you test SVG upload functionality for category creation. Use this to verify your SVG files before uploading to the main application.</p>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <input type="file" id="fileInput" class="file-input" accept=".svg">
+            <div id="uploadContent">
+                <h3>📁 Drop SVG file here or click to browse</h3>
+                <p>Only SVG files are allowed, maximum 100KB</p>
+                <button class="btn" onclick="document.getElementById('fileInput').click()">Choose File</button>
+            </div>
+        </div>
+
+        <div id="preview" class="preview" style="display: none;">
+            <h4>Preview:</h4>
+            <div id="svgPreview"></div>
+            <div id="fileInfo"></div>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="success" class="success" style="display: none;"></div>
+
+        <div class="sample-svg">
+            <h4>Sample SVG for Testing:</h4>
+            <p>Copy this SVG content to a .svg file for testing:</p>
+            <pre><code>&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"&gt;
+  &lt;circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/&gt;
+  &lt;path d="M12 6v6l4 2" fill="none" stroke="currentColor" stroke-width="2"/&gt;
+&lt;/svg&gt;</code></pre>
+        </div>
+
+        <div class="info">
+            <h3>🔧 Troubleshooting</h3>
+            <ul>
+                <li><strong>File too large:</strong> Optimize your SVG using online tools like SVGO</li>
+                <li><strong>Invalid format:</strong> Ensure the file has proper SVG XML structure</li>
+                <li><strong>Upload fails:</strong> Check your internet connection and try again</li>
+                <li><strong>Preview not showing:</strong> Verify the SVG has valid viewBox and dimensions</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadContent = document.getElementById('uploadContent');
+        const preview = document.getElementById('preview');
+        const svgPreview = document.getElementById('svgPreview');
+        const fileInfo = document.getElementById('fileInfo');
+        const errorDiv = document.getElementById('error');
+        const successDiv = document.getElementById('success');
+
+        // Drag and drop handlers
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            hideMessages();
+
+            // Validate file type
+            if (!file.type.includes('svg') && !file.name.toLowerCase().endsWith('.svg')) {
+                showError('Please select an SVG file only');
+                return;
+            }
+
+            // Validate file size (100KB limit)
+            if (file.size > 100 * 1024) {
+                showError(`File size must be less than 100KB. Current size: ${(file.size / 1024).toFixed(1)}KB`);
+                return;
+            }
+
+            // Read and preview the file
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const svgContent = e.target.result;
+                
+                // Validate SVG content
+                if (!svgContent.includes('<svg')) {
+                    showError('Invalid SVG file. File must contain valid SVG markup.');
+                    return;
+                }
+
+                // Show preview
+                svgPreview.innerHTML = svgContent;
+                fileInfo.innerHTML = `
+                    <p><strong>File Name:</strong> ${file.name}</p>
+                    <p><strong>File Size:</strong> ${(file.size / 1024).toFixed(1)}KB</p>
+                    <p><strong>File Type:</strong> ${file.type}</p>
+                `;
+                preview.style.display = 'block';
+                
+                showSuccess('SVG file is valid and ready for upload!');
+            };
+            reader.readAsText(file);
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showSuccess(message) {
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+
+        function hideMessages() {
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
+
+
+

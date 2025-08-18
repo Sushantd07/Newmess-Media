@@ -25,9 +25,34 @@ html, body {
   scrollbar-width: none; /* Firefox */
 }
 
+/* Horizontal scrollbar hiding for category grid */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
 /* Ensure all Lucide React icons have transparent background and inherit color */
 [class*='lucide-'] {
   background: none !important;
+}
+
+/* Ensure custom SVG icons display properly */
+.custom-svg-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.custom-svg-icon svg path,
+.custom-svg-icon svg rect,
+.custom-svg-icon svg circle,
+.custom-svg-icon svg polygon {
+  fill: inherit;
+  stroke: inherit;
 } 
 
 /* Toast animations */

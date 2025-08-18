@@ -4,7 +4,8 @@ import ComplaintsTab from '../models/tabs/Complaint.tabs.js';
 import QuickHelpTab from '../models/tabs/QuickHelp.tabs.js';
 import OverviewTab from '../models/tabs/OverviewTabs.js';
 import VideoGuideTab from '../models/tabs/VideoGuide.tabs.js';
-import { uploadLogoToCloudinary, deleteLogoFromCloudinary } from '../utils/logoCloudinary.js';
+import fs from 'fs';
+import path from 'path';
 
 // Create Company Page
 export const createCompanyPage = async (req, res) => {
@@ -477,29 +478,42 @@ export const uploadCompanyLogo = async (req, res) => {
       });
     }
 
-    // If company already has a logo, delete the old one from Cloudinary
-    if (companyPage.logo && companyPage.logo.publicId) {
-      await deleteLogoFromCloudinary(companyPage.logo.publicId);
-      console.log('Old logo deleted from Cloudinary');
+    // If company already has a logo, delete the old one from frontend public folder
+    if (companyPage.logo && companyPage.logo.url && companyPage.logo.url.startsWith('/')) {
+      try {
+        const oldLogoPath = path.join('../Frontend/public', companyPage.logo.url);
+        if (fs.existsSync(oldLogoPath)) {
+          fs.unlinkSync(oldLogoPath);
+          console.log('Old logo deleted from frontend public folder:', oldLogoPath);
+        }
+      } catch (deleteError) {
+        console.error('Error deleting old logo:', deleteError);
+      }
     }
 
-    // Upload new logo to Cloudinary
-    const cloudinaryResponse = await uploadLogoToCloudinary(req.file.path);
+    // Generate public URL path for the uploaded logo
+    let categoryName = req.body.categoryName || req.body.parentCategoryName || 'general';
     
-    if (!cloudinaryResponse) {
-      return res.status(500).json({ 
-        success: false, 
-        message: 'Failed to upload logo to Cloudinary' 
-      });
+    // If we got a category ID instead of name, use a default folder
+    if (categoryName && categoryName.length > 20) {
+      // This looks like an ObjectId, use a default folder
+      categoryName = 'general';
     }
+    
+    const categoryFolder = categoryName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const filename = req.file.filename;
+    const logoUrl = `/company-logos/${categoryFolder}/${filename}`;
+    
+    console.log('Logo saved to public folder:', req.file.path);
+    console.log('Logo URL generated:', logoUrl);
 
     // Update company page with new logo information
     const updatedCompanyPage = await CompanyPage.findByIdAndUpdate(
       companyPage._id,
       {
         logo: {
-          url: cloudinaryResponse.secure_url,
-          publicId: cloudinaryResponse.public_id
+          url: logoUrl,
+          filename: filename
         }
       },
       { new: true }
@@ -509,11 +523,11 @@ export const uploadCompanyLogo = async (req, res) => {
       success: true, 
       data: {
         logo: {
-          url: cloudinaryResponse.secure_url,
-          publicId: cloudinaryResponse.public_id
+          url: logoUrl,
+          filename: filename
         }
       },
-      message: 'Logo uploaded successfully'
+      message: 'Logo uploaded successfully to public folder'
     });
   } catch (err) {
     console.error('Error uploading logo:', err);
@@ -536,10 +550,17 @@ export const deleteCompanyLogo = async (req, res) => {
       });
     }
 
-    // If company has a logo, delete it from Cloudinary
-    if (companyPage.logo && companyPage.logo.publicId) {
-      await deleteLogoFromCloudinary(companyPage.logo.publicId);
-      console.log('Logo deleted from Cloudinary');
+    // If company has a logo, delete it from frontend public folder
+    if (companyPage.logo && companyPage.logo.url && companyPage.logo.url.startsWith('/')) {
+      try {
+        const logoPath = path.join('../Frontend/public', companyPage.logo.url);
+        if (fs.existsSync(logoPath)) {
+          fs.unlinkSync(logoPath);
+          console.log('Logo deleted from frontend public folder:', logoPath);
+        }
+      } catch (deleteError) {
+        console.error('Error deleting logo from frontend public folder:', deleteError);
+      }
     }
 
     // Remove logo information from company page
@@ -553,7 +574,7 @@ export const deleteCompanyLogo = async (req, res) => {
 
     res.status(200).json({ 
       success: true, 
-      message: 'Logo deleted successfully'
+      message: 'Logo deleted successfully from frontend public folder'
     });
   } catch (err) {
     console.error('Error deleting logo:', err);

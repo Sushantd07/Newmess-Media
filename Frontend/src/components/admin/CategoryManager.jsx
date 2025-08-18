@@ -15,7 +15,8 @@ const CategoryManager = () => {
     showOnFrontPage: false,
     metaTitle: '',
     metaDescription: '',
-    keywords: []
+    keywords: [],
+    badges: []
   });
 
   const [categories, setCategories] = useState([]);
@@ -110,7 +111,8 @@ const CategoryManager = () => {
       showOnFrontPage: false,
       metaTitle: '',
       metaDescription: '',
-      keywords: []
+      keywords: [],
+      badges: []
     });
     setIconUpload({
       file: null,
@@ -137,8 +139,8 @@ const CategoryManager = () => {
 
     try {
       const url = isEditing 
-        ? `http://localhost:3000/api/categories/${editingCategory._id}`
-        : 'http://localhost:3000/api/categories/create';
+        ? `/api/categories/${editingCategory._id}`
+        : '/api/categories/create';
       
       const method = isEditing ? 'PUT' : 'POST';
 
@@ -183,7 +185,8 @@ const CategoryManager = () => {
       showOnFrontPage: category.showOnFrontPage || false,
       metaTitle: category.metaTitle || '',
       metaDescription: category.metaDescription || '',
-      keywords: category.keywords || []
+      keywords: category.keywords || [],
+      badges: category.badges || []
     });
     // Set icon preview if category has an icon
     if (category.icon && category.icon.startsWith('/')) {
@@ -197,7 +200,7 @@ const CategoryManager = () => {
 
   const handleDelete = async (categoryId) => {
     try {
-      const response = await fetch(`http://localhost:3000/api/categories/${categoryId}`, {
+      const response = await fetch(`/api/categories/${categoryId}`, {
         method: 'DELETE',
       });
 
@@ -227,7 +230,7 @@ const CategoryManager = () => {
     try {
       // Update categories with front page settings
       const updatePromises = frontPageCategories.map((category, index) => {
-        return fetch(`http://localhost:3000/api/categories/${category._id}`, {
+        return fetch(`/api/categories/${category._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -244,7 +247,7 @@ const CategoryManager = () => {
       );
       
       const removePromises = categoriesToRemove.map(category => {
-        return fetch(`http://localhost:3000/api/categories/${category._id}`, {
+        return fetch(`/api/categories/${category._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -295,27 +298,54 @@ const CategoryManager = () => {
   const handleIconFileSelect = (file) => {
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.includes('svg')) {
+    // Debug logging
+    console.log('🔍 File selected:', file);
+    console.log('🔍 File name:', file.name);
+    console.log('🔍 File type:', file.type);
+    console.log('🔍 File size:', file.size, 'bytes');
+    console.log('🔍 File extension:', file.name.split('.').pop().toLowerCase());
+
+    // Validate file type - support multiple image formats
+    const allowedTypes = ['image/svg+xml', 'image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+    const allowedExtensions = ['.svg', '.png', '.jpg', '.jpeg', '.gif', '.webp'];
+    const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+    
+    console.log('🔍 Allowed types:', allowedTypes);
+    console.log('🔍 Allowed extensions:', allowedExtensions);
+    console.log('🔍 File extension:', fileExtension);
+    console.log('🔍 Is type allowed?', allowedTypes.includes(file.type));
+    console.log('🔍 Is extension allowed?', allowedExtensions.includes(fileExtension));
+
+    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+      console.log('❌ File type validation failed');
       setIconUpload(prev => ({
         ...prev,
-        error: 'Please select an SVG file only'
+        error: 'Please select an image file (SVG, PNG, JPG, GIF, WebP)'
       }));
       return;
     }
 
-    // Validate file size (max 100KB for SVG)
-    if (file.size > 100 * 1024) {
+    console.log('✅ File type validation passed');
+
+    // Validate file size (max 2MB for all image types)
+    console.log('🔍 File size validation - Max allowed:', 2 * 1024 * 1024, 'bytes');
+    if (file.size > 2 * 1024 * 1024) {
+      console.log('❌ File size validation failed - File too large');
       setIconUpload(prev => ({
         ...prev,
-        error: 'File size must be less than 100KB'
+        error: 'File size must be less than 2MB'
       }));
       return;
     }
+    console.log('✅ File size validation passed');
 
     // Create preview
+    console.log('🔍 Starting file preview creation...');
     const reader = new FileReader();
+    
     reader.onload = (e) => {
+      console.log('🔍 File preview created successfully');
+      console.log('🔍 Preview result length:', e.target.result.length);
       setIconUpload(prev => ({
         ...prev,
         file,
@@ -323,7 +353,19 @@ const CategoryManager = () => {
         error: null
       }));
     };
-    reader.readAsText(file);
+    
+    reader.onerror = (error) => {
+      console.error('❌ Error reading file:', error);
+    };
+    
+    // For SVG files, read as text. For other images, read as data URL
+    if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+      console.log('🔍 Reading SVG file as text...');
+      reader.readAsText(file);
+    } else {
+      console.log('🔍 Reading image file as data URL...');
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleIconDrop = (e) => {
@@ -339,19 +381,33 @@ const CategoryManager = () => {
   const uploadIcon = async () => {
     if (!iconUpload.file) return;
 
+    console.log('🔍 Starting icon upload...');
+    console.log('🔍 File to upload:', iconUpload.file);
+    console.log('🔍 Category name:', formData.name || 'category');
+
     setIconUpload(prev => ({ ...prev, uploading: true, error: null }));
 
     try {
       const uploadFormData = new FormData();
       uploadFormData.append('icon', iconUpload.file);
-      uploadFormData.append('categoryName', formData.name || 'category');
+      
+      // Send category name for custom filename
+      const categoryName = formData.name || 'category';
+      uploadFormData.append('categoryName', categoryName);
+      
+      console.log('🔍 FormData created with file and category name:', categoryName);
 
+      console.log('🔍 Making API request to /api/categories/upload-icon');
       const response = await fetch('/api/categories/upload-icon', {
         method: 'POST',
         body: uploadFormData
       });
 
+      console.log('🔍 API response status:', response.status);
+      console.log('🔍 API response headers:', response.headers);
+      
       const data = await response.json();
+      console.log('🔍 API response data:', data);
 
       if (data.success) {
         // Update form data with the new icon path
@@ -595,6 +651,23 @@ const CategoryManager = () => {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Badges (e.g., Banking · Government · Public Sector)
+                </label>
+                <input
+                  type="text"
+                  value={Array.isArray(formData.badges) ? formData.badges.join(' · ') : ''}
+                  onChange={(e) => {
+                    const parts = e.target.value.split('·').map(s => s.trim()).filter(Boolean);
+                    setFormData(prev => ({ ...prev, badges: parts }));
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Banking · Government · Public Sector"
+                />
+                <p className="text-xs text-gray-500 mt-1">Use the middle dot separator (·). Stored as an array.</p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -638,7 +711,7 @@ const CategoryManager = () => {
                     >
                       <input
                         type="file"
-                        accept=".svg"
+                        accept=".svg,.png,.jpg,.jpeg,.gif,.webp"
                         onChange={(e) => handleIconFileSelect(e.target.files[0])}
                         className="hidden"
                         id="icon-upload"
@@ -648,10 +721,10 @@ const CategoryManager = () => {
                         <label htmlFor="icon-upload" className="cursor-pointer">
                           <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                           <p className="text-sm font-medium text-gray-900">
-                            Drop SVG file here or <span className="text-blue-600 hover:text-blue-700">browse</span>
+                            Drop image file here or <span className="text-blue-600 hover:text-blue-700">browse</span>
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                            SVG files only, max 100KB
+                            SVG, PNG, JPG, GIF, WebP files, max 2MB
                           </p>
                         </label>
                       ) : (
@@ -660,10 +733,23 @@ const CategoryManager = () => {
                           <div className="flex items-center justify-center">
                             {iconUpload.preview && (
                               <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center border shadow-sm">
-                                {iconUpload.preview.startsWith('data:') ? (
-                                  <img src={iconUpload.preview} alt="Preview" className="w-10 h-10" />
+                                {iconUpload.preview.includes('<svg') ? (
+                                  // SVG content - render as HTML
+                                  <div 
+                                    className="w-10 h-10"
+                                    dangerouslySetInnerHTML={{ __html: iconUpload.preview }}
+                                  />
+                                ) : iconUpload.preview.startsWith('data:') ? (
+                                  // Data URL (PNG/JPG) - render as img tag
+                                  <img src={iconUpload.preview} alt="Preview" className="w-10 h-10 object-contain" />
+                                ) : iconUpload.preview.startsWith('/') ? (
+                                  // File path - render as img tag
+                                  <img src={iconUpload.preview} alt="Preview" className="w-10 h-10 object-contain" />
                                 ) : (
-                                  <img src={iconUpload.preview} alt="Preview" className="w-10 h-10" />
+                                  // Fallback
+                                  <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">
+                                    <span className="text-xs text-gray-500">Preview</span>
+                                  </div>
                                 )}
                               </div>
                             )}
@@ -703,24 +789,7 @@ const CategoryManager = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Color
-                  </label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {colorOptions.map((color, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, color }))}
-                        className={`w-8 h-8 rounded-full border-2 ${
-                          formData.color === color ? 'border-gray-800' : 'border-gray-300'
-                        }`}
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </div>
-                </div>
+
               </div>
 
               <div>
@@ -875,10 +944,53 @@ const CategoryManager = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div 
-                        className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
+                        className="w-10 h-10 rounded-lg flex items-center justify-center text-xl overflow-hidden"
                         style={{ backgroundColor: category.color || '#3B82F6' }}
                       >
-                        {category.icon || '📁'}
+                        {(() => {
+                          // Debug logging
+                          console.log(`🔍 Category: ${category.name}`);
+                          console.log(`🔍 Icon value:`, category.icon);
+                          console.log(`🔍 Icon type:`, typeof category.icon);
+                          console.log(`🔍 Starts with /:`, category.icon && category.icon.startsWith('/'));
+                          console.log(`🔍 Contains <svg:`, category.icon && category.icon.includes('<svg'));
+                          console.log(`🔍 Starts with data::`, category.icon && category.icon.startsWith('data:'));
+                          
+                          if (category.icon && category.icon.startsWith('/')) {
+                            if (category.icon.includes('<svg')) {
+                              console.log(`✅ Rendering SVG content for ${category.name}`);
+                              return (
+                                <div 
+                                  className="w-8 h-8"
+                                  dangerouslySetInnerHTML={{ __html: category.icon }}
+                                />
+                              );
+                            } else {
+                              console.log(`✅ Rendering image file for ${category.name}: ${category.icon}`);
+                              return (
+                                <img 
+                                  src={category.icon} 
+                                  alt={`${category.name} icon`} 
+                                  className="w-8 h-8 object-contain"
+                                  onError={(e) => console.error(`❌ Image failed to load: ${category.icon}`, e)}
+                                  onLoad={() => console.log(`✅ Image loaded successfully: ${category.icon}`)}
+                                />
+                              );
+                            }
+                          } else if (category.icon && category.icon.startsWith('data:')) {
+                            console.log(`✅ Rendering data URL for ${category.name}`);
+                            return (
+                              <img 
+                                src={category.icon} 
+                                alt={`${category.name} icon`} 
+                                className="w-8 h-8 object-contain"
+                              />
+                            );
+                          } else {
+                            console.log(`📁 No icon for ${category.name}, showing default`);
+                            return '📁';
+                          }
+                        })()}
                       </div>
                       <div>
                         <h3 className="font-medium text-gray-900">{category.name}</h3>
@@ -1023,10 +1135,34 @@ const CategoryManager = () => {
                       >
                         <div className="flex items-center gap-3">
                           <div 
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-lg overflow-hidden"
                             style={{ backgroundColor: category.color || '#3B82F6' }}
                           >
-                            {category.icon || '📁'}
+                            {category.icon && category.icon.startsWith('/') ? (
+                              category.icon.includes('<svg') ? (
+                                // SVG content - render as HTML
+                                <div 
+                                  className="w-6 h-6"
+                                  dangerouslySetInnerHTML={{ __html: category.icon }}
+                                />
+                              ) : (
+                                // Image file - render as img tag
+                                <img 
+                                  src={category.icon} 
+                                  alt={`${category.name} icon`} 
+                                  className="w-6 h-6 object-contain"
+                                />
+                              )
+                            ) : category.icon && category.icon.startsWith('data:') ? (
+                              // Data URL (PNG/JPG) - render as img tag
+                              <img 
+                                src={category.icon} 
+                                alt={`${category.name} icon`} 
+                                className="w-6 h-6 object-contain"
+                              />
+                            ) : (
+                              '📁'
+                            )}
                           </div>
                           <div>
                             <h5 className="font-medium text-gray-900">{category.name}</h5>
@@ -1074,10 +1210,34 @@ const CategoryManager = () => {
                           </button>
                         </div>
                         <div 
-                          className="w-8 h-8 rounded-lg flex items-center justify-center text-lg"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-lg overflow-hidden"
                           style={{ backgroundColor: category.color || '#3B82F6' }}
                         >
-                          {category.icon || '📁'}
+                          {category.icon && category.icon.startsWith('/') ? (
+                            category.icon.includes('<svg') ? (
+                              // SVG content - render as HTML
+                              <div 
+                                className="w-6 h-6"
+                                dangerouslySetInnerHTML={{ __html: category.icon }}
+                              />
+                            ) : (
+                              // Image file - render as img tag
+                              <img 
+                                src={category.icon} 
+                                alt={`${category.name} icon`} 
+                                className="w-6 h-6 object-contain"
+                              />
+                            )
+                          ) : category.icon && category.icon.startsWith('data:') ? (
+                            // Data URL (PNG/JPG) - render as img tag
+                            <img 
+                              src={category.icon} 
+                              alt={`${category.name} icon`} 
+                              className="w-6 h-6 object-contain"
+                            />
+                          ) : (
+                            '📁'
+                          )}
                         </div>
                         <div>
                           <h5 className="font-medium text-gray-900">{category.name}</h5>

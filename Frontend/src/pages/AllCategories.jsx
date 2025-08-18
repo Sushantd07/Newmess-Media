@@ -33,15 +33,18 @@ const AllCategories = () => {
   // Category arrangement modal state
   const [showArrangementModal, setShowArrangementModal] = useState(false);
 
-useEffect(() => {
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/api/categories');
-      const data = await response.json();
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        const data = await response.json();
       
       if (data.success) {
         console.log('Categories from API:', data.data);
         console.log("Sample Category Object:", data.data[0]);
+        
+
+        
         setCategories(data.data);
       } else {
         console.error('Failed to fetch categories:', data.message);
@@ -97,7 +100,7 @@ const sortedCategories = [...filteredCategories].sort((a, b) => {
     // Refresh categories data
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/categories');
+        const response = await fetch('/api/categories');
         const data = await response.json();
         
         if (data.success) {
@@ -201,7 +204,29 @@ const sortedCategories = [...filteredCategories].sort((a, b) => {
         {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {sortedCategories.map((category) => {
-            const Icon = iconMap[category.iconName] || CreditCard;
+            // Check if category has a custom SVG icon (more flexible detection)
+            const hasCustomIcon = category.icon && (
+              category.icon.startsWith('<svg') || 
+              category.icon.includes('<svg') || 
+              category.icon.includes('viewBox') ||
+              category.icon.includes('xmlns=')
+            );
+            
+            // Check if it's an image file (PNG, JPG, etc.) - either as path or data URL
+            const isImageFile = category.icon && (
+              (category.icon.startsWith('/') && 
+               !category.icon.includes('<svg') && 
+               ['.png', '.jpg', '.jpeg', '.gif', '.webp'].some(ext => category.icon.toLowerCase().endsWith(ext))) ||
+              (category.icon.startsWith('data:image/')) ||
+              (category.iconType === 'image') ||
+              (category.icon && category.icon.includes('.png')) ||
+              (category.icon && category.icon.includes('.jpg')) ||
+              (category.icon && category.icon.includes('.jpeg'))
+            );
+            
+            const Icon = hasCustomIcon ? null : (iconMap[category.iconName] || CreditCard);
+            
+
 
             return (
               <div
@@ -213,7 +238,29 @@ const sortedCategories = [...filteredCategories].sort((a, b) => {
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-2">
                       <div className={`w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center`}>
-                        <Icon className="h-6 w-6 text-white" />
+                        {hasCustomIcon ? (
+                          <div 
+                            className="h-7 w-7 text-white custom-svg-icon"
+                            dangerouslySetInnerHTML={{ __html: category.icon }}
+                          />
+                        ) : isImageFile ? (
+                          <img 
+                            src={category.icon} 
+                            alt={`${category.name} icon`} 
+                            className="h-7 w-7 object-contain"
+                            onError={(e) => {
+                              console.error(`❌ AllCategories - Image failed to load for ${category.name}:`, category.icon);
+                              e.target.style.display = 'none';
+                              // Show fallback icon
+                              const fallbackIcon = document.createElement('div');
+                              fallbackIcon.className = 'h-7 w-7 text-white';
+                              fallbackIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
+                              e.target.parentNode.appendChild(fallbackIcon);
+                            }}
+                          />
+                        ) : (
+                          <Icon className="h-7 w-7 text-white" />
+                        )}
                       </div>
                     </div>
                     <span className="text-sm font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">

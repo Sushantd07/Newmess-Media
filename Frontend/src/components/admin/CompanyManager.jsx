@@ -40,6 +40,7 @@ const CompanyManager = () => {
   });
 
   const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -77,18 +78,43 @@ const CompanyManager = () => {
     fetchCompanies();
   }, []);
 
+  // Debug: Log categories when they change
+  useEffect(() => {
+    console.log('🔍 Categories state updated:', categories.length, 'categories');
+    if (categories.length > 0) {
+      console.log('🔍 Available categories:', categories.map(cat => ({ id: cat._id, name: cat.name })));
+    }
+  }, [categories]);
+
   const fetchCategories = async () => {
     try {
+      console.log('🔍 Fetching categories...');
       const response = await fetch('/api/categories');
+      console.log('🔍 Categories response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('🔍 Categories data:', data);
 
       if (data.success) {
+        console.log('✅ Categories loaded:', data.data.length, 'categories');
         setCategories(data.data);
+        setCategoriesLoading(false);
       } else {
-        console.error('Failed to fetch categories for company form:', data.message);
+        console.error('❌ Failed to fetch categories for company form:', data.message);
+        setCategoriesLoading(false);
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error('❌ Error fetching categories:', error);
+      setCategoriesLoading(false);
+      // Retry after 2 seconds
+      setTimeout(() => {
+        console.log('🔄 Retrying categories fetch...');
+        fetchCategories();
+      }, 2000);
     }
   };
 
@@ -265,6 +291,15 @@ const CompanyManager = () => {
               }
             }
           });
+          
+          // Add category name for proper folder organization
+          if (submitData.parentCategory) {
+            const selectedCategory = categories.find(cat => cat._id === submitData.parentCategory);
+            if (selectedCategory) {
+              formDataToSend.append('categoryName', selectedCategory.name);
+              console.log('📁 Adding category name for upload:', selectedCategory.name);
+            }
+          }
           
           // Add logo file (not the blob URL)
           formDataToSend.append('logo', formData.logoFile);
@@ -1557,11 +1592,17 @@ const CompanyManager = () => {
                   required
                 >
                   <option value="">Select a category</option>
-                  {categories.map(category => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
+                  {categoriesLoading ? (
+                    <option value="" disabled>Loading categories...</option>
+                  ) : categories.length > 0 ? (
+                    categories.map(category => (
+                      <option key={category._id} value={category._id}>
+                        {category.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" disabled>No categories available</option>
+                  )}
                 </select>
               </div>
 

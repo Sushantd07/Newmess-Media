@@ -52,6 +52,11 @@ const CategorySchema = new mongoose.Schema(
     metaDescription: String,
     keywords: [String],
     color: String,
+    // Display badges like: Banking · Government · Public Sector
+    badges: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

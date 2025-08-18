@@ -1,6 +1,7 @@
 import express from "express";
 import logoUpload from "../middleware/logoUpload.js";
 import compressLogo from "../middleware/logoCompression.js";
+import companyLogoUpload from "../middleware/companyLogoUpload.js";
 import {
   createCompanyPage,
   createCompanyPageWithContactNumbers,
@@ -47,8 +48,7 @@ router.post("/save-component", saveDynamicComponents);
 
 // 🟢 Logo Upload Routes
 router.post("/:slug/upload-logo", 
-  logoUpload.single('logo'), 
-  compressLogo, 
+  companyLogoUpload.single('logo'), 
   uploadCompanyLogo
 );
 router.delete("/:slug/delete-logo", deleteCompanyLogo);

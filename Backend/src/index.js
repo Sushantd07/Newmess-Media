@@ -34,7 +34,8 @@ import './models/tabs/OverviewTabs.js';
     "https://localhost:5173",
     "https://localhost:3000",
     "https://127.0.0.1:5173",
-      "https://gzd2rl1g-5173.inc1.devtunnels.ms"
+    "https://gzd2rl1g-5173.inc1.devtunnels.ms",
+    "https://ca0ad85c14cc.ngrok-free.app"
   ];
 
   // Add ngrok domains to allowed origins
@@ -95,9 +96,9 @@ import './models/tabs/OverviewTabs.js';
     });
   });
 
-  // ✅ Static file serving for public assets
-  app.use('/category-icons', express.static('./public/category-icons'));
-  app.use('/company-logos', express.static('./public/company-logos'));
+  // ✅ Static file serving for frontend public assets
+  app.use('/category-icons', express.static('../Frontend/public/category-icons'));
+  app.use('/company-logos', express.static('../Frontend/public/company-logos'));
 
   // ✅ Routes
   app.use('/api/categories', categoryRoutes);

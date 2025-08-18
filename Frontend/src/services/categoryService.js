@@ -23,7 +23,7 @@ class CategoryService {
       const data = await response.json();
 
       if (data.success) {
-        return data.data; // Return just the data array
+        return data.data; // includes badges in each category
       } else {
         throw new Error(data.message || 'Failed to fetch categories with subcategories');
       }

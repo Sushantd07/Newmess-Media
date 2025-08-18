@@ -2,6 +2,7 @@ import express from "express";
 import Subcategory from "../models/Subcategory.js";
 import logoUpload from "../middleware/logoUpload.js";
 import compressLogo from "../middleware/logoCompression.js";
+import companyLogoUpload from "../middleware/companyLogoUpload.js";
 import {
   createSubcategory,
   bulkCreateSubcategories,
@@ -42,8 +43,7 @@ router.delete("/:id", deleteSubcategory);
 
 // Company Page Routes
 router.post("/create-company-page", 
-  logoUpload.single('logo'), 
-  compressLogo, 
+  companyLogoUpload.single('logo'), 
   createCompanyPage
 );
 router.post("/link-contact-tab", linkContactTabToCompany);
