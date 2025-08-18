@@ -9,6 +9,18 @@ import {
 } from 'lucide-react';
 
 const HeroSection = () => {
+  // BACKGROUND COLOR CUSTOMIZATION:
+  // To change background colors for different views, modify the className below:
+  // 
+  // Current setup:
+  // - Mobile: bg-gradient-to-b from-[#F28C28] via-[#FDFDFC] to-[#1D8052]
+  // - Desktop: md:from-[#F28C28] md:via-[#FDFDFC] md:to-[#1D8052]
+  //
+  // Examples for different colors:
+  // - Mobile only: bg-blue-500 md:bg-red-500
+  // - Mobile only: bg-gradient-to-r from-blue-400 to-purple-600 md:from-red-400 md:to-yellow-600
+  // - Solid colors: bg-orange-500 md:bg-blue-600
+  // - Custom colors: bg-[#FF6B35] md:bg-[#4ECDC4]
   const [business, setBusiness] = useState('');
   const [placeholderText, setPlaceholderText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -339,7 +351,7 @@ const HeroSection = () => {
     .map(({ topic }) => topic);
 
   return (
-    <div className="relative overflow-hidden border-amber-800 b-[10px] w-full min-h-[400px] sm:min-h-[500px] lg:h-[542px] bg-gradient-to-b from-[#F28C28] via-[#FDFDFC] to-[#1D8052] px-1 sm:px-6 lg:px-12 py-6 sm:py-8 flex items-center justify-center shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+         <div className="overflow-hidden border-amber-800 b-[10px] w-full min-h-[250px] sm:min-h-[500px] lg:h-[542px] bg-gradient-to-b from-[#F28C28] via-[#FDFDFC] to-[#1D8052] md:from-[#F28C28] md:via-[#FDFDFC] md:to-[#1D8052] px-1 sm:px-6 lg:px-12 py-6 sm:py-8 flex items-center justify-center shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
 
       {/* Premium Top Shadow */}
       <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-black/10 to-transparent pointer-events-none z-10"></div>
@@ -396,51 +408,76 @@ const HeroSection = () => {
           {/* Mobile hero heading + about text (matches requested design) */}
           <div className="px-2 text-center">
             <h1 className="text-[22px] leading-snug font-extrabold text-white">
-              India's Most Trusted <span className="text-orange-200">Toll-Free Directory</span>
+              India's Most Trusted <span className="text-orange-500">Toll-Free Directory</span>
             </h1>
-            <p className="mt-1 text-[13px] text-white/90">
+            <p className="mt-1 text-[13px] text-black/90">
               Get quick access to verified toll-free numbers for essential services and top businesses across India.
             </p>
             <div className="mt-2 mx-auto h-1 w-16 bg-orange-400 rounded-full"></div>
           </div>
-          {/* Compact Search Bar - single rounded bar layout as per reference */}
-          <div className="rounded-2xl shadow-md bg-white px-2 py-2">
-            <form onSubmit={handleSearch} className="flex items-stretch gap-2">
-              {/* Location */}
-              <div className="relative flex-1 max-w-[38%]">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-orange-600">
-                  <Globe className="h-4 w-4" />
-                </div>
-                <input
-                  type="text"
-                  value={userState}
-                  readOnly
-                  className="w-full h-12 pl-8 pr-2 rounded-xl bg-white border border-orange-400 text-orange-700 font-medium shadow-sm cursor-default text-sm"
-                />
+                                 {/* Mobile Search Bar - single rounded bar layout */}
+            <div className="px-4">
+              <div className="bg-white rounded-full shadow-lg p-1">
+                <form onSubmit={handleSearch} className="flex items-center gap-2">
+                  {/* Search Input */}
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder="Search for services, companies"
+                      value={business}
+                      onChange={(e) => setBusiness(e.target.value)}
+                      className="w-full h-12 pl-4 pr-12 rounded-full bg-white border-0 focus:ring-0 focus:outline-none text-sm text-gray-700 placeholder-gray-400"
+                    />
+                    {/* Voice Search Button */}
+                    <button
+                      type="button"
+                      onClick={handleMicClick}
+                      className={`absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-full transition-colors ${isListening ? 'bg-orange-100 text-orange-600' : 'text-gray-400'} focus:outline-none`}
+                      aria-label="Voice Search"
+                    >
+                      <Mic className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {/* Search Button */}
+                  <button
+                    type="submit"
+                    className="h-12 w-12 flex items-center justify-center rounded-full bg-orange-500 text-white shadow-sm hover:bg-orange-600 focus:outline-none transition-colors"
+                    aria-label="Search"
+                  >
+                    <Search className="h-5 w-5" />
+                  </button>
+                </form>
               </div>
-              {/* Search */}
-              <div className="relative flex-[1.6]">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder={`Find your service (e.g., ${placeholderText})`}
-                  value={business}
-                  onChange={(e) => setBusiness(e.target.value)}
-                  className="w-full h-12 pl-9 pr-10 rounded-xl bg-white border border-gray-300 focus:ring-2 focus:ring-orange-400 outline-none text-sm shadow-sm"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center rounded-full bg-orange-500 text-white shadow-sm hover:bg-orange-600 focus:outline-none"
-                  aria-label="Search"
-                >
-                  <Search className="h-4 w-4" />
-                </button>
+            </div>
+
+                       {/* Mobile Stats Section */}
+            <div className="mt-4 px-4">
+              <div className="bg-transparent border-0 shadow-none flex flex-row justify-between items-center gap-1">
+                {[
+                  { value: 50000, suffix: '+', label: 'Numbers' },
+                  { value: 100, suffix: '%', label: 'Verified' },
+                  { value: 24, suffix: '/7', label: 'Available' },
+                  { value: 2025, suffix: '', label: 'Updated', noComma: true }
+                ].map((stat, index) => (
+                  <div key={index} className="text-center flex-1">
+                    <div className="text-[18px] font-bold text-white leading-tight">
+                      <CountUp
+                        end={stat.value}
+                        suffix={stat.suffix}
+                        duration={1.8}
+                        separator={stat.noComma ? '' : ','}
+                        enableScrollSpy
+                        scrollSpyOnce
+                      />
+                    </div>
+                    <p className="text-[12px] text-white mt-1 leading-tight opacity-90">{stat.label}</p>
+                  </div>
+                ))}
               </div>
-            </form>
-          </div>
+            </div>
 
           {/* Top Row: Left label box + Right dropdown (mobile only) */}
-          <div className="px-3 flex items-center justify-between gap-3">
+          {/* <div className="px-3 flex items-center justify-between gap-3">
             <div className="w-[26%] min-w-[130px]">
               <div className="w-full px-4 py-2 text-sm border border-gray-200 rounded-full bg-white shadow-sm text-gray-800 font-medium text-center">
                 Helpline Number
@@ -459,10 +496,10 @@ const HeroSection = () => {
                 ))}
               </select>
             </div>
-          </div>
+          </div> */}
 
           {/* Dynamic Helpline Directory */}
-          <div className="rounded-xl shadow-md bg-white px-4 py-4">
+          <div className="hidden rounded-xl shadow-md bg-white px-4 py-4">
             <div className="mb-3 p-3 rounded-lg text-balck text-center bg-gradient-to-r "
                  style={{ backgroundImage: `linear-gradient(to right, var(--tw-gradient-from), var(--tw-gradient-to))` }}>
               <div className={`hidden`}></div>
@@ -592,15 +629,15 @@ const HeroSection = () => {
 
           {/* Stats */}
           <div className="mt-6">
-  <div className="bg-white border border-gray-200 rounded-xl px-4 sm:px-6 py-5 shadow-md flex flex-col sm:flex-row justify-between items-center gap-2">
+  <div className="bg-white border border-gray-200 rounded-xl px-4 sm:px-6 py-5 shadow-md flex flex-row justify-between items-center gap-2">
     {[
       { value: 50000, suffix: '+', label: 'Verified Toll-Free Numbers' },
       { value: 99.9, suffix: '%', label: 'Accuracy Rate' },
       { value: 24, suffix: '/7', label: 'Support' },
       { value: 2022, suffix: '', label: 'Since', noComma: true }
     ].map((stat, index) => (
-      <div key={index} className="text-center sm:text-left">
-        <div className="text-[20px] sm:text-[27px] font-bold text-gray-900 leading-tight">
+      <div key={index} className="text-center">
+        <div className="text-[16px] sm:text-[20px] md:text-[27px] font-bold text-gray-900 leading-tight">
           <CountUp
             end={stat.value}
             suffix={stat.suffix}
@@ -610,7 +647,7 @@ const HeroSection = () => {
             scrollSpyOnce
           />
         </div>
-        <p className="text-sm text-gray-500 mt-1">{stat.label}</p>
+        <p className="text-xs sm:text-sm text-gray-500 mt-1">{stat.label}</p>
       </div>
     ))}
   </div>
