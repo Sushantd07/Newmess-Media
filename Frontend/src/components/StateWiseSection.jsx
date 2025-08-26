@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import SnameMap from '../assets/lastMap.svg?react';
 import { MapPin, ArrowRight, Users, Shield, Phone, Lock, Unlock } from 'lucide-react';
+import MobileStatesGrid from './MobileStatesGrid';
 
 const statesData = [
 	{
@@ -599,7 +600,10 @@ const InteractiveMap = ({ onStateHover, onStateLeave, onStateClick, hoveredState
   );
 };
 
+
+
 const StatewiseSection = () => {
+  console.log('StatewiseSection component rendering...');
   const [hoveredState, setHoveredState] = useState(null);
   const [clickedState, setClickedState] = useState(null);
   const [isTableLocked, setIsTableLocked] = useState(false);
@@ -638,8 +642,9 @@ const StatewiseSection = () => {
 
   return (
     <section className="py-10 bg-gradient-to-br from-orange-50 via-white to-orange-100">
+      
       {/* Section Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+      <div className="hidden md:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <div className="flex flex-col items-center text-center">
           <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-[15px] font-semibold mb-3">
             <MapPin className="h-4 w-4" />
@@ -655,8 +660,15 @@ const StatewiseSection = () => {
         </div>
       </div>
 
-      {/* Card Container */}
-      <div className="max-w-9xl mx-auto px-2 sm:px-4 lg:px-8">
+      {/* Mobile View - States Grid */}
+      <div className="block md:hidden max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div className="bg-white/90 rounded-3xl overflow-hidden p-2">
+          <MobileStatesGrid />
+        </div>
+      </div>
+
+      {/* Desktop View - Original Map Layout */}
+      <div className="hidden md:block max-w-9xl mx-auto px-2 sm:px-4 lg:px-8">
         <div className="bg-white/90 rounded-3xl shadow-2xl border border-orange-200 overflow-hidden flex flex-col md:flex-row h-auto md:h-[600px]">
           
           {/* Left column */}
