@@ -109,9 +109,9 @@ const handleSubmit = async (e) => {
             <Mail className="h-4 w-4" />
             Contact Directory
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-2">
             Get in Touch with Our <span className="text-orange-600">Contact Us</span>
-          </h1>
+          </h2>
           <p className="text-base text-gray-600 max-w-2xl mx-auto mb-2">
             Reach out for business listings, support, or general queries. Our team is here to help you.
           </p>

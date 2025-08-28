@@ -25,11 +25,35 @@ html, body {
   scrollbar-width: none; /* Firefox */
 }
 
+/* Horizontal scrollbar hiding for category grid */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
 /* Ensure all Lucide React icons have transparent background and inherit color */
-  [class*='lucide-'] {
-    background: none !important;
-    
-  } 
+[class*='lucide-'] {
+  background: none !important;
+}
+
+/* Ensure custom SVG icons display properly */
+.custom-svg-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.custom-svg-icon svg path,
+.custom-svg-icon svg rect,
+.custom-svg-icon svg circle,
+.custom-svg-icon svg polygon {
+  fill: inherit;
+  stroke: inherit;
+} 
 
 /* Toast animations */
 @keyframes slideIn {
@@ -89,5 +113,89 @@ html, body {
 
 .animate-scale-in {
   animation: scaleIn 0.3s ease-out;
+}
+
+/* Rich HTML content - preserve pasted formatting while keeping SEO-visible */
+.rich-html {
+  /* Reset inherited styles that might interfere with pasted content */
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+.rich-html * {
+  /* Ensure all child elements inherit properly */
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+.rich-html table {
+  /* Preserve table formatting exactly as pasted */
+  border-collapse: inherit;
+  border-spacing: inherit;
+  width: inherit;
+  margin: inherit;
+  padding: inherit;
+}
+
+.rich-html ul,
+.rich-html ol {
+  /* Preserve list formatting exactly as pasted */
+  list-style: inherit;
+  margin: inherit;
+  padding: inherit;
+}
+
+.rich-html li {
+  /* Preserve list item formatting exactly as pasted */
+  list-style: inherit;
+  margin: inherit;
+  padding: inherit;
+}
+
+/* Ensure bullets and numbers are visible */
+.rich-html ul li {
+  list-style-type: disc;
+  margin-left: 1.5em;
+}
+
+.rich-html ol li {
+  list-style-type: decimal;
+  margin-left: 1.5em;
+}
+
+/* Preserve bold and italic formatting */
+.rich-html strong,
+.rich-html b {
+  font-weight: bold !important;
+}
+
+.rich-html em,
+.rich-html i {
+  font-style: italic !important;
+}
+
+.rich-html u {
+  text-decoration: underline !important;
+}
+ 
+/* Minimal CSS only for lists to ensure proper rendering */
+.rich-html ul {
+  list-style-type: disc;
+  margin: 0 0 0.5em 0;
+  padding: 0 0 0 1.5em;
+}
+
+.rich-html ol {
+  list-style-type: decimal;
+  margin: 0 0 0.5em 0;
+  padding: 0 0 0 1.5em;
+}
+
+.rich-html li {
+  margin: 0.25em 0;
 }
  

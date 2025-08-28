@@ -10,25 +10,42 @@ import companyPageRoutes from './routes/companyPageRoutes.js';
 import tabRoutes from './routes/tabRoutes.js';
 import commentRoutes from './routes/commentRoutes.js';
 import structuredComplaintsRoutes from './routes/structuredComplaintsRoutes.js';
+import dynamicPageRoutes from './routes/dynamicPageRoutes.js';
+import contactNumbersRoutes from './routes/contactNumbersRoutes.js';
 
 // Import all models to register them with Mongoose
 import './models/Category.js';
 import './models/Subcategory.js';
+import './models/CompanyPage.js';
 import './models/tabs/ContactNumbers.tabs.js';
+import './models/tabs/Complaint.tabs.js';
+import './models/tabs/QuickHelp.tabs.js';
+import './models/tabs/VideoGuide.tabs.js';
+import './models/tabs/OverviewTabs.js';
+import './models/SeoSetting.js';
+import './models/DynamicPage.js';
+import './models/ContactNumbers.js';
 
   import cors from 'cors';
   import bodyParser from 'body-parser';
+  import seoRoutes from './routes/seoRoutes.js';
 
   const app = express();
 
   // ✅ CORS Configuration for ngrok support
   const allowedOrigins = [
     "http://localhost:5173", 
+    "http://localhost:5174", 
     "http://localhost:3000", 
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
     "https://localhost:5173",
+    "https://localhost:5174",
     "https://localhost:3000",
-    "https://127.0.0.1:5173"
+    "https://127.0.0.1:5173",
+    "https://127.0.0.1:5174",
+    "https://gzd2rl1g-5173.inc1.devtunnels.ms",
+    "https://ca0ad85c14cc.ngrok-free.app"
   ];
 
   // Add ngrok domains to allowed origins
@@ -89,13 +106,20 @@ import './models/tabs/ContactNumbers.tabs.js';
     });
   });
 
+  // ✅ Static file serving for frontend public assets
+  app.use('/category-icons', express.static('../Frontend/public/category-icons'));
+  app.use('/company-logos', express.static('../Frontend/public/company-logos'));
+
   // ✅ Routes
   app.use('/api/categories', categoryRoutes);
   app.use('/api/subcategories', subcategoryRoutes);
   app.use('/api/company-pages', companyPageRoutes);
   app.use('/api/tabs', tabRoutes);
   app.use('/api/comments', commentRoutes);
+  app.use('/api/seo', seoRoutes);
   app.use('/api/structured-complaints', structuredComplaintsRoutes);
+  app.use('/api/dynamic-pages', dynamicPageRoutes);
+  app.use('/api/contact-numbers', contactNumbersRoutes);
 
   // ✅ Error handling middleware
   app.use((err, req, res, next) => {

@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Edit, Trash2, Plus, Eye, EyeOff, Star, CheckCircle, X, Save, ArrowLeft, Building2, Phone, Globe, Users, Eye as EyeIcon, Copy, Heart, Clock, Check, ArrowRight } from 'lucide-react';
+import { Edit, Trash2, Plus, Eye, EyeOff, Star, CheckCircle, X, Save, ArrowLeft, Building2, Phone, Globe, Users, Eye as EyeIcon, Copy, Heart, Clock, Check, ArrowRight, AlertCircle, Search, Filter, Grid, List, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, MoreHorizontal, Settings, Download, Upload } from 'lucide-react';
+import LogoUpload from './LogoUpload.jsx';
+import CompanyListEnhanced from './CompanyListEnhanced.jsx';
+
 
 const CompanyManager = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +12,7 @@ const CompanyManager = () => {
     slug: '',
     phone: '',
     logo: '/company-logos/Bank/placeholder.svg',
+    logoFile: null, // For new company logo upload
     verified: true,
     isActive: true,
     tags: [],
@@ -29,10 +33,14 @@ const CompanyManager = () => {
     parentCompany: '',
     rating: 4.2,
     totalReviews: 0,
-    monthlySearches: '0'
+    monthlySearches: '0',
+    
+    // Tab Selection
+    selectedTabs: ['numbers', 'overview', 'complaints', 'quickhelp', 'video']
   });
 
   const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -41,6 +49,28 @@ const CompanyManager = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [showPreview, setShowPreview] = useState(true);
+  const [deleteCategoryConfirm, setDeleteCategoryConfirm] = useState(null);
+
+  // Enhanced category management states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
+  const [sortBy, setSortBy] = useState('name'); // 'name', 'category', 'status', 'created'
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+  const [expandedCategories, setExpandedCategories] = useState(new Set());
+  const [showFilters, setShowFilters] = useState(false);
+  const [bulkActions, setBulkActions] = useState([]);
+  const [selectedCompanies, setSelectedCompanies] = useState(new Set());
+  
+  // Category arrangement states
+  const [showArrangementModal, setShowArrangementModal] = useState(false);
+  const [selectedCategoryForArrangement, setSelectedCategoryForArrangement] = useState(null);
+  const [categoryDisplayLimits, setCategoryDisplayLimits] = useState({});
+  const [arrangementLoading, setArrangementLoading] = useState(false);
+  const [companyOrder, setCompanyOrder] = useState({});
 
   // Fetch categories and companies on component mount
   useEffect(() => {
@@ -48,18 +78,43 @@ const CompanyManager = () => {
     fetchCompanies();
   }, []);
 
+  // Debug: Log categories when they change
+  useEffect(() => {
+    console.log('🔍 Categories state updated:', categories.length, 'categories');
+    if (categories.length > 0) {
+      console.log('🔍 Available categories:', categories.map(cat => ({ id: cat._id, name: cat.name })));
+    }
+  }, [categories]);
+
   const fetchCategories = async () => {
     try {
+      console.log('🔍 Fetching categories...');
       const response = await fetch('/api/categories');
+      console.log('🔍 Categories response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('🔍 Categories data:', data);
 
       if (data.success) {
+        console.log('✅ Categories loaded:', data.data.length, 'categories');
         setCategories(data.data);
+        setCategoriesLoading(false);
       } else {
-        console.error('Failed to fetch categories for company form:', data.message);
+        console.error('❌ Failed to fetch categories for company form:', data.message);
+        setCategoriesLoading(false);
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error('❌ Error fetching categories:', error);
+      setCategoriesLoading(false);
+      // Retry after 2 seconds
+      setTimeout(() => {
+        console.log('🔄 Retrying categories fetch...');
+        fetchCategories();
+      }, 2000);
     }
   };
 
@@ -120,11 +175,13 @@ const CompanyManager = () => {
 
   const resetForm = () => {
     setFormData({
+      // Basic Info
       id: '',
       name: '',
       slug: '',
       phone: '',
       logo: '/company-logos/Bank/placeholder.svg',
+      logoFile: null,
       verified: true,
       isActive: true,
       tags: [],
@@ -134,6 +191,8 @@ const CompanyManager = () => {
       order: 0,
       role: 'Support',
       customRole: '',
+      
+      // Company Details
       description: '',
       companyName: '',
       mainPhone: '',
@@ -143,11 +202,13 @@ const CompanyManager = () => {
       parentCompany: '',
       rating: 4.2,
       totalReviews: 0,
-      monthlySearches: '0'
+      monthlySearches: '0',
+      
+      // Tab Selection - Include default tabs
+      selectedTabs: ['numbers', 'overview']
     });
-    setTagInput('');
-    setIsEditing(false);
     setEditingCompany(null);
+    setIsEditing(false);
   };
 
   const handleSubmit = async (e) => {
@@ -185,31 +246,98 @@ const CompanyManager = () => {
 
     // Remove customRole from submission data as it's not needed in backend
     delete submitData.customRole;
+    
+    // Include selected tabs in submission
+    if (formData.selectedTabs.length > 0) {
+      submitData.tabs = formData.selectedTabs;
+    }
+    
+    // For new companies, use only the selected tabs (no automatic defaults)
+    if (!isEditing) {
+      submitData.selectedTabs = formData.selectedTabs || [];
+    }
 
     try {
-      console.log('Submitting data:', submitData); // Debug log
       
-      const url = isEditing 
-        ? `http://localhost:3000/api/subcategories/${editingCompany._id}`
-        : 'http://localhost:3000/api/subcategories/create-company-page';
       
-      const method = isEditing ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submitData),
-      });
+      let response;
+      
+      if (isEditing) {
+        // For editing, use JSON
+        response = await fetch(`http://localhost:3000/api/subcategories/${editingCompany._id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(submitData),
+        });
+      } else {
+        // For new company, handle logo file upload
+        if (formData.logoFile) {
+          const formDataToSend = new FormData();
+          
+          // Add all form data
+          Object.keys(submitData).forEach(key => {
+            if (key !== 'logoFile' && key !== 'logo') {
+              if (Array.isArray(submitData[key])) {
+                // For arrays, send each element individually with the same key
+                submitData[key].forEach((item, index) => {
+                  formDataToSend.append(`${key}[${index}]`, item);
+                });
+              } else if (typeof submitData[key] === 'boolean') {
+                formDataToSend.append(key, submitData[key].toString());
+              } else if (submitData[key] !== null && submitData[key] !== undefined) {
+                formDataToSend.append(key, submitData[key]);
+              }
+            }
+          });
+          
+          // Add category name for proper folder organization
+          if (submitData.parentCategory) {
+            const selectedCategory = categories.find(cat => cat._id === submitData.parentCategory);
+            if (selectedCategory) {
+              formDataToSend.append('categoryName', selectedCategory.name);
+              console.log('📁 Adding category name for upload:', selectedCategory.name);
+            }
+          }
+          
+          // Add logo file (not the blob URL)
+          formDataToSend.append('logo', formData.logoFile);
+          
+          console.log('Sending FormData with logo file:', formData.logoFile.name);
+          response = await fetch('http://localhost:3000/api/subcategories/create-company-page', {
+            method: 'POST',
+            body: formDataToSend,
+          });
+        } else if (formData.logo && formData.logo.startsWith('blob:')) {
+          // If we have a blob URL but no file, skip logo for now
+          console.log('Blob URL detected but no file available, skipping logo upload');
+          response = await fetch('http://localhost:3000/api/subcategories/create-company-page', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(submitData),
+          });
+        } else {
+          // No logo file, use JSON
+          response = await fetch('http://localhost:3000/api/subcategories/create-company-page', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(submitData),
+          });
+        }
+      }
 
       const data = await response.json();
-      console.log('Response:', data); // Debug log
+      
 
       if (data.success) {
         setMessage({ 
           type: 'success', 
-          text: isEditing ? 'Company updated successfully!' : 'Company created successfully!' 
+          text: isEditing ? 'Company updated successfully!' : `Company created successfully! ${data.data?.createdTabs ? 'All selected tabs have been automatically created.' : ''}` 
         });
         resetForm();
         fetchCompanies();
@@ -232,6 +360,7 @@ const CompanyManager = () => {
       slug: company.slug,
       phone: company.phone,
       logo: company.logo || '/company-logos/Bank/placeholder.svg',
+      logoFile: null,
       verified: company.verified !== undefined ? company.verified : true,
       isActive: company.isActive !== undefined ? company.isActive : true,
       tags: company.tags || [],
@@ -250,7 +379,8 @@ const CompanyManager = () => {
       parentCompany: company.parentCompany || '',
       rating: company.rating || 4.2,
       totalReviews: company.totalReviews || 0,
-      monthlySearches: company.monthlySearches || '0'
+      monthlySearches: company.monthlySearches || '0',
+      selectedTabs: company.selectedTabs || []
     });
     setIsEditing(true);
   };
@@ -272,6 +402,155 @@ const CompanyManager = () => {
       }
     } catch (error) {
       setMessage({ type: 'error', text: 'Network error. Please try again.' });
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId, categoryName) => {
+    try {
+      // First, get all companies in this category
+      const companiesInCategory = companies.filter(company => 
+        company.parentCategory === categoryId || company.parentCategory._id === categoryId
+      );
+
+      if (companiesInCategory.length === 0) {
+        setMessage({ type: 'error', text: 'No companies found in this category' });
+        setDeleteCategoryConfirm(null);
+        return;
+      }
+
+      // Delete all companies in the category
+      const deletePromises = companiesInCategory.map(company => 
+        fetch(`http://localhost:3000/api/subcategories/${company._id}`, {
+          method: 'DELETE',
+        })
+      );
+
+      const responses = await Promise.all(deletePromises);
+      const results = await Promise.all(responses.map(res => res.json()));
+
+      // Check if all deletions were successful
+      const allSuccessful = results.every(result => result.success);
+      
+      if (allSuccessful) {
+        setMessage({ 
+          type: 'success', 
+          text: `Successfully deleted ${companiesInCategory.length} companies from "${categoryName}" category!` 
+        });
+        setDeleteCategoryConfirm(null);
+        fetchCompanies();
+      } else {
+        setMessage({ 
+          type: 'error', 
+          text: 'Some companies could not be deleted. Please try again.' 
+        });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error. Please try again.' });
+    }
+  };
+
+  const handleCreateDefaultTabs = async (company) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/subcategories/company/${company.slug}/create-default-tabs`, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setMessage({ type: 'success', text: `Default tabs created for "${company.name}" successfully!` });
+        fetchCompanies();
+      } else {
+        setMessage({ type: 'error', text: data.message || 'Failed to create default tabs' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error. Please try again.' });
+    }
+  };
+
+  // Category arrangement functions
+  const handleOpenArrangementModal = (category) => {
+    setSelectedCategoryForArrangement(category);
+    setShowArrangementModal(true);
+  };
+
+  const handleSaveCategoryArrangement = async () => {
+    if (!selectedCategoryForArrangement) return;
+
+    setArrangementLoading(true);
+    try {
+      // Get the ordered company IDs for this category
+      const orderedCompanyIds = companyOrder[selectedCategoryForArrangement._id] || [];
+      
+      // Update the order of companies in this category
+      const updatePromises = orderedCompanyIds.map((companyId, index) => 
+        fetch(`http://localhost:3000/api/subcategories/${companyId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            order: index + 1,
+            parentCategory: selectedCategoryForArrangement._id
+          }),
+        })
+      );
+
+      await Promise.all(updatePromises);
+
+      setMessage({ 
+        type: 'success', 
+        text: `Company order updated for "${selectedCategoryForArrangement.name}" category!` 
+      });
+      setShowArrangementModal(false);
+      setSelectedCategoryForArrangement(null);
+      // Refresh companies to get updated data
+      fetchCompanies();
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Network error. Please try again.' });
+    } finally {
+      setArrangementLoading(false);
+    }
+  };
+
+  const handleDisplayLimitChange = (categoryId, value) => {
+    setCategoryDisplayLimits(prev => ({
+      ...prev,
+      [categoryId]: parseInt(value) || 6
+    }));
+  };
+
+  const handleCompanyOrderChange = (categoryId, companyId, newIndex) => {
+    setCompanyOrder(prev => {
+      const currentOrder = prev[categoryId] || [];
+      const newOrder = [...currentOrder];
+      
+      // Remove company from current position
+      const currentIndex = newOrder.indexOf(companyId);
+      if (currentIndex > -1) {
+        newOrder.splice(currentIndex, 1);
+      }
+      
+      // Add company to new position
+      newOrder.splice(newIndex, 0, companyId);
+      
+      return {
+        ...prev,
+        [categoryId]: newOrder
+      };
+    });
+  };
+
+  const initializeCompanyOrder = (categoryId, companies) => {
+    if (!companyOrder[categoryId]) {
+      const orderedIds = companies
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
+        .map(company => company._id);
+      
+      setCompanyOrder(prev => ({
+        ...prev,
+        [categoryId]: orderedIds
+      }));
     }
   };
 
@@ -485,10 +764,718 @@ const CompanyManager = () => {
               </div>
             </div>
           </div>
+
+          {/* Tab Selection Preview */}
+          <div className="border border-gray-200 rounded-lg p-4 bg-gradient-to-br from-indigo-50 to-blue-50">
+            <h4 className="font-medium text-gray-900 mb-3">Selected Tabs:</h4>
+            <div className="space-y-2 text-sm">
+              {formData.selectedTabs.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {formData.selectedTabs.map((tabId, index) => {
+                    const tabLabels = {
+                      'overview': 'Overview',
+                      'numbers': 'Contact Numbers',
+                      'complaints': 'Complaint Process',
+                      'quickhelp': 'Quick Help',
+                      'video': 'Video Guide'
+                    };
+                    return (
+                      <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {tabLabels[tabId] || tabId}
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : (
+                <span className="text-gray-500 italic">No tabs selected</span>
+              )}
+              <p className="text-xs text-gray-600 mt-2">
+                💡 These tabs will be created for the company and can be managed in the full edit mode
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
+
+  // Enhanced filtering and search functions
+  const getFilteredAndSortedCompanies = () => {
+    let filtered = [...companies];
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(company => 
+        company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        company.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        company.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        company.parentCategory?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Category filter
+    if (selectedCategoryFilter !== 'all') {
+      filtered = filtered.filter(company => 
+        company.parentCategory?._id === selectedCategoryFilter || 
+        company.parentCategory === selectedCategoryFilter
+      );
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'active') {
+        filtered = filtered.filter(company => company.isActive);
+      } else if (statusFilter === 'inactive') {
+        filtered = filtered.filter(company => !company.isActive);
+      } else if (statusFilter === 'verified') {
+        filtered = filtered.filter(company => company.verified);
+      } else if (statusFilter === 'unverified') {
+        filtered = filtered.filter(company => !company.verified);
+      }
+    }
+
+    // Sorting
+    filtered.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case 'name':
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case 'category':
+          aValue = a.parentCategory?.name?.toLowerCase() || '';
+          bValue = b.parentCategory?.name?.toLowerCase() || '';
+          break;
+        case 'status':
+          aValue = a.isActive ? 'active' : 'inactive';
+          bValue = b.isActive ? 'active' : 'inactive';
+          break;
+        case 'created':
+          aValue = new Date(a.createdAt || 0);
+          bValue = new Date(b.createdAt || 0);
+          break;
+        default:
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+      }
+
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    return filtered;
+  };
+
+  const getPaginatedCompanies = () => {
+    const filtered = getFilteredAndSortedCompanies();
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filtered.slice(startIndex, endIndex);
+  };
+
+  const getGroupedCompanies = () => {
+    const filtered = getFilteredAndSortedCompanies();
+    const grouped = {};
+    
+    filtered.forEach(company => {
+      const categoryId = company.parentCategory?._id || company.parentCategory;
+      const categoryName = company.parentCategory?.name || 'Uncategorized';
+      
+      if (!grouped[categoryId]) {
+        grouped[categoryId] = {
+          name: categoryName,
+          companies: []
+        };
+      }
+      grouped[categoryId].companies.push(company);
+    });
+
+    return grouped;
+  };
+
+  const toggleCategoryExpansion = (categoryId) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryId)) {
+      newExpanded.delete(categoryId);
+    } else {
+      newExpanded.add(categoryId);
+    }
+    setExpandedCategories(newExpanded);
+  };
+
+  const handleBulkAction = async (action) => {
+    if (selectedCompanies.size === 0) {
+      setMessage({ type: 'error', text: 'Please select companies first' });
+      return;
+    }
+
+    const selectedCompanyIds = Array.from(selectedCompanies);
+    
+    try {
+      setLoading(true);
+      
+      switch (action) {
+        case 'activate':
+          await Promise.all(selectedCompanyIds.map(id => 
+            fetch(`http://localhost:3000/api/subcategories/${id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ isActive: true })
+            })
+          ));
+          setMessage({ type: 'success', text: `${selectedCompanyIds.length} companies activated successfully!` });
+          break;
+          
+        case 'deactivate':
+          await Promise.all(selectedCompanyIds.map(id => 
+            fetch(`http://localhost:3000/api/subcategories/${id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ isActive: false })
+            })
+          ));
+          setMessage({ type: 'success', text: `${selectedCompanyIds.length} companies deactivated successfully!` });
+          break;
+          
+        case 'delete':
+          if (confirm(`Are you sure you want to delete ${selectedCompanyIds.length} companies?`)) {
+            await Promise.all(selectedCompanyIds.map(id => 
+              fetch(`http://localhost:3000/api/subcategories/${id}`, {
+                method: 'DELETE'
+              })
+            ));
+            setMessage({ type: 'success', text: `${selectedCompanyIds.length} companies deleted successfully!` });
+          }
+          break;
+      }
+      
+      setSelectedCompanies(new Set());
+      fetchCompanies();
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error performing bulk action' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleCompanySelection = (companyId) => {
+    const newSelected = new Set(selectedCompanies);
+    if (newSelected.has(companyId)) {
+      newSelected.delete(companyId);
+    } else {
+      newSelected.add(companyId);
+    }
+    setSelectedCompanies(newSelected);
+  };
+
+  const selectAllCompanies = () => {
+    const filtered = getFilteredAndSortedCompanies();
+    const allIds = filtered.map(company => company._id);
+    setSelectedCompanies(new Set(allIds));
+  };
+
+  const clearSelection = () => {
+    setSelectedCompanies(new Set());
+  };
+
+  // Enhanced Companies List Component
+  const EnhancedCompaniesList = () => {
+    const filteredCompanies = getFilteredAndSortedCompanies();
+    const groupedCompanies = getGroupedCompanies();
+    const totalPages = Math.ceil(filteredCompanies.length / itemsPerPage);
+    const hasSelection = selectedCompanies.size > 0;
+
+    return (
+      <div className="bg-white rounded-lg shadow">
+        {/* Enhanced Header with Search and Filters */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Existing Companies</h2>
+              <p className="text-gray-600 mt-1">
+                {filteredCompanies.length} of {companies.length} companies
+                {searchTerm && ` matching "${searchTerm}"`}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-3 py-2 rounded-lg border transition-colors ${
+                  showFilters 
+                    ? 'bg-blue-50 border-blue-200 text-blue-700' 
+                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <Filter className="h-4 w-4" />
+              </button>
+              <div className="flex items-center border border-gray-300 rounded-lg">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 transition-colors ${
+                    viewMode === 'list' 
+                      ? 'bg-blue-50 text-blue-600' 
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <List className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 transition-colors ${
+                    viewMode === 'grid' 
+                      ? 'bg-blue-50 text-blue-600' 
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <Grid className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search companies by name, phone, description, or category..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Filters Panel */}
+          {showFilters && (
+            <div className="bg-gray-50 p-4 rounded-lg mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <select
+                    value={selectedCategoryFilter}
+                    onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">All Categories</option>
+                    {categories.map(category => (
+                      <option key={category._id} value={category._id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="verified">Verified</option>
+                    <option value="unverified">Unverified</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="name">Name</option>
+                    <option value="category">Category</option>
+                    <option value="status">Status</option>
+                    <option value="created">Created Date</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Order</label>
+                  <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bulk Actions */}
+          {hasSelection && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-blue-900">
+                    {selectedCompanies.size} company{selectedCompanies.size !== 1 ? 'ies' : 'y'} selected
+                  </span>
+                  <button
+                    onClick={clearSelection}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Clear selection
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleBulkAction('activate')}
+                    className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                  >
+                    Activate
+                  </button>
+                  <button
+                    onClick={() => handleBulkAction('deactivate')}
+                    className="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors"
+                  >
+                    Deactivate
+                  </button>
+                  <button
+                    onClick={() => handleBulkAction('delete')}
+                    className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Companies Content */}
+        <div className="p-6">
+          {filteredCompanies.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-400 text-6xl mb-4">🏢</div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {searchTerm ? 'No companies found' : 'No companies yet'}
+              </h3>
+              <p className="text-gray-600">
+                {searchTerm 
+                  ? `No companies match your search "${searchTerm}"` 
+                  : 'Create your first company to get started'
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* List View */}
+              {viewMode === 'list' && (
+                <div className="space-y-4">
+                  {Object.entries(groupedCompanies).map(([categoryId, categoryData]) => (
+                    <div key={categoryId} className="border border-gray-200 rounded-lg overflow-hidden">
+                      {/* Category Header */}
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => toggleCategoryExpansion(categoryId)}
+                              className="p-1 hover:bg-blue-100 rounded transition-colors"
+                            >
+                              {expandedCategories.has(categoryId) ? (
+                                <ChevronDown className="h-4 w-4 text-blue-600" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4 text-blue-600" />
+                              )}
+                            </button>
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <Building2 className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-gray-900 text-lg">{categoryData.name}</h3>
+                              <p className="text-sm text-gray-600">
+                                {categoryData.companies.length} company{categoryData.companies.length !== 1 ? 'ies' : 'y'}
+                              </p>
+                            </div>
+                          </div>
+                                                  <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleOpenArrangementModal({
+                              _id: categoryId,
+                              name: categoryData.name,
+                              companies: categoryData.companies
+                            })}
+                            className="px-3 py-1 text-blue-600 hover:bg-blue-50 border border-blue-200 rounded transition-colors flex items-center gap-1 text-sm"
+                            title="Reorder companies within this category"
+                          >
+                            <Settings className="h-3 w-3" />
+                            Arrange Order
+                          </button>
+                          <button
+                            onClick={() => setDeleteCategoryConfirm({ 
+                              id: categoryId, 
+                              name: categoryData.name, 
+                              count: categoryData.companies.length 
+                            })}
+                            className="px-3 py-1 text-red-600 hover:bg-red-50 border border-red-200 rounded transition-colors flex items-center gap-1 text-sm"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            Delete All
+                          </button>
+                        </div>
+                        </div>
+                      </div>
+                      
+                      {/* Companies in this category */}
+                      {expandedCategories.has(categoryId) && (
+                        <div className="divide-y divide-gray-100">
+                          {categoryData.companies.map((company) => (
+                            <div
+                              key={company._id}
+                              className={`px-6 py-4 transition-colors ${
+                                selectedCompanies.has(company._id) ? 'bg-blue-50' : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedCompanies.has(company._id)}
+                                    onChange={() => toggleCompanySelection(company._id)}
+                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <Building2 className="h-5 w-5 text-blue-600" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <h3 className="font-medium text-gray-900">{company.name}</h3>
+                                    <p className="text-sm text-gray-600">
+                                      {company.description || 'No description'}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                                        <Phone className="h-3 w-3" />
+                                        {company.phone}
+                                      </div>
+                                      {company.website && (
+                                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                                          <Globe className="h-3 w-3" />
+                                          Website
+                                        </div>
+                                      )}
+                                      {company.isActive ? (
+                                        <span className="inline-flex items-center gap-1 text-green-600">
+                                          <CheckCircle className="h-3 w-3" />
+                                          Active
+                                        </span>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1 text-gray-500">
+                                          <EyeOff className="h-3 w-3" />
+                                          Inactive
+                                        </span>
+                                      )}
+                                      {company.verified && (
+                                        <span className="inline-flex items-center gap-1 text-yellow-600">
+                                          <Star className="h-3 w-3" />
+                                          Verified
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleEdit(company)}
+                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    title="Edit company"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleCreateDefaultTabs(company)}
+                                    className={`p-2 rounded-lg transition-colors ${
+                                      company.tabs?.numbers && company.tabs?.overview
+                                        ? 'text-gray-400 cursor-not-allowed bg-gray-100'
+                                        : 'text-green-600 hover:bg-green-50'
+                                    }`}
+                                    title={
+                                      company.tabs?.numbers && company.tabs?.overview
+                                        ? 'Default tabs already exist'
+                                        : 'Create default tabs'
+                                    }
+                                    disabled={company.tabs?.numbers && company.tabs?.overview}
+                                  >
+                                    {company.tabs?.numbers && company.tabs?.overview ? (
+                                      <Check className="h-4 w-4" />
+                                    ) : (
+                                      <Plus className="h-4 w-4" />
+                                    )}
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteConfirm(company)}
+                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    title="Delete company"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Grid View */}
+              {viewMode === 'grid' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {getPaginatedCompanies().map((company) => (
+                    <div
+                      key={company._id}
+                      className={`border border-gray-200 rounded-lg p-4 transition-all hover:shadow-md ${
+                        selectedCompanies.has(company._id) ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedCompanies.has(company._id)}
+                          onChange={() => toggleCompanySelection(company._id)}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleEdit(company)}
+                            className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirm(company)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <div className="text-center mb-3">
+                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                          <Building2 className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <h3 className="font-medium text-gray-900 text-sm">{company.name}</h3>
+                        <p className="text-xs text-gray-500 mt-1">{company.parentCategory?.name}</p>
+                      </div>
+                      
+                      <div className="space-y-2 text-xs">
+                        <div className="flex items-center gap-1 text-gray-600">
+                          <Phone className="h-3 w-3" />
+                          <span className="truncate">{company.phone}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {company.isActive ? (
+                            <span className="inline-flex items-center gap-1 text-green-600">
+                              <CheckCircle className="h-3 w-3" />
+                              Active
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-gray-500">
+                              <EyeOff className="h-3 w-3" />
+                              Inactive
+                            </span>
+                          )}
+                          {company.verified && (
+                            <span className="inline-flex items-center gap-1 text-yellow-600">
+                              <Star className="h-3 w-3" />
+                              Verified
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <span>
+                      Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredCompanies.length)} of {filteredCompanies.length} results
+                    </span>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="px-2 py-1 border border-gray-300 rounded text-sm"
+                    >
+                      <option value={10}>10 per page</option>
+                      <option value={20}>20 per page</option>
+                      <option value={50}>50 per page</option>
+                      <option value={100}>100 per page</option>
+                    </select>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                            currentPage === pageNum
+                              ? 'bg-blue-600 text-white'
+                              : 'text-gray-600 hover:bg-gray-100'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                    
+                    <button
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-8">
@@ -533,6 +1520,30 @@ const CompanyManager = () => {
               </>
             )}
           </div>
+          
+          {/* Default Tabs Info */}
+          {!isEditing && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-blue-600 text-sm font-bold">ℹ</span>
+                </div>
+                <div>
+                  <h4 className="font-medium text-blue-900 mb-1">Default Tabs Feature</h4>
+                  <p className="text-sm text-blue-700 mb-2">
+                    When you create a new company, the system automatically creates:
+                  </p>
+                  <ul className="text-sm text-blue-700 space-y-1">
+                    <li>• <strong>Contact Numbers Tab:</strong> Pre-filled with company contact information</li>
+                    <li>• <strong>Overview Tab:</strong> Company details, services, and quick links</li>
+                  </ul>
+                  <p className="text-sm text-blue-700 mt-2">
+                    You can also create these tabs for existing companies using the green "+" button in the company list below.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           
           <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basic Information Section */}
@@ -581,26 +1592,18 @@ const CompanyManager = () => {
                   required
                 >
                   <option value="">Select a category</option>
-                  {categories.map(category => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
+                  {categoriesLoading ? (
+                    <option value="" disabled>Loading categories...</option>
+                  ) : categories.length > 0 ? (
+                    categories.map(category => (
+                      <option key={category._id} value={category._id}>
+                        {category.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="" disabled>No categories available</option>
+                  )}
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Logo Path
-                </label>
-                <input
-                  type="text"
-                  name="logo"
-                  value={formData.logo}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="/company-logos/Bank/company_logo.svg"
-                />
               </div>
 
               <div>
@@ -616,6 +1619,31 @@ const CompanyManager = () => {
                   placeholder="e.g., All India"
                 />
               </div>
+            </div>
+
+            {/* Logo Upload Section - Full Width */}
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Company Logo
+              </label>
+              <LogoUpload
+                currentLogo={formData.logo}
+                onLogoUpload={(logoUrl, file) => setFormData(prev => ({ 
+                  ...prev, 
+                  logo: logoUrl,
+                  logoFile: file 
+                }))}
+                onLogoDelete={() => setFormData(prev => ({ 
+                  ...prev, 
+                  logo: '/company-logos/Bank/placeholder.svg',
+                  logoFile: null 
+                }))}
+                companySlug={isEditing ? formData.slug : null}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -744,6 +1772,81 @@ const CompanyManager = () => {
                 />
                 <span className="ml-2 text-sm text-gray-700">Active</span>
               </label>
+            </div>
+          </div>
+
+          {/* Tab Selection Section */}
+          <div className="border-b border-gray-200 pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Tab Selection</h3>
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-green-700">
+                <Check className="h-4 w-4" />
+                <span>
+                  <strong>Note:</strong> All selected tabs will be created automatically when the company is saved. 
+                  You can select which tabs to include below.
+                </span>
+              </div>
+            </div>
+            {/* Tab Selection - Using SimpleTabManager logic */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="block text-sm font-medium text-gray-700">
+                  Select Tabs
+                </label>
+                <span className="text-xs text-gray-500">
+                  {formData.selectedTabs.length} of 5 selected
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[
+                  { id: 'overview', label: 'Overview', icon: '📊', description: 'Company overview and general information' },
+                  { id: 'numbers', label: 'Contact Numbers', icon: '📞', description: 'Customer service and contact information' },
+                  { id: 'complaints', label: 'Complaints', icon: '⚠️', description: 'Complaint registration and resolution process' },
+                  { id: 'quickhelp', label: 'Quick Help', icon: '❓', description: 'FAQs and quick solutions' },
+                  { id: 'video', label: 'Video Guide', icon: '▶️', description: 'Video tutorials and guides' }
+                ].map((tab) => {
+                  const isSelected = formData.selectedTabs.includes(tab.id);
+                  
+                  return (
+                    <div
+                      key={tab.id}
+                      className={`relative p-4 border rounded-lg cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                          : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                      onClick={() => {
+                        const newSelectedTabs = isSelected
+                          ? formData.selectedTabs.filter(id => id !== tab.id)
+                          : [...formData.selectedTabs, tab.id];
+                        setFormData(prev => ({ ...prev, selectedTabs: newSelectedTabs }));
+                      }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="text-lg">{tab.icon}</div>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 text-sm">
+                            {tab.label}
+                          </h4>
+                          <p className="text-xs text-gray-500">
+                            {tab.description}
+                          </p>
+                        </div>
+                        {isSelected && (
+                          <div className="text-blue-600">
+                            <Check className="h-4 w-4" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              <div className="text-xs text-gray-500">
+                <strong>Note:</strong> All selected tabs will be created automatically when the company is saved.
+              </div>
             </div>
           </div>
 
@@ -955,95 +2058,8 @@ const CompanyManager = () => {
         <CompanyPreview />
       </div>
 
-      {/* Companies List */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Existing Companies</h2>
-          <p className="text-gray-600 mt-1">Manage your companies</p>
-        </div>
-        
-        <div className="p-6">
-          {companies.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-gray-400 text-6xl mb-4">🏢</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No companies yet</h3>
-              <p className="text-gray-600">Create your first company to get started</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {companies.map((company) => (
-                <div
-                  key={company._id}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Building2 className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-gray-900">{company.name}</h3>
-                        <p className="text-sm text-gray-600">
-                          {company.description || 'No description'}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
-                            <Phone className="h-3 w-3" />
-                            {company.phone}
-                          </div>
-                          {company.website && (
-                            <div className="flex items-center gap-1 text-xs text-gray-500">
-                              <Globe className="h-3 w-3" />
-                              Website
-                            </div>
-                          )}
-                          {company.isActive ? (
-                            <span className="inline-flex items-center gap-1 text-xs text-green-600">
-                              <CheckCircle className="h-3 w-3" />
-                              Active
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-xs text-gray-500">
-                              <EyeOff className="h-3 w-3" />
-                              Inactive
-                            </span>
-                          )}
-                          {company.verified && (
-                            <span className="inline-flex items-center gap-1 text-xs text-blue-600">
-                              <Star className="h-3 w-3" />
-                              Verified
-                            </span>
-                          )}
-                          <span className="text-xs text-gray-500">
-                            Role: {company.role || 'Support'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleEdit(company)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit company"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => setDeleteConfirm(company)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete company"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Enhanced Companies List */}
+      <EnhancedCompaniesList />
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
@@ -1073,6 +2089,259 @@ const CompanyManager = () => {
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Category Arrangement Modal */}
+      {showArrangementModal && selectedCategoryForArrangement && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <Settings className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900">Arrange Company Order</h3>
+                <p className="text-gray-600">Reorder subcategories within this category</p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {/* Category Info */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-semibold text-blue-900">{selectedCategoryForArrangement.name}</h4>
+                    <p className="text-sm text-blue-700">
+                      {selectedCategoryForArrangement.companies?.length || 0} companies to reorder
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {selectedCategoryForArrangement.companies?.length || 0}
+                    </div>
+                    <div className="text-xs text-blue-600">Total Companies</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Company Ordering */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Drag and drop to reorder companies
+                  </label>
+                  <p className="text-xs text-gray-500 mb-4">
+                    The order you set here will be reflected on the frontend category grid
+                  </p>
+                </div>
+
+                {/* Company List for Reordering */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h5 className="font-medium text-gray-900 mb-3">Company Order</h5>
+                  <div className="space-y-2">
+                    {(() => {
+                      // Initialize order if not set
+                      if (selectedCategoryForArrangement.companies && !companyOrder[selectedCategoryForArrangement._id]) {
+                        initializeCompanyOrder(selectedCategoryForArrangement._id, selectedCategoryForArrangement.companies);
+                      }
+                      
+                      const orderedIds = companyOrder[selectedCategoryForArrangement._id] || [];
+                      const companies = selectedCategoryForArrangement.companies || [];
+                      
+                      return orderedIds.map((companyId, index) => {
+                        const company = companies.find(c => c._id === companyId);
+                        if (!company) return null;
+                        
+                        return (
+                          <div
+                            key={company._id}
+                            className="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3 cursor-move hover:bg-gray-50 transition-colors"
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData('text/plain', company._id);
+                            }}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              const draggedId = e.dataTransfer.getData('text/plain');
+                              if (draggedId !== company._id) {
+                                handleCompanyOrderChange(selectedCategoryForArrangement._id, draggedId, index);
+                              }
+                            }}
+                          >
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <span className="text-sm font-bold text-blue-600">{index + 1}</span>
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-900">{company.name}</div>
+                              <div className="text-sm text-gray-500">{company.phone}</div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  const currentOrder = companyOrder[selectedCategoryForArrangement._id] || [];
+                                  const currentIndex = currentOrder.indexOf(company._id);
+                                  if (currentIndex > 0) {
+                                    handleCompanyOrderChange(selectedCategoryForArrangement._id, company._id, currentIndex - 1);
+                                  }
+                                }}
+                                disabled={index === 0}
+                                className="p-1 text-gray-400 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <ChevronUp className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const currentOrder = companyOrder[selectedCategoryForArrangement._id] || [];
+                                  const currentIndex = currentOrder.indexOf(company._id);
+                                  if (currentIndex < currentOrder.length - 1) {
+                                    handleCompanyOrderChange(selectedCategoryForArrangement._id, company._id, currentIndex + 1);
+                                  }
+                                }}
+                                disabled={index === (companyOrder[selectedCategoryForArrangement._id] || []).length - 1}
+                                className="p-1 text-gray-400 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <ChevronDown className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+
+                {/* Preview */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <h5 className="font-medium text-gray-900 mb-3">Frontend Preview</h5>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {(() => {
+                      const orderedIds = companyOrder[selectedCategoryForArrangement._id] || [];
+                      const companies = selectedCategoryForArrangement.companies || [];
+                      
+                      return orderedIds.slice(0, 8).map((companyId, index) => {
+                        const company = companies.find(c => c._id === companyId);
+                        if (!company) return null;
+                        
+                        return (
+                          <div key={company._id} className="bg-white border border-gray-200 rounded-lg p-3 text-center">
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                              <Building2 className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div className="text-xs font-medium text-gray-900 truncate">
+                              {company.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Position {index + 1}
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                  {selectedCategoryForArrangement.companies?.length > 8 && (
+                    <div className="text-center mt-3">
+                      <div className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                        +{selectedCategoryForArrangement.companies.length - 8} more companies
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Frontend Impact Info */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-yellow-600 text-sm font-bold">ℹ</span>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-yellow-900 mb-1">Frontend Impact</h4>
+                    <ul className="text-sm text-yellow-800 space-y-1">
+                      <li>• This order affects the <strong>CategoryGrid</strong> component on the frontend</li>
+                      <li>• Companies will appear in the exact order you set here</li>
+                      <li>• The order is saved to the database and persists across sessions</li>
+                      <li>• Changes take effect immediately on the frontend</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  setShowArrangementModal(false);
+                  setSelectedCategoryForArrangement(null);
+                }}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+                              <button
+                  onClick={handleSaveCategoryArrangement}
+                  disabled={arrangementLoading}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {arrangementLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Saving Order...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      Save Company Order
+                    </>
+                  )}
+                </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Category Confirmation Modal */}
+      {deleteCategoryConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <Trash2 className="h-5 w-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Delete Category</h3>
+            </div>
+            
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center gap-2 text-red-800">
+                <AlertCircle className="h-5 w-5" />
+                <span className="font-medium">Warning: This action will delete ALL companies in this category!</span>
+              </div>
+            </div>
+            
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete the <strong>"{deleteCategoryConfirm.name}"</strong> category? 
+              This will permanently remove <strong>{deleteCategoryConfirm.count} company{deleteCategoryConfirm.count !== 1 ? 'ies' : 'y'}</strong> and cannot be undone.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteCategoryConfirm(null)}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteCategory(deleteCategoryConfirm.id, deleteCategoryConfirm.name)}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete All Companies
               </button>
             </div>
           </div>

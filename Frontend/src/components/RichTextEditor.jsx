@@ -1,109 +1,62 @@
-import React, { useState } from 'react';
-import { Editor } from '@tinymce/tinymce-react';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
+import TinyMCEEditor from './admin/TinyMCEEditor.jsx';
 
-const RichTextEditor = () => {
-  const [content, setContent] = useState('');
+const RichTextEditor = forwardRef(({
+  initialValue = '',
+  onSave,
+  onCancel,
+  isVisible = false,
+  title = 'Rich Text Editor',
+  placeholder = 'Start typing your content here...',
+  height = 500,
+  showToolbar = true,
+  showPreview = false,
+  isInline = false,
+  showSaveButton = true,
+  className = ''
+}, ref) => {
+  const [content, setContent] = useState(initialValue);
+  const editorRef = useRef(null);
 
-  const editorConfig = useMemo(() => ({
-    height: 500,
-    menubar: true,
-    plugins: [
-      'paste',
-      'table',
-      'link',
-      'code',
-      'lists',
-      'formatselect'
-    ],
-    toolbar:
-      'undo redo | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist | formatselect | link table code',
-    paste_as_text: true,
-    content_style: `
-      table {
-        border-collapse: collapse;
-        width: 100%;
-        margin: 10px 0;
-        font-size: 14px;
-        line-height: 1.5;
-        color: #333;
-      }
-      th, td {
-        padding: 6px 10px;
-        border: 1px solid #ddd;
-        text-align: left;
-        vertical-align: middle;
-      }
-      th {
-        background-color: #f9f9f9;
-        font-weight: bold;
-      }
-      td {
-        background-color: #fff;
-      }
-      tr:nth-child(even) td {
-        background-color: #f7f7f7;
-      }
-    `,
-    setup: (editor) => {
-      editor.on('keydown', (e) => {
-        if (e.ctrlKey) {
-          switch (e.key) {
-            case '1':
-              e.preventDefault();
-              editor.execCommand('FormatBlock', false, 'h1');
-              break;
-            case '2':
-              e.preventDefault();
-              editor.execCommand('FormatBlock', false, 'h2');
-              break;
-            case '3':
-              e.preventDefault();
-              editor.execCommand('FormatBlock', false, 'h3');
-              break;
-            case '4':
-              e.preventDefault();
-              editor.execCommand('FormatBlock', false, 'h4');
-              break;
-            case '5':
-              e.preventDefault();
-              editor.execCommand('FormatBlock', false, 'h5');
-              break;
-            case '6':
-              e.preventDefault();
-              editor.execCommand('FormatBlock', false, 'h6');
-              break;
-          }
-        }
-      });
-    },
-  }), []);
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    getContent: () => content,
+    setContent: (newContent) => setContent(newContent),
+    focus: () => editorRef.current?.focus(),
+    getEditor: () => editorRef.current
+  }));
 
-  const handleEditorChange = (content) => {
-    setContent(content);
+  const handleSave = () => {
+    if (onSave) {
+      onSave(content);
+    }
   };
 
-  const handleSubmit = () => {
-    console.log('Submitted Content:', content);
-    // You can send the content to your backend here
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    }
   };
 
   return (
-    <div>
-      <Editor
-        apiKey="no-api-key" // Replace with your TinyMCE API key for production
-        value={content}
-        onEditorChange={(newContent, editor) => {
-          setContent(newContent);
-        }}
-        init={editorConfig}
-
-      />
-      <button onClick={handleSubmit} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">
-        Submit
-      </button>
-    </div>
+    <TinyMCEEditor
+      ref={editorRef}
+      initialValue={content}
+      onSave={handleSave}
+      onCancel={handleCancel}
+      isVisible={isVisible}
+      title={title}
+      placeholder={placeholder}
+      height={height}
+      showToolbar={showToolbar}
+      showPreview={showPreview}
+      isInline={isInline}
+      showSaveButton={showSaveButton}
+      className={className}
+    />
   );
-};
+});
+
+RichTextEditor.displayName = 'RichTextEditor';
 
 export default RichTextEditor;

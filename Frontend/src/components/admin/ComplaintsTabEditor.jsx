@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Edit3, Save, X, Eye, EyeOff, FileText, AlertCircle, CheckCircle } from 'lucide-react';
-import TinyMCEEditor from './TinyMCEEditor';
+import TinyMCEEditor from './TinyMCEEditor.jsx';
 
-const ComplaintsTabEditor = forwardRef(({
-  complaintsData,
-  isAdminMode = false,
-  onSave,
-  onCancel,
-  isVisible = false,
-  companyName = 'Company',
-  isFullEditMode = false
-}) => {
+
+const ComplaintsTabEditor = forwardRef((props, ref) => {
+  const {
+    complaintsData,
+    isAdminMode = false,
+    onSave,
+    onCancel,
+    isVisible = false,
+    companyName = 'Company',
+    isFullEditMode = false,
+  } = props;
   const [showEditor, setShowEditor] = useState(false);
   const [editorContent, setEditorContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -271,6 +273,9 @@ const ComplaintsTabEditor = forwardRef(({
 
   const handleSaveContent = async (content) => {
     console.log('🚀 ComplaintsTabEditor handleSaveContent STARTED');
+    console.log('📍 Route: /api/structured-complaints/company/{companySlug}');
+    console.log('🗄️ Collection: structuredComplaints');
+    console.log('💾 Action: POST request to save rich text content');
     setIsSaving(true);
     setSaveStatus('saving');
     
@@ -292,6 +297,8 @@ const ComplaintsTabEditor = forwardRef(({
       
       console.log('📤 ComplaintsTabEditor sending structuredData:', structuredData);
       console.log('📤 onSave function type:', typeof onSave);
+      console.log('🌐 API Endpoint: http://localhost:3000/api/structured-complaints/company/{companySlug}');
+      console.log('📊 Database Collection: structuredComplaints');
       
       if (!onSave) {
         console.error('❌ onSave function is not provided');
@@ -301,6 +308,7 @@ const ComplaintsTabEditor = forwardRef(({
       console.log('📤 Calling onSave function...');
       await onSave(structuredData);
       console.log('✅ ComplaintsTabEditor save successful');
+      console.log('💾 Data saved to structuredComplaints collection');
       
       setSaveStatus('success');
       setShowEditor(false);
@@ -309,6 +317,7 @@ const ComplaintsTabEditor = forwardRef(({
       setTimeout(() => setSaveStatus(null), 3000);
     } catch (error) {
       console.error('❌ ComplaintsTabEditor save error:', error);
+      console.error('🚫 Failed to save to structuredComplaints collection');
       setSaveStatus('error');
     } finally {
       setIsSaving(false);
@@ -415,23 +424,65 @@ const ComplaintsTabEditor = forwardRef(({
           </div>
         </div>
         
-        {/* Inline TinyMCE Editor */}
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
-          <TinyMCEEditor
-            ref={editorComponentRef}
-            initialValue={editorContent}
-            onSave={handleSaveContent}
-            onCancel={handleCancel}
-            isVisible={true}
-            title={`Edit ${companyName} Complaints Content`}
-            placeholder="Start typing or paste content from Word documents. You can include headings, tables, lists, and formatted text..."
-            height={500}
-            showToolbar={true}
-            showPreview={true}
-            isInline={true}
-            showSaveButton={true}
-          />
+        {/* SAVE BUTTON ABOVE TEXT EDITOR - PROMINENT AND CLEAR */}
+        <div className="mb-4 p-4 bg-green-50 border-2 border-green-300 rounded-lg shadow-md">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Save className="w-6 h-6 text-green-600" />
+              <div>
+                <span className="text-lg font-bold text-green-800">Save Rich Text Editor Content</span>
+                <div className="text-sm text-green-700 mt-1">
+                  💾 Saves to <strong>structuredComplaints</strong> collection via <strong>/api/structured-complaints/company/{companySlug}</strong>
+                </div>
+              </div>
+            </div>
+            <button
+              className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-base font-bold shadow-lg transition-all duration-200 flex items-center gap-3 hover:scale-105 border-2 border-green-500"
+              onClick={() => {
+                console.log('🔘 SAVE BUTTON ABOVE TEXT EDITOR Clicked');
+                console.log('📍 Route: /api/structured-complaints/company/{companySlug}');
+                console.log('🗄️ Collection: structuredComplaints');
+                if (editorComponentRef.current) {
+                  const content = editorComponentRef.current.getContent();
+                  console.log('📝 Content to save:', content.substring(0, 100) + '...');
+                  handleSaveContent(content);
+                } else {
+                  console.error('❌ Editor ref not available');
+                }
+              }}
+              disabled={isSaving}
+              type="button"
+            >
+              {isSaving ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Saving to Database...
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  Save Content to Backend
+                </>
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* TinyMCE Editor */}
+        <TinyMCEEditor
+          ref={editorComponentRef}
+          initialValue={editorContent}
+          onSave={handleSaveContent}
+          onCancel={handleCancel}
+          isVisible={true}
+          title={`Edit ${companyName} Complaints Content`}
+          placeholder="Start typing or paste content from Word documents. You can include headings, tables, lists, and formatted text..."
+          height={500}
+          showToolbar={true}
+          showPreview={false}
+          isInline={true}
+          showSaveButton={false}
+        />
         {/* Clear Button for Admins */}
         <button
           className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
@@ -511,13 +562,13 @@ const ComplaintsTabEditor = forwardRef(({
         ref={editorComponentRef}
         initialValue={editorContent}
         onSave={handleSaveContent}
-        onCancel={handleCancel}
+        onCancel={() => setShowEditor(false)}
         isVisible={showEditor}
         title={`Edit ${companyName} Complaints Content`}
         placeholder="Start typing or paste content from Word documents. You can include headings, tables, lists, and formatted text..."
         height={600}
         showToolbar={true}
-        showPreview={true}
+        showPreview={false}
         showSaveButton={false}
       />
     </>

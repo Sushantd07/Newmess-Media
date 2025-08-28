@@ -11,7 +11,10 @@ const CompanyPageSchema = new Schema(
 
     // generic company header info (all dynamic)
     name: { type: String, required: true },
-    logo: String,
+    logo: {
+      url: String,
+      publicId: String
+    },
     description: String,
     rating: Number,
     totalReviews: Number,
@@ -29,6 +32,13 @@ const CompanyPageSchema = new Schema(
       video: { type: Schema.Types.ObjectId, ref: "VideoGuideTab" },
       overview: { type: Schema.Types.ObjectId, ref: "OverviewTab" },
     },
+
+    // selected tabs for this company (array of tab IDs that are enabled)
+    selectedTabs: [{
+      type: String,
+      enum: ["overview", "numbers", "complaints", "quickhelp", "video"],
+      default: []
+    }],
 
     // global FAQs if you want a universal FAQ across tabs
     faqs: [

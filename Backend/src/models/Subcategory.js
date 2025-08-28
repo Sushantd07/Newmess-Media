@@ -130,20 +130,27 @@ const SubcategorySchema = new mongoose.Schema(
       },
       quickhelp: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'QuickHelp',
+        ref: 'QuickHelpTab',
         default: null,
       },
       video: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'VideoGuide',
+        ref: 'VideoGuideTab',
         default: null,
       },
       overview: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'OverviewTabs',
+        ref: 'OverviewTab',
         default: null,
       },
     },
+
+    // selected tabs for this company (array of tab IDs that are enabled)
+    selectedTabs: [{
+      type: String,
+      enum: ["overview", "numbers", "complaints", "quickhelp", "video"],
+      default: []
+    }],
   },
   {
     timestamps: true,

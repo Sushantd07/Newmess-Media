@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import CompanySeoGear from './CompanySeoGear.jsx';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,18 +27,8 @@ const Header = () => {
   const langDropdownTimer = useRef(null);
   const categoriesDropdownTimer = useRef(null);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const navbar = document.querySelector("header");
-      if (window.scrollY > 20) {
-        navbar.classList.add("shadow-md");
-      } else {
-        navbar.classList.remove("shadow-md");
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Removed scroll-triggered header shadow to avoid a visible thin line under the navbar
+  // If a subtle separation is needed later, prefer a light border instead of a shadow.
 
   useEffect(() => {
     if (isDarkMode) {
@@ -234,6 +225,7 @@ const Header = () => {
   return (
     <>
       <header className="sticky top-0 z-50 bg-white text-gray-800  h-[74px] max-[400px]:h-auto transition-shadow duration-300">
+        {/* Floating SEO button is injected by pages, not here */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 max-[400px]:px-2">
           <div className="flex items-center justify-between py-3 max-[400px]:py-2">
             {/* Logo */}
@@ -533,6 +525,7 @@ const Header = () => {
             </div>
           )}
         </div>
+        <CompanySeoGear />
       </header>
 
       {/* Desktop Sidebar */}

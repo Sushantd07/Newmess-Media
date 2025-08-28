@@ -54,7 +54,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-gray-900 text-white py-5">
+    <footer className="bg-gray-900 text-white pt-5 pb-0">
       {/* Trust Indicators Bar */}
       {/* <div className="bg-gradient-to-r from-orange-500 to-orange-600 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,10 +79,10 @@ const Footer = () => {
       </div> */}
 
       {/* Main Footer Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-0">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-6 gap-8">
           {/* Brand Section */}
-          <div className="lg:col-span-2">
+          <div className="col-span-2 lg:col-span-2">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -148,7 +148,7 @@ const Footer = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="lg:col-span-1"
+              className="col-span-1 lg:col-span-1"
             >
               <h4 className="text-white font-semibold mb-4 capitalize">
                 {category === 'company' ? 'Company' : 

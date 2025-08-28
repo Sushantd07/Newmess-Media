@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Editor } from '@tinymce/tinymce-react';
 import { 
   FileText, 
   Save, 
@@ -17,6 +16,7 @@ import {
   Settings
 } from 'lucide-react';
 import structuredComplaintsService from '../../services/structuredComplaintsService.js';
+import TinyMCEEditor from './TinyMCEEditor.jsx';
 
 const ComplaintsSidebar = ({
   complaintsData,
@@ -370,27 +370,20 @@ const ComplaintsSidebar = ({
               Paste your Word document here. The system will automatically extract and structure the content.
             </p>
           </div>
-          <Editor
-            apiKey={tinymceConfig.apiKey}
-            value={editorContent}
-            onEditorChange={(content) => {
+          <TinyMCEEditor
+            initialValue={editorContent}
+            onSave={(content) => {
               setEditorContent(content);
               processContent(content);
             }}
-            init={{
-              ...tinymceConfig,
-              setup: (editor) => {
-                tinymceConfig.setup && tinymceConfig.setup(editor);
-                editor.on('paste', () => {
-                  setTimeout(() => {
-                    const content = editor.getContent();
-                    setEditorContent(content);
-                    processContent(content);
-                  }, 200);
-                });
-              }
-            }}
+            isVisible={true}
+            title="Word Document Processor"
             placeholder="Paste your Word document here... The system will automatically process and structure the content."
+            height={400}
+            showToolbar={true}
+            showPreview={false}
+            isInline={true}
+            showSaveButton={false}
           />
           <div className="flex justify-end p-3 border-t border-gray-200 bg-gray-50">
             <button

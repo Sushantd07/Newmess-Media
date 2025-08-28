@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
+import DynamicSEO from '../components/DynamicSEO.jsx';
+import SafeBoundary from '../components/SafeBoundary.jsx';
+import SeoFloatingButton from '../components/SeoFloatingButton.jsx';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Search, Filter, Grid3x3, List, ChevronDown, ChevronRight, Phone, Star, 
   TrendingUp, Building2, Shield, Clock, Users, ArrowRight, ArrowLeft, 
-  MapPin, Globe, Award, Target, Zap, Eye, CheckCircle, ExternalLink,
+  MapPin, Globe, Award, Target, Zap, Eye, ExternalLink,
   Heart, Share2, Bookmark, PhoneCall, Mail, MessageCircle, ThumbsUp,
-  Calendar, Clock as ClockIcon, UserCheck, Verified, Sparkles, Copy, PlayCircle
+  Calendar, Clock as ClockIcon, UserCheck, Verified, Sparkles, Copy, PlayCircle,
+  Settings
 } from 'lucide-react';
 import CategoryService from '../services/categoryService';
 import { motion, AnimatePresence } from 'framer-motion';
+import CategoryArrangementModal from '../components/admin/CategoryArrangementModal.jsx';
 
 const CategoryPage = () => {
   const { categoryId } = useParams();
@@ -24,6 +30,9 @@ const CategoryPage = () => {
   const [videoInfo, setVideoInfo] = useState(null);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [isVideoLoading, setIsVideoLoading] = useState(false);
+  
+  // Category arrangement modal state
+  const [showArrangementModal, setShowArrangementModal] = useState(false);
 
   // Multiple YouTube videos for slider
   const videos = [
@@ -264,7 +273,8 @@ const CategoryPage = () => {
     
     const matchesFilter = selectedFilter === 'all' || 
                          (selectedFilter === 'trending' && subcategory.trending) ||
-                         (selectedFilter === 'popular' && subcategory.order < 10);
+                         (selectedFilter === 'popular' && subcategory.order < 10) ||
+                         (selectedFilter === 'verified' && subcategory.verified);
     
     return matchesSearch && matchesFilter;
   }) || [];
@@ -291,6 +301,28 @@ const CategoryPage = () => {
     navigate(`/category/${categoryId}/${subcategoryId}/${companySlug}`);
   };
 
+  const handleOpenArrangementModal = () => {
+    setShowArrangementModal(true);
+  };
+
+  const handleCategoriesChange = () => {
+    // Refresh category data
+    const fetchCategoryData = async () => {
+      try {
+        setLoading(true);
+        const data = await CategoryService.getCategoryWithSubcategories(categoryId);
+        setCategoryData(data);
+        setCurrentCategory(data);
+      } catch (err) {
+        console.error('Error refreshing category data:', err);
+        setError('Failed to load category data. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategoryData();
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -307,7 +339,17 @@ const CategoryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-x-hidden">
+      <SeoFloatingButton type="category" identifier={categoryId} defaults={{
+        title: `${currentCategory?.name || 'Category'} - India Customer Help`,
+        description: `Find verified customer care contacts and toll-free numbers for ${currentCategory?.name}.`,
+        canonical: `https://www.indiacustomerhelp.in/category/${categoryId}`,
+        robots: 'index,follow',
+        lang: 'en',
+      }} />
+      <SafeBoundary>
+        <DynamicSEO type="category" identifier={categoryId} />
+      </SafeBoundary>
       {/* Header Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white">
         <div className="absolute inset-0 bg-black/20"></div>
@@ -335,59 +377,59 @@ const CategoryPage = () => {
           </div>
           
           {/* Category Header */}
-          <div className="grid lg:grid-cols-3 gap-6 items-center">
+          <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 items-center">
             <div className="lg:col-span-2">
-              <div className="flex items-center gap-4 mb-3">
-                <div className="w-20 h-20 rounded-xl flex items-center justify-center overflow-hidden bg-white/95 shadow-lg border border-gray-200/50">
-                  <Building2 className="h-12 w-12 text-blue-600" />
+              <div className="flex items-center gap-3 sm:gap-4 mb-3">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center overflow-hidden bg-white/95 shadow-lg border border-gray-200/50">
+                  <Building2 className="h-10 w-10 sm:h-12 sm:w-12 text-blue-600" />
                 </div>
                 <div>
-                  <h1 className="text-4xl md:text-3xl font-bold mb-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 leading-tight">
                     {currentCategory.name}
                   </h1>
                 </div>
               </div>
 
-              <p className="text-lg text-white/90 mb-3 leading-relaxed">
+              <p className="text-sm sm:text-base text-white/90 mb-3 leading-relaxed">
                 {currentCategory.description || 'Discover the most trusted and reliable services in this category. Get instant access to verified contact information and expert support.'}
               </p>
 
               {/* Quick Stats */}
-              <div className="grid grid-cols-3 gap-3 mb-3">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3">
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 text-center">
-                  <div className="text-white font-bold text-lg">{currentCategory.subcategoryCount || 0}</div>
-                  <div className="text-white/80 text-xs">Services</div>
+                  <div className="text-white font-bold text-base sm:text-lg">{currentCategory.subcategoryCount || 0}</div>
+                  <div className="text-white/80 text-[11px] sm:text-xs">Services</div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 text-center">
-                  <div className="text-white font-bold text-lg">24/7</div>
-                  <div className="text-white/80 text-xs">Support</div>
+                  <div className="text-white font-bold text-base sm:text-lg">24/7</div>
+                  <div className="text-white/80 text-[11px] sm:text-xs">Support</div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 text-center">
-                  <div className="text-white font-bold text-lg">100%</div>
-                  <div className="text-white/80 text-xs">Verified</div>
+                  <div className="text-white font-bold text-base sm:text-lg">100%</div>
+                  <div className="text-white/80 text-[11px] sm:text-xs">Verified</div>
                 </div>
               </div>
 
               {/* Quick Actions */}
-              <div className="flex flex-wrap gap-3">
-                <button className="bg-white text-blue-600 font-semibold px-4 py-2 rounded-lg hover:bg-blue-50 transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2 text-sm">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                <button className="bg-white text-blue-600 font-semibold px-3 py-2 rounded-lg hover:bg-blue-50 transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2 text-xs sm:text-sm">
                   <Search className="h-4 w-4" />
                   Explore Services
                 </button>
-                <button className="bg-white/10 backdrop-blur-sm text-white font-semibold px-4 py-2 rounded-lg hover:bg-white/20 transition-all duration-300 border border-white/20 flex items-center gap-2 text-sm">
+                <button className="bg-white/10 backdrop-blur-sm text-white font-semibold px-3 py-2 rounded-lg hover:bg-white/20 transition-all duration-300 border border-white/20 flex items-center gap-2 text-xs sm:text-sm">
                   <Share2 className="h-4 w-4" />
                   Share Category
                 </button>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 border border-white/20">
               <h3 className="text-lg font-semibold text-white mb-4 text-center">
                 Video Guide
               </h3>
               <div className="space-y-3">
                 {/* Video Slider Section */}
-                <div className="relative rounded-xl overflow-hidden shadow-lg border border-white/20 h-48">
+                <div className="relative rounded-xl overflow-hidden shadow-lg border border-white/20 h-40 sm:h-48">
 
                   
                   <motion.div
@@ -461,16 +503,16 @@ const CategoryPage = () => {
         </div>
       </div>
 
-      {/* Enhanced Search and Filter Section */}
-      <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      {/* Search and Filter Section (moved below results header) */}
+      <div className="hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col lg:flex-row gap-6 items-center justify-between"
+            className="flex flex-col lg:flex-row gap-4 sm:gap-6 items-start lg:items-center justify-between"
           >
-            {/* Enhanced Search Bar */}
-            <div className="relative flex-1 max-w-md">
+            {/* Enhanced Search Bar (hidden old placement) */}
+            <div className="relative w-full lg:flex-1 max-w-2xl">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-gray-400" />
               </div>
@@ -479,7 +521,7 @@ const CategoryPage = () => {
                 placeholder="Search services, companies, or keywords..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm"
+                className="w-full pl-12 pr-4 py-3 md:py-3.5 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm"
               />
               {searchTerm && (
                 <button
@@ -491,63 +533,37 @@ const CategoryPage = () => {
               )}
             </div>
 
-            {/* Enhanced Filters */}
-            <div className="flex items-center gap-4">
-              <div className="relative">
+            {/* Single compact filter dropdown (hidden old placement) */}
+            <div className="w-full lg:w-auto">
+              <div className="relative w-full sm:w-64">
                 <select
-                  value={selectedFilter}
-                  onChange={(e) => setSelectedFilter(e.target.value)}
-                  className="appearance-none px-6 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm pr-12"
+                  value={selectedFilter !== 'all' ? selectedFilter : sortBy}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const sortOptions = ['popular', 'name', 'count', 'rating', 'newest'];
+                    if (sortOptions.includes(val)) {
+                      setSortBy(val);
+                      setSelectedFilter('all');
+                    } else {
+                      setSelectedFilter(val);
+                    }
+                  }}
+                  className="appearance-none w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm pr-10"
                 >
-                  <option value="all">All Services</option>
-                  <option value="trending">Trending</option>
-                  <option value="popular">Most Popular</option>
-                  <option value="verified">Verified Only</option>
+                  <optgroup label="Filter By">
+                    <option value="all">All Services</option>
+                    <option value="trending">Trending</option>
+                    <option value="verified">Verified Only</option>
+                  </optgroup>
+                  <optgroup label="Sort By">
+                    <option value="popular">Most Popular</option>
+                    <option value="name">Alphabetical (A–Z)</option>
+                    <option value="count">Most Companies</option>
+                    <option value="rating">Highest Rated</option>
+                    <option value="newest">Newest First</option>
+                  </optgroup>
                 </select>
-                <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-              </div>
-
-              <div className="relative">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="appearance-none px-6 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm pr-12"
-                >
-                  <option value="popular">Most Popular</option>
-                  <option value="name">Name A-Z</option>
-                  <option value="count">Most Companies</option>
-                  <option value="rating">Highest Rated</option>
-                  <option value="newest">Newest First</option>
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-              </div>
-
-              {/* Enhanced View Mode Toggle */}
-              <div className="flex items-center bg-gray-100 rounded-2xl p-1 shadow-sm">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setViewMode('grid')}
-                  className={`p-3 rounded-xl transition-all duration-300 ${
-                    viewMode === 'grid' 
-                      ? 'bg-white shadow-md text-blue-600' 
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  <Grid3x3 className="h-5 w-5" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setViewMode('list')}
-                  className={`p-3 rounded-xl transition-all duration-300 ${
-                    viewMode === 'list' 
-                      ? 'bg-white shadow-md text-blue-600' 
-                      : 'text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  <List className="h-5 w-5" />
-                </motion.button>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
               </div>
             </div>
           </motion.div>
@@ -574,15 +590,56 @@ const CategoryPage = () => {
             </p>
           </div>
           
-          {sortedSubcategories.length > 0 && (
-            <div className="flex items-center gap-2 mt-4 sm:mt-0">
-              <div className="flex items-center gap-1 text-sm text-gray-500">
-                <Eye className="h-4 w-4" />
-                <span>{Math.floor(Math.random() * 1000) + 500} people viewed this category</span>
-              </div>
-            </div>
-          )}
+          {/* Removed view count for cleaner design */}
         </motion.div>
+
+        {/* Search and Filter Section (placed under header) */}
+        <div className="bg-white/60 rounded-2xl border border-slate-200/60 shadow-sm mb-6">
+          <div className="px-4 sm:px-6 py-3 md:py-4 flex flex-col lg:flex-row gap-3 lg:gap-6 items-stretch lg:items-center">
+            <div className="relative w-full lg:flex-1 max-w-2xl">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search services, companies, or keywords..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 md:py-3.5 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm"
+              />
+            </div>
+            <div className="relative w-full sm:w-64">
+              <select
+                value={selectedFilter !== 'all' ? selectedFilter : sortBy}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const sortOptions = ['popular', 'name', 'count', 'rating', 'newest'];
+                  if (sortOptions.includes(val)) {
+                    setSortBy(val);
+                    setSelectedFilter('all');
+                  } else {
+                    setSelectedFilter(val);
+                  }
+                }}
+                className="appearance-none w-full px-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-sm pr-10"
+              >
+                <optgroup label="Filter By">
+                  <option value="all">All Services</option>
+                  <option value="trending">Trending</option>
+                  <option value="verified">Verified Only</option>
+                </optgroup>
+                <optgroup label="Sort By">
+                  <option value="popular">Most Popular</option>
+                  <option value="name">Alphabetical (A–Z)</option>
+                  <option value="count">Most Companies</option>
+                  <option value="rating">Highest Rated</option>
+                  <option value="newest">Newest First</option>
+                </optgroup>
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+            </div>
+          </div>
+        </div>
 
         {/* Enhanced Subcategories Grid/List */}
         <AnimatePresence mode="wait">
@@ -619,7 +676,7 @@ const CategoryPage = () => {
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className={viewMode === 'grid' ? 'grid md:grid-cols-2 lg:grid-cols-3 gap-8' : 'space-y-6'}
+              className={viewMode === 'grid' ? 'grid md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8' : 'space-y-4 sm:space-y-6'}
             >
               {sortedSubcategories.map((subcategory, index) => (
                 <motion.div
@@ -630,7 +687,7 @@ const CategoryPage = () => {
                     scale: 1.02,
                     transition: { duration: 0.2 }
                   }}
-                  className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-200 p-6 flex flex-col group"
+                  className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-200 p-4 sm:p-6 flex flex-col group border-l-4 border-l-orange-400"
                 >
                   {/* Top: Logo, Name, Verified, Tag */}
                   <div className="flex items-center gap-4 mb-3">
@@ -642,22 +699,23 @@ const CategoryPage = () => {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className="font-semibold text-gray-900 text-lg truncate cursor-pointer transition-colors duration-200 hover:text-orange-600 hover:underline"
+                          className="font-semibold text-gray-900 text-base sm:text-lg truncate cursor-pointer transition-colors duration-200 hover:text-orange-600 hover:underline"
                           onClick={() => handleSubcategoryClick(subcategory.slug)}
                         >
                           {subcategory.name}
                         </span>
+                        {/* Verified badge removed as requested */}
                       </div>
-                      <div className="text-xs text-gray-500 mt-0.5">
+                      <div className="text-xs text-gray-500 mt-0.5 line-clamp-2">
                         {subcategory.description || 'Professional service with excellent customer support and verified contact information.'}
                       </div>
                     </div>
                   </div>
                   
                   {/* Info Row */}
-                  <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 sm:gap-3 mt-2 text-[11px] sm:text-xs text-gray-500">
                     <span className="flex items-center gap-1">
                       <Globe className="h-4 w-4 text-gray-400" />
                       All India
@@ -670,7 +728,7 @@ const CategoryPage = () => {
                   </div>
                   
                   {/* Divider */}
-                  <div className="border-t border-gray-100 my-3" />
+                  <div className="border-t border-gray-100 my-2 sm:my-3" />
                   
                   {/* Contact Row */}
                   <div className="flex items-center gap-2 mb-4">
@@ -731,6 +789,14 @@ const CategoryPage = () => {
 
 
       </div>
+
+      {/* Category Arrangement Modal */}
+      <CategoryArrangementModal
+        isOpen={showArrangementModal}
+        onClose={() => setShowArrangementModal(false)}
+        categories={[currentCategory]} // Pass current category as array for consistency
+        onCategoriesChange={handleCategoriesChange}
+      />
     </div>
   );
 };
