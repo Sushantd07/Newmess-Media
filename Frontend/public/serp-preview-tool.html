@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google SERP Preview Tool - Newmess Media</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .search-header {
+            background: #f1f3f4;
+            padding: 20px;
+            border-bottom: 1px solid #dadce0;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #dfe1e5;
+            border-radius: 24px;
+            padding: 8px 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-icon {
+            color: #9aa0a6;
+            margin-right: 12px;
+        }
+
+        .search-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            color: #202124;
+        }
+
+        .search-results {
+            padding: 20px;
+        }
+
+        .result-item {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e8eaed;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .result-url {
+            color: #202124;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .result-title {
+            color: #1a0dab;
+            font-size: 20px;
+            font-weight: normal;
+            margin-bottom: 4px;
+            text-decoration: none;
+        }
+
+        .result-title:hover {
+            text-decoration: underline;
+        }
+
+        .result-snippet {
+            color: #4d5156;
+            font-size: 14px;
+            line-height: 1.58;
+        }
+
+        .rich-snippet {
+            background: #f8f9fa;
+            border-left: 3px solid #4285f4;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 4px;
+        }
+
+        .faq-section {
+            background: #f8f9fa;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+
+        .faq-question {
+            color: #1a0dab;
+            font-weight: 500;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+
+        .faq-answer {
+            color: #4d5156;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .organization-panel {
+            background: #f8f9fa;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+
+        .org-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .org-logo {
+            width: 48px;
+            height: 48px;
+            background: #4285f4;
+            border-radius: 8px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .org-info h3 {
+            color: #202124;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .org-rating {
+            display: flex;
+            align-items: center;
+            color: #5f6368;
+            font-size: 14px;
+        }
+
+        .stars {
+            color: #fbbc04;
+            margin-right: 8px;
+        }
+
+        .org-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .org-detail {
+            color: #5f6368;
+            font-size: 14px;
+        }
+
+        .org-detail strong {
+            color: #202124;
+        }
+
+        .breadcrumbs {
+            color: #5f6368;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .breadcrumb-item {
+            color: #5f6368;
+            text-decoration: none;
+        }
+
+        .breadcrumb-item:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            margin: 0 8px;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-top: 1px solid #dadce0;
+        }
+
+        .control-group {
+            margin-bottom: 16px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #202124;
+        }
+
+        .control-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .control-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: monospace;
+            resize: vertical;
+        }
+
+        .control-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .preview-toggle {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .preview-toggle:hover {
+            background: #3367d6;
+        }
+
+        .preview-toggle.secondary {
+            background: #5f6368;
+        }
+
+        .preview-toggle.secondary:hover {
+            background: #494c50;
+        }
+
+        .site-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .site-link {
+            color: #1a0dab;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .site-link:hover {
+            text-decoration: underline;
+        }
+
+        .schema-example {
+            background: #f1f3f4;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            padding: 12px;
+            margin-top: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #5f6368;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Search Header -->
+        <div class="search-header">
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" value="newmess media business directory" readonly>
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        <div class="search-results">
+            <!-- Main Result -->
+            <div class="result-item">
+                <div class="breadcrumbs">
+                    <a href="#" class="breadcrumb-item">newmessmedia.com</a>
+                    <span class="breadcrumb-separator">›</span>
+                    <span class="breadcrumb-item">Business Directory</span>
+                </div>
+                
+                <a href="#" class="result-title">Newmess Media - India's Most Trusted Business Directory</a>
+                <div class="result-url">https://newmessmedia.com</div>
+                <div class="result-snippet">
+                    Find verified toll-free numbers, business contacts, and essential services across India. Trusted by millions for authentic business information since 2022.
+                </div>
+
+                <!-- Organization Knowledge Panel -->
+                <div class="organization-panel">
+                    <div class="org-header">
+                        <div class="org-logo">NM</div>
+                        <div class="org-info">
+                            <h3>Newmess Media</h3>
+                            <div class="org-rating">
+                                <span class="stars">★★★★★</span>
+                                <span>4.8 (15,000 reviews)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="org-details">
+                        <div class="org-detail">
+                            <strong>Phone:</strong> +91-1800-123-4567
+                        </div>
+                        <div class="org-detail">
+                            <strong>Address:</strong> Mumbai, Maharashtra, India
+                        </div>
+                        <div class="org-detail">
+                            <strong>Founded:</strong> 2022
+                        </div>
+                        <div class="org-detail">
+                            <strong>Services:</strong> Business Directory
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Site Links -->
+                <div class="site-links">
+                    <a href="#" class="site-link">Banking Services</a>
+                    <a href="#" class="site-link">Telecom Services</a>
+                    <a href="#" class="site-link">Healthcare Services</a>
+                    <a href="#" class="site-link">Shopping & Retail</a>
+                    <a href="#" class="site-link">Insurance Services</a>
+                </div>
+            </div>
+
+            <!-- FAQ Rich Snippet -->
+            <div class="result-item">
+                <div class="breadcrumbs">
+                    <a href="#" class="breadcrumb-item">newmessmedia.com</a>
+                    <span class="breadcrumb-separator">›</span>
+                    <span class="breadcrumb-item">FAQ</span>
+                </div>
+                
+                <a href="#" class="result-title">Frequently Asked Questions - Newmess Media</a>
+                <div class="result-url">https://newmessmedia.com/faq</div>
+                
+                <div class="faq-section">
+                    <div class="faq-question">How do I find a business contact number?</div>
+                    <div class="faq-answer">You can search for any business by name, category, or location. Our directory contains verified toll-free numbers and contact information for businesses across India.</div>
+                </div>
+                
+                <div class="faq-section">
+                    <div class="faq-question">Are all the contact numbers verified?</div>
+                    <div class="faq-answer">Yes, we maintain a 99.9% verification rate. All contact numbers are regularly updated and verified to ensure accuracy.</div>
+                </div>
+                
+                <div class="faq-section">
+                    <div class="faq-question">What categories of businesses do you cover?</div>
+                    <div class="faq-answer">We cover all major categories including Banking Services, Telecom Services, Healthcare, Shopping, Insurance, and many more business sectors across India.</div>
+                </div>
+            </div>
+
+            <!-- Category Results -->
+            <div class="result-item">
+                <div class="breadcrumbs">
+                    <a href="#" class="breadcrumb-item">newmessmedia.com</a>
+                    <span class="breadcrumb-separator">›</span>
+                    <span class="breadcrumb-item">Categories</span>
+                </div>
+                
+                <a href="#" class="result-title">All Business Categories - Banking, Telecom, Healthcare & More</a>
+                <div class="result-url">https://newmessmedia.com/category</div>
+                <div class="result-snippet">
+                    Browse through our comprehensive directory of verified toll-free numbers organized by industry categories. Find contact information for banking services, telecom providers, healthcare facilities, and more.
+                </div>
+                
+                <div class="rich-snippet">
+                    <strong>Top Categories:</strong> Banking Services • Telecom Services • Healthcare Services • Shopping & Retail • Insurance Services • Travel & Tourism • Education Services • Government Services
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <h3>Preview Controls</h3>
+            
+            <div class="control-group">
+                <label class="control-label">Search Query:</label>
+                <input type="text" class="control-input" value="newmess media business directory" id="searchQuery">
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Rich Snippets:</label>
+                <select class="control-select" id="richSnippets">
+                    <option value="all">All (Organization + FAQ + Categories)</option>
+                    <option value="organization">Organization Only</option>
+                    <option value="faq">FAQ Only</option>
+                    <option value="categories">Categories Only</option>
+                    <option value="none">None (Basic Result)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label class="control-label">Paste Your SERP Schema (JSON):</label>
+                <textarea class="control-textarea" id="customSchema" rows="8" placeholder='Paste your schema.org JSON here...'></textarea>
+                <div class="schema-example">
+                    Example: {"@context": "https://schema.org", "@type": "Organization", "name": "Your Company"}
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <button class="preview-toggle" onclick="updatePreview()">Update Preview</button>
+                <button class="preview-toggle secondary" onclick="resetPreview()">Reset</button>
+                <button class="preview-toggle secondary" onclick="loadCustomSchema()">Load Custom Schema</button>
+                <button class="preview-toggle secondary" onclick="exportSchema()">Export Schema</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updatePreview() {
+            const searchQuery = document.getElementById('searchQuery').value;
+            const richSnippets = document.getElementById('richSnippets').value;
+            
+            // Update search input
+            document.querySelector('.search-input').value = searchQuery;
+            
+            // Show/hide rich snippets based on selection
+            const organizationPanel = document.querySelector('.organization-panel');
+            const faqSections = document.querySelectorAll('.faq-section');
+            const richSnippet = document.querySelector('.rich-snippet');
+            
+            if (richSnippets === 'all' || richSnippets === 'organization') {
+                organizationPanel.style.display = 'block';
+            } else {
+                organizationPanel.style.display = 'none';
+            }
+            
+            if (richSnippets === 'all' || richSnippets === 'faq') {
+                faqSections.forEach(section => section.style.display = 'block');
+            } else {
+                faqSections.forEach(section => section.style.display = 'none');
+            }
+            
+            if (richSnippets === 'all' || richSnippets === 'categories') {
+                richSnippet.style.display = 'block';
+            } else {
+                richSnippet.style.display = 'none';
+            }
+        }
+        
+        function resetPreview() {
+            document.getElementById('searchQuery').value = 'newmess media business directory';
+            document.getElementById('richSnippets').value = 'all';
+            document.getElementById('customSchema').value = '';
+            updatePreview();
+        }
+        
+        function loadCustomSchema() {
+            const customSchemaText = document.getElementById('customSchema').value.trim();
+            
+            if (!customSchemaText) {
+                alert('Please paste your SERP schema JSON first!');
+                return;
+            }
+            
+            try {
+                const customSchema = JSON.parse(customSchemaText);
+                
+                // Update the preview based on the custom schema
+                updatePreviewFromSchema(customSchema);
+                
+                alert('Custom schema loaded successfully!');
+                
+            } catch (error) {
+                alert('Invalid JSON format! Please check your schema syntax.\n\nError: ' + error.message);
+            }
+        }
+        
+        function updatePreviewFromSchema(schema) {
+            // Extract organization info
+            if (schema['@type'] === 'Organization' || (schema['@graph'] && schema['@graph'].find(item => item['@type'] === 'Organization'))) {
+                const org = schema['@type'] === 'Organization' ? schema : schema['@graph'].find(item => item['@type'] === 'Organization');
+                
+                if (org.name) {
+                    document.querySelector('.result-title').textContent = org.name + ' - Business Directory';
+                }
+                if (org.description) {
+                    document.querySelector('.result-snippet').textContent = org.description;
+                }
+                if (org.aggregateRating) {
+                    const rating = org.aggregateRating;
+                    document.querySelector('.org-rating').innerHTML = `<span class="stars">★★★★★</span> ${rating.ratingValue || '4.8'} (${rating.reviewCount || '15,000'} reviews)`;
+                }
+                if (org.contactPoint && org.contactPoint.telephone) {
+                    const phoneElement = document.querySelector('.org-detail strong');
+                    if (phoneElement && phoneElement.nextSibling) {
+                        phoneElement.nextSibling.textContent = ' ' + org.contactPoint.telephone;
+                    }
+                }
+            }
+            
+            // Extract FAQ info
+            if (schema['@type'] === 'FAQPage' || (schema['@graph'] && schema['@graph'].find(item => item['@type'] === 'FAQPage'))) {
+                const faq = schema['@type'] === 'FAQPage' ? schema : schema['@graph'].find(item => item['@type'] === 'FAQPage');
+                
+                if (faq.mainEntity && faq.mainEntity.length > 0) {
+                    const faqContainer = document.querySelector('.faq-section');
+                    if (faqContainer) {
+                        faqContainer.innerHTML = '';
+                        
+                        faq.mainEntity.forEach((item, index) => {
+                            if (index < 3) { // Show max 3 FAQs
+                                const faqDiv = document.createElement('div');
+                                faqDiv.className = 'faq-section';
+                                faqDiv.innerHTML = `
+                                    <div class="faq-question">${item.name || 'Question'}</div>
+                                    <div class="faq-answer">${item.acceptedAnswer?.text || item.answer?.text || 'Answer'}</div>
+                                `;
+                                faqContainer.parentNode.appendChild(faqDiv);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        
+        function exportSchema() {
+            const schema = {
+                "@context": "https://schema.org",
+                "@graph": [
+                    {
+                        "@type": "Organization",
+                        "name": "Newmess Media",
+                        "url": "https://newmessmedia.com",
+                        "logo": "https://newmessmedia.com/logo3-Photoroom.png",
+                        "description": "India's Most Trusted Business Directory",
+                        "aggregateRating": {
+                            "@type": "AggregateRating",
+                            "ratingValue": "4.8",
+                            "reviewCount": "15000"
+                        }
+                    },
+                    {
+                        "@type": "FAQPage",
+                        "mainEntity": [
+                            {
+                                "@type": "Question",
+                                "name": "How do I find a business contact number?",
+                                "acceptedAnswer": {
+                                    "@type": "Answer",
+                                    "text": "You can search for any business by name, category, or location."
+                                }
+                            }
+                        ]
+                    }
+                ]
+            };
+            
+            const blob = new Blob([JSON.stringify(schema, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'serp-schema.json';
+            a.click();
+        }
+        
+        // Initialize preview
+        updatePreview();
+    </script>
+</body>
+</html>
+

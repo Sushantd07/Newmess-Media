@@ -3,15 +3,16 @@ import { Edit3, Save, X, Eye, EyeOff, FileText, AlertCircle, CheckCircle } from 
 import TinyMCEEditor from './TinyMCEEditor.jsx';
 
 
-const ComplaintsTabEditor = forwardRef(({
-  complaintsData,
-  isAdminMode = false,
-  onSave,
-  onCancel,
-  isVisible = false,
-  companyName = 'Company',
-  isFullEditMode = false
-}) => {
+const ComplaintsTabEditor = forwardRef((props, ref) => {
+  const {
+    complaintsData,
+    isAdminMode = false,
+    onSave,
+    onCancel,
+    isVisible = false,
+    companyName = 'Company',
+    isFullEditMode = false,
+  } = props;
   const [showEditor, setShowEditor] = useState(false);
   const [editorContent, setEditorContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);

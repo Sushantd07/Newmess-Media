@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SnameMap from '../assets/lastMap.svg?react';
 import { MapPin, ArrowRight, Users, Shield, Phone, Lock, Unlock } from 'lucide-react';
 
-const statesData = [
+export const statesData = [
 	{
 		id: 'maharashtra',
 		svgId: 'INMH',
@@ -503,7 +504,6 @@ const InteractiveMap = ({ onStateHover, onStateLeave, onStateClick, hoveredState
         // Store function references for cleanup
         const mouseEnterHandler = () => {
           const stateId = svgIdToStateId[svgId];
-          console.log('Hovered:', stateId);
           onStateHover(stateId);
           
           // Add hover visual effect (only if not clicked)
@@ -530,7 +530,6 @@ const InteractiveMap = ({ onStateHover, onStateLeave, onStateClick, hoveredState
 
         const clickHandler = () => {
           const stateId = svgIdToStateId[svgId];
-          console.log('Clicked:', stateId);
           onStateClick(stateId);
           
           // Visual feedback for click - dark colors
@@ -600,6 +599,7 @@ const InteractiveMap = ({ onStateHover, onStateLeave, onStateClick, hoveredState
 };
 
 const StatewiseSection = () => {
+  const navigate = useNavigate();
   const [hoveredState, setHoveredState] = useState(null);
   const [clickedState, setClickedState] = useState(null);
   const [isTableLocked, setIsTableLocked] = useState(false);
@@ -619,15 +619,7 @@ const StatewiseSection = () => {
   };
 
   const handleStateClick = (stateId) => {
-    if (clickedState === stateId) {
-      // Unclick the same state
-      setClickedState(null);
-      setIsTableLocked(false);
-    } else {
-      // Click a different state
-      setClickedState(stateId);
-      setIsTableLocked(true);
-    }
+    navigate(`/state/${stateId}`);
   };
 
   const unlockTable = () => {

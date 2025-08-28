@@ -7,7 +7,7 @@ const ComplaintsTab = ({ complaintsData, loading, error, complaintContent, isAdm
   const editorRef = useRef(null);
   
   // Debug logging
-  console.log('🔍 ComplaintsTab Component Debug:');
+
   console.log('🔍 isAdminMode:', isAdminMode);
   console.log('🔍 companyName:', companyName);
   console.log('🔍 onSaveComplaints:', typeof onSaveComplaints);
@@ -376,66 +376,7 @@ const ComplaintsTab = ({ complaintsData, loading, error, complaintContent, isAdm
                   </div>
                     )}
 
-                {/* Debug Info - Only show in Admin Mode */}
-                {isAdminMode && (
-                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="font-semibold text-blue-900 mb-2">ComplaintsTab Debug Info:</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-blue-800"><strong>Admin Mode:</strong> {isAdminMode ? '✅ ON' : '❌ OFF'}</p>
-                        <p className="text-blue-800"><strong>Company Name:</strong> {companyName}</p>
-                        <p className="text-blue-800"><strong>Editor Ref:</strong> {editorRef.current ? '✅ Available' : '❌ Not Available'}</p>
-                        <p className="text-blue-800"><strong>Complaints Data:</strong> {complaintsData ? '✅ Available' : '❌ Not Available'}</p>
-                      </div>
-                      <div>
-                        <p className="text-blue-800"><strong>onSaveComplaints:</strong> {onSaveComplaints ? '✅ Available' : '❌ Not Available'}</p>
-                        <p className="text-blue-800"><strong>onSaveStructuredComplaints:</strong> {onSaveStructuredComplaints ? '✅ Available' : '❌ Not Available'}</p>
-                        <p className="text-blue-800"><strong>API Endpoint:</strong> /api/structured-complaints/company/{companyName}</p>
-                        <p className="text-blue-800"><strong>Database:</strong> structuredComplaints collection</p>
-                      </div>
-                    </div>
-                    
-                    {/* Test Save Button */}
-                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <h5 className="font-semibold text-green-900 mb-2">Test Save Functionality:</h5>
-                      <div className="flex gap-2">
-                        <button
-                          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
-                          onClick={() => {
-                            console.log('🧪 Test Save Button Clicked');
-                            const testContent = '<h1>Test Content</h1><p>This is a test save from ComplaintsTab component.</p>';
-                            if (onSaveComplaints) {
-                              console.log('🧪 Calling onSaveComplaints with test content');
-                              onSaveComplaints({ richTextContent: testContent });
-                            } else {
-                              console.error('❌ onSaveComplaints not available');
-                            }
-                          }}
-                        >
-                          Test Save (onSaveComplaints)
-                        </button>
-                        <button
-                          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium"
-                          onClick={() => {
-                            console.log('🧪 Test Structured Save Button Clicked');
-                            const testData = {
-                              richTextContent: '<h1>Test Structured Content</h1><p>This is a test save from ComplaintsTab component.</p>',
-                              mainHeading: { title: 'Test Heading', description: 'Test Description' }
-                            };
-                            if (onSaveStructuredComplaints) {
-                              console.log('🧪 Calling onSaveStructuredComplaints with test data');
-                              onSaveStructuredComplaints(testData);
-                            } else {
-                              console.error('❌ onSaveStructuredComplaints not available');
-                            }
-                          }}
-                        >
-                          Test Save (onSaveStructuredComplaints)
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+
               </>
             )}
           </div>

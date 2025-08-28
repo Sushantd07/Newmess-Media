@@ -68,15 +68,21 @@ class CategoryService {
   static async getCategoryGridData() {
     try {
       const response = await fetch(`${API_BASE_URL}/categories/grid-data`);
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') || '';
+      let data = null;
+      try {
+        if (contentType.includes('application/json')) {
+          data = await response.json();
+        }
+      } catch (_) {}
 
-      if (data.success) {
+      if (response.ok && data && data.success) {
         return data.data; // Return just the data array
       } else {
-        throw new Error(data.message || 'Failed to fetch category grid data');
+        throw new Error((data && data.message) || 'Failed to fetch category grid data');
       }
     } catch (error) {
-      console.error('Error fetching category grid data:', error);
+      // Avoid noisy console in production; surface a user-friendly fallback upstream
       throw error;
     }
   }
@@ -158,13 +164,13 @@ class CategoryService {
   // Cache management methods
   static clearCacheKey(key) {
     // Simple cache clearing - in a real app you might use a more sophisticated caching system
-    console.log(`Clearing cache for key: ${key}`);
+    // logging removed for production
     // For now, just log the cache clear operation
     return true;
   }
 
   static clearAllCache() {
-    console.log('Clearing all category cache');
+    // logging removed for production
     return true;
   }
 }

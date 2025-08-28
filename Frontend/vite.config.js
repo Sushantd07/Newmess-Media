@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import path from 'node:path'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import svgr from 'vite-plugin-svgr';
@@ -12,15 +13,23 @@ export default defineConfig({
     tailwindcss(),
     
   ],
+  // Ensure only a single copy of React is used to avoid "Invalid hook call"
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+    alias: {
+      react: path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom')
+    }
+  },
 server: {
     host: '0.0.0.0',
-    port: 5173,
+    port: 5174,
     allowedHosts: [
       'localhost',
       '127.0.0.1',
       'gzd2rl1g-5173.inc1.devtunnels.ms',
       '.devtunnels.ms',
-      '4b629ad97734.ngrok-free.app',
+      '5c488ddea99b.ngrok-free.app',
       '.ngrok-free.app'
     ],
     proxy: {
@@ -43,19 +52,16 @@ server: {
     cors: {
       origin: [
         'http://localhost:5173',
+        'http://localhost:5174',
         'http://localhost:3000',
         'https://2b812e3cf734.ngrok-free.app',
         'https://gzd2rl1g-5173.inc1.devtunnels.ms',
-        'https://4b629ad97734.ngrok-free.app',
+        'https://5c488ddea99b.ngrok-free.app/',
         'https://*.ngrok-free.app'
       ],
       credentials: true
     },
-   hmr: {
-  host: '4b629ad97734.ngrok-free.app', // match your dev tunnel URL exactly
-  protocol: 'wss',
-  port: 443
-}
+    // Use default local HMR on the chosen port
 
 },
 })

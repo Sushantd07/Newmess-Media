@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Phone,
   Globe,
@@ -39,6 +39,81 @@ import {
 import { useNavigate } from 'react-router-dom';
 import CategoryService from '../services/categoryService.js';
 import CategoryArrangementModal from './admin/CategoryArrangementModal.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
+
+// Mobile-specific CSS styles for enhanced mobile experience
+const mobileStyles = `
+  @media (max-width: 768px) {
+    /* Enhanced touch interactions */
+    .mobile-category-card {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    
+    .mobile-company-card {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    
+    /* Improved scrolling for mobile */
+    .mobile-scroll-container {
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+    
+    /* Enhanced button interactions */
+    .mobile-call-button {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-height: 44px; /* iOS minimum touch target */
+    }
+    
+    /* Better text readability on mobile */
+    .mobile-text {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Optimized shadows for mobile */
+    .mobile-shadow {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Smooth transitions for mobile */
+    .mobile-transition {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    /* Hide scrollbars on mobile */
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    
+    /* Enhanced focus states for accessibility */
+    .mobile-focus:focus {
+      outline: 2px solid #f97316;
+      outline-offset: 2px;
+    }
+    
+    /* Optimized spacing for mobile */
+    .mobile-spacing {
+      padding: 16px;
+      margin: 8px;
+    }
+    
+    /* Better image handling on mobile */
+    .mobile-image {
+      object-fit: contain;
+      max-width: 100%;
+      height: auto;
+    }
+  }
+`;
 
 // Icon mapping for dynamic icon rendering
 const ICON_MAP = {
@@ -66,6 +141,8 @@ const ICON_MAP = {
 };
 
 const CategoryGridCompanyList = () => {
+  const { role } = useAuth();
+  const isAdmin = role === 'admin';
   const [copied, setCopied] = useState(null);
   const [favoriteIds, setFavoriteIds] = useState([]);
   const [search, setSearch] = useState("");
@@ -76,6 +153,17 @@ const CategoryGridCompanyList = () => {
   const recognitionRef = useRef(null);
   const navigate = useNavigate();
   const categoryScrollRef = useRef(null);
+
+  // Inject mobile styles
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = mobileStyles;
+    document.head.appendChild(styleElement);
+
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
 
   // Fetch data from backend
   useEffect(() => {
@@ -89,7 +177,6 @@ const CategoryGridCompanyList = () => {
 
         setCategoryData(data);
       } catch (err) {
-        console.error('Error fetching category data:', err);
         setError('Failed to load categories. Please try again later.');
       } finally {
         setLoading(false);
@@ -125,7 +212,7 @@ const CategoryGridCompanyList = () => {
         const data = await CategoryService.getCategoryGridData();
         setCategoryData(data);
       } catch (err) {
-        console.error('Error refreshing category data:', err);
+        // swallow error for UI; error state already managed on first load
       } finally {
         setLoading(false);
       }
@@ -190,51 +277,6 @@ const CategoryGridCompanyList = () => {
       });
     }
   };
-
-  // Mobile: prepare 5 category containers and auto-scroll their subcategory rows
-  const topFiveMobileCategories = useMemo(() => (categoriesForLeftPanel || []).slice(0, 5), [categoriesForLeftPanel]);
-  const mobileRowRefs = useRef([]);
-  const mobileIntervalsRef = useRef([]);
-
-  const stopAutoForIndex = (index) => {
-    const existing = mobileIntervalsRef.current[index];
-    if (existing) {
-      clearInterval(existing);
-      mobileIntervalsRef.current[index] = null;
-    }
-  };
-
-  const startAutoForIndex = (index) => {
-    const el = mobileRowRefs.current[index];
-    if (!el) return;
-    stopAutoForIndex(index);
-    const id = setInterval(() => {
-      const firstCard = el.querySelector('.mobile-card');
-      const gap = 16; // px
-      const step = firstCard ? firstCard.clientWidth + gap : el.clientWidth;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      const nextLeft = el.scrollLeft + step;
-      el.scrollTo({ left: nextLeft >= maxScroll ? 0 : nextLeft, behavior: 'smooth' });
-    }, 2200);
-    mobileIntervalsRef.current[index] = id;
-  };
-
-  useEffect(() => {
-    // initialize auto-scroll for visible rows
-    mobileIntervalsRef.current.forEach((id) => id && clearInterval(id));
-    mobileIntervalsRef.current = [];
-    topFiveMobileCategories.forEach((_, index) => {
-      const el = mobileRowRefs.current[index];
-      if (el) {
-        el.scrollLeft = 0;
-        startAutoForIndex(index);
-      }
-    });
-    return () => {
-      mobileIntervalsRef.current.forEach((id) => id && clearInterval(id));
-      mobileIntervalsRef.current = [];
-    };
-  }, [topFiveMobileCategories]);
 
   // Filtered contacts for right container
   const filteredContacts = subcategoryContacts.filter(co =>
@@ -316,21 +358,23 @@ const CategoryGridCompanyList = () => {
 
         {/* Desktop Layout (md and up) */}
         <div className="hidden md:block">
-          <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 flex flex-col md:flex-row items-start gap-0 overflow-hidden">
+          <div className="bg-white rounded-3xl shadow-none ring-1 ring-gray-100 flex flex-col md:flex-row items-start gap-0 overflow-hidden">
             {/* Left: Top Categories */}
-            <div className="w-full md:w-[32%] flex flex-col p-6 pt-8 md:pt-8 border-b md:border-b-0 md:border-r border-gray-100">
+            <div className="w-full md:w-[32%] flex flex-col p-6 pt-8 md:pt-8 md:border-r border-gray-100">
               <div>
                 <div className="flex items-center justify-between mb-2 mt-0">
                   <h2 className="text-xl font-bold text-gray-800">Top Categories</h2>
-                  <button
-                    onClick={handleOpenArrangementModal}
-                    className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    title="Arrange Category Order"
-                  >
-                    <Settings className="h-4 w-4" />
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={handleOpenArrangementModal}
+                      className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Arrange Category Order"
+                    >
+                      <Settings className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
-                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-3 gap-4 mb-0 mt-10">
+                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-3 gap-4 mb-0 mt-6">
                   {categoriesForLeftPanel.map((cat, idx) => {
                     // Check if category has a custom SVG icon or image file
                     const hasCustomIcon = cat.icon && (
@@ -411,7 +455,7 @@ const CategoryGridCompanyList = () => {
             {/* Right: Company Cards */}
             <div className="w-full md:w-[68%] flex flex-col justify-between p-6 pt-8 md:pt-8">
               <div>
-                <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 mt-0">
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4 mt-0">
                   <h2 className="text-xl font-bold text-gray-800 mb-2 mt-0">Top Contacts</h2>
                   <div className="relative w-full sm:w-auto sm:max-w-xs">
                     <svg className="lucide lucide-search absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
@@ -431,6 +475,7 @@ const CategoryGridCompanyList = () => {
                     </button>
                   </div>
                 </div>
+                {/* Quick Filters removed - restoring original mobile design */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-0 mt-0 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-orange-100">
                   {filteredContacts.map((co, idx) => (
                     <div
@@ -451,22 +496,18 @@ const CategoryGridCompanyList = () => {
                             <span
                               className="font-semibold text-gray-900 text-lg truncate cursor-pointer transition-colors duration-200 hover:text-orange-600 hover:underline"
                               onClick={() => {
-                                console.log('Company clicked:', co.id, co.name, co.slug, selectedCategory?.slug);
                                 // Use SEO-friendly slug route structure for all companies
                                 if (co.slug) {
                                   // Use the SEO-friendly category route structure
                                   const route = `/category/banking-services/${co.slug}/contactnumber`;
-                                  console.log('Navigating to SEO-friendly route:', route);
                                   navigate(route);
                                 } else if (co._id) {
                                   // Fallback to ObjectId route structure
                                   const route = `/company/${co._id}/contactnumber`;
-                                  console.log('Navigating to ObjectId route:', route);
                                   navigate(route);
                                 } else {
                                   // Final fallback to company ID route
                                   const route = `/company/${co.id}/contactnumber`;
-                                  console.log('Navigating to fallback route:', route);
                                   navigate(route);
                                 }
                               }}
@@ -476,7 +517,11 @@ const CategoryGridCompanyList = () => {
                             {co.verified && <Check className="h-4 w-4 text-green-500" title="Verified" />}
                           </div>
                           <div className="text-xs text-gray-500 mt-0.5">
-                            {co.tags && co.tags.length > 0 ? co.tags.join(' · ') : (co.role || 'Support')}
+                            {co.tags && co.tags.length > 0
+                              ? co.tags.join(' · ')
+                              : (selectedCategory?.badges && selectedCategory.badges.length > 0
+                                  ? selectedCategory.badges.join(' · ')
+                                  : (co.role || 'Support'))}
                           </div>
                         </div>
                       </div>
@@ -516,28 +561,18 @@ const CategoryGridCompanyList = () => {
                         </button>
                         <button
                           onClick={() => {
-                            console.log('View More clicked:', {
-                              id: co.id,
-                              name: co.name,
-                              slug: co.slug,
-                              _id: co._id,
-                              selectedCategory: selectedCategory?.slug
-                            });
                             // Use SEO-friendly slug route structure for all companies
                             if (co.slug) {
                               // Use the SEO-friendly category route structure
                               const route = `/category/banking-services/${co.slug}/contactnumber`;
-                              console.log('Navigating to SEO-friendly route:', route);
                               navigate(route);
                             } else if (co._id) {
                               // Fallback to ObjectId route structure
                               const route = `/company/${co._id}/contactnumber`;
-                              console.log('Navigating to ObjectId route:', route);
                               navigate(route);
                             } else {
                               // Final fallback to company ID route
                               const route = `/company/${co.id}/contactnumber`;
-                              console.log('Navigating to fallback route:', route);
                               navigate(route);
                             }
                           }}
@@ -561,123 +596,280 @@ const CategoryGridCompanyList = () => {
         </div>
         </div>
 
-        {/* Mobile Layout (below md) */}
+        {/* Mobile Layout (below md) - Amazon/JustDial Style */}
         <div className="md:hidden">
-          <div className="space-y-4">
-            {topFiveMobileCategories.map((cat, idx) => (
-              <div key={cat._id || cat.id || cat.slug || idx} className="bg-white rounded-2xl shadow border border-gray-100 p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-base font-bold text-gray-900">{cat.name}</h3>
+          
+          {/* Enhanced Mobile Categories Section - Amazon/JustDial Style */}
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            
+            {/* Enhanced Categories Header */}
+            <div className="px-4 pt-6 pb-4 border-b border-gray-100 bg-gradient-to-r from-orange-50/30 to-white">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800 mb-1">Popular Categories</h2>
+                  <p className="text-sm text-gray-600">Choose your service</p>
+                </div>
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={() => navigate(`/category/${cat.slug || cat._id || cat.id}`)}
-                    className="text-sm font-semibold text-orange-600"
+                    onClick={() => scrollCategories('left')}
+                    className="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-100 rounded-xl transition-all duration-200"
+                    title="Scroll Left"
                   >
-                    View all
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={handleOpenArrangementModal}
+                      className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-100 rounded-xl transition-all duration-200"
+                      title="Arrange Category Order"
+                    >
+                      <Settings className="h-5 w-5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => scrollCategories('right')}
+                    className="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-100 rounded-xl transition-all duration-200"
+                    title="Scroll Right"
+                  >
+                    <ChevronRight className="h-5 w-5" />
                   </button>
                 </div>
-                <div
-                  ref={(el) => (mobileRowRefs.current[idx] = el)}
-                  className="overflow-hidden snap-x snap-mandatory"
-                  style={{ scrollbarWidth: 'none' }}
-                  onMouseEnter={() => stopAutoForIndex(idx)}
-                  onMouseLeave={() => startAutoForIndex(idx)}
-                  onTouchStart={() => stopAutoForIndex(idx)}
-                  onTouchEnd={() => startAutoForIndex(idx)}
-                >
-                  <div className="flex gap-4 pb-1">
-                    {(cat.subcategories || []).map((co) => (
-                      <div key={co._id || co.id || co.slug} className="mobile-card min-w-[88%] max-w-[88%] snap-start">
-                        <div className="bg-white border border-gray-200 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 p-4 relative overflow-hidden">
-                          <div className="relative z-10">
-                            <div className="flex items-start gap-3 mb-3">
-                              <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0 shadow-md border border-gray-100 bg-gradient-to-br from-gray-50 to-white">
-                                {co.logo ? (
-                                  <img src={co.logo} alt={co.name} className="w-10 h-10 object-contain bg-transparent" loading="lazy" decoding="async" style={{ background: 'transparent', borderRadius: 0, boxShadow: 'none' }} />
-                                ) : (
-                                  <span className="text-gray-300 text-xl font-bold">{co.name?.[0]}</span>
-                                )}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                  <span
-                                    className="font-bold text-gray-900 text-base truncate cursor-pointer transition-colors duration-200 hover:text-orange-600"
-                                    onClick={() => {
-                                      if (co.slug) {
-                                        navigate(`/category/banking-services/${co.slug}/contactnumber`);
-                                      } else if (co._id) {
-                                        navigate(`/company/${co._id}/contactnumber`);
-                                      } else {
-                                        navigate(`/company/${co.id}/contactnumber`);
-                                      }
-                                    }}
-                                  >
-                                    {co.name}
-                                  </span>
-                                  <span className="ml-auto inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-[11px] font-semibold px-2 py-0.5 rounded-full">
-                                    <svg className="h-3 w-3 text-yellow-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                    4.2
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1 flex-wrap mt-1">
-                                  <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[11px] font-medium">{(selectedCategory && selectedCategory.badges && selectedCategory.badges[0]) || cat.name}</span>
-                                  {co.tags && co.tags.length > 0 && (
-                                    <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[11px] font-medium">{co.tags[0]}</span>
-                                  )}
-                                  <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-[11px] font-medium">Support</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-xl p-3 mb-3 border border-orange-200/50">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center shadow-md">
-                                    <Phone className="h-5 w-5 text-white" />
-                                  </div>
-                                  <div>
-                                    <div className="text-[11px] text-orange-600 font-semibold mb-0.5">Toll-Free Number</div>
-                                    <div className="font-bold text-gray-900 text-base">{co.phone}</div>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2" />
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                              <button
-                                onClick={() => window.open(`tel:${co.phone}`)}
-                                className="w-full h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
-                                aria-label="Call Now"
-                              >
-                                <Phone className="h-4 w-4 text-white" />
-                                <span>Call Now</span>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  if (co.slug) {
-                                    navigate(`/category/banking-services/${co.slug}/contactnumber`);
-                                  } else if (co._id) {
-                                    navigate(`/company/${co._id}/contactnumber`);
-                                  } else {
-                                    navigate(`/company/${co.id}/contactnumber`);
-                                  }
-                                }}
-                                className="w-full h-11 bg-white border border-orange-200 text-orange-600 font-semibold rounded-xl flex items-center justify-center gap-2 shadow-sm hover:shadow-md hover:bg-orange-50 transition-all duration-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-200"
-                                aria-label="View Details"
-                              >
-                                <span>View Details</span>
-                                <ArrowRight className="h-4 w-4 text-orange-600" />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
+              </div>
+              
+              {/* Enhanced Horizontal Scrolling Categories - JustDial Style */}
+              <div 
+                ref={categoryScrollRef}
+                className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 mobile-scroll-container"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {categoriesForLeftPanel.map((cat, idx) => {
+                  const hasCustomIcon = cat.icon && (
+                    cat.icon.startsWith('<svg') ||
+                    cat.icon.includes('<svg') ||
+                    cat.icon.includes('viewBox') ||
+                    cat.icon.includes('xmlns=')
+                  );
+                  
+                  const isImageFile = cat.icon && (
+                    (cat.icon.startsWith('/') && 
+                     !cat.icon.includes('<svg') && 
+                     ['.png', '.jpg', '.jpeg', '.gif', '.webp'].some(ext => cat.icon.toLowerCase().endsWith(ext))) ||
+                    (cat.icon.startsWith('data:image/')) ||
+                    (cat.iconType === 'image') ||
+                    (cat.icon && cat.icon.includes('.png')) ||
+                    (cat.icon && cat.icon.includes('.jpg')) ||
+                    (cat.icon && cat.icon.includes('.jpeg'))
+                  );
+                  
+                  const IconComponent = hasCustomIcon ? null : (ICON_MAP[cat.icon] || Smartphone);
+                  
+                  return (
+                    <button
+                      key={cat._id}
+                      onClick={() => setSelectedCategoryIdx(idx)}
+                      className={`flex flex-col items-center rounded-xl p-3 shadow-sm border transition-all duration-200 group min-w-[80px] relative mobile-category-card mobile-focus
+                        ${selectedCategoryIdx === idx 
+                          ? 'border-orange-500 bg-orange-50 scale-105 shadow-md' 
+                          : 'border-gray-200 bg-white hover:border-orange-300 hover:bg-orange-50'
+                        }`}
+                      style={{ outline: 'none' }}
+                    >
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 transition-all duration-200 ${
+                        selectedCategoryIdx === idx 
+                          ? 'bg-orange-500 shadow-orange-200' 
+                          : 'bg-gray-100 group-hover:bg-orange-100'
+                      }`}>
+                        {hasCustomIcon ? (
+                          <div
+                            className={`h-5 w-5 ${selectedCategoryIdx === idx ? 'text-white' : 'text-orange-600'} custom-svg-icon`}
+                            dangerouslySetInnerHTML={{ __html: cat.icon }}
+                          />
+                        ) : isImageFile ? (
+                          <img 
+                            src={cat.icon} 
+                            alt={`${cat.name} icon`} 
+                            className="h-5 w-5 object-contain mobile-image"
+                            loading="lazy"
+                            onError={(e) => {
+                              console.error(`❌ Image failed to load for ${cat.name}:`, cat.icon);
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <IconComponent className={`h-5 w-5 ${selectedCategoryIdx === idx ? 'text-white' : 'text-orange-600'}`} />
+                        )}
                       </div>
-                    ))}
-                    {(cat.subcategories || []).length === 0 && (
-                      <div className="text-gray-500 text-sm">No subcategories</div>
-                    )}
-                  </div>
+                      <span className={`text-xs font-medium text-center leading-tight mobile-text ${
+                        selectedCategoryIdx === idx ? 'text-orange-700' : 'text-gray-700 group-hover:text-orange-600'
+                      }`}>
+                        {cat.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Enhanced Company Cards Section - Amazon Style */}
+            <div className="p-4">
+              
+              {/* Enhanced Search Section - JustDial Style */}
+              <div className="mb-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search companies, services..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full pl-10 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-200 text-sm mobile-focus"
+                  />
+                  <button 
+                    onClick={handleMicClick}
+                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 rounded-lg transition-all duration-200 ${
+                      listening ? 'bg-orange-100 text-orange-600 animate-pulse' : 'hover:bg-gray-200 text-gray-500'
+                    }`}
+                  >
+                    <Mic className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
-            ))}
+              
+              {/* Enhanced Company Cards Grid - Amazon/JustDial Style */}
+              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-orange-300 scrollbar-track-orange-100 mobile-scroll-container">
+                {filteredContacts.map((co, idx) => (
+                  <div
+                    key={co._id || co.id}
+                    className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-4 group mobile-company-card mobile-shadow"
+                  >
+                    {/* Company Header */}
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-12 h-12 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 bg-gray-100">
+                        {co.logo ? (
+                          <img src={co.logo} alt={co.name} className="w-10 h-10 object-contain mobile-image" />
+                        ) : (
+                          <span className="text-gray-400 text-lg font-bold">{co.name[0]}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className="font-semibold text-gray-900 text-base truncate cursor-pointer hover:text-orange-600 mobile-text"
+                            onClick={() => {
+                              if (co.slug) {
+                                const route = `/category/banking-services/${co.slug}/contactnumber`;
+                                navigate(route);
+                              } else if (co._id) {
+                                const route = `/company/${co._id}/contactnumber`;
+                                navigate(route);
+                              } else {
+                                const route = `/company/${co.id}/contactnumber`;
+                                navigate(route);
+                              }
+                            }}
+                          >
+                            {co.name}
+                          </span>
+                          {co.verified && (
+                            <div className="flex items-center gap-1 bg-green-100 px-2 py-0.5 rounded-full">
+                              <Check className="h-3 w-3 text-green-600" />
+                              <span className="text-xs font-medium text-green-700">Verified</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <span>
+                            {co.tags && co.tags.length > 0
+                              ? co.tags[0]
+                              : (selectedCategory?.badges && selectedCategory.badges.length > 0
+                                  ? selectedCategory.badges[0]
+                                  : (co.role || 'Support'))}
+                          </span>
+                          <span>•</span>
+                          <span>{co.address || 'All India'}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button 
+                          onClick={() => handleCopy(co.phone, co._id || co.id)} 
+                          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors mobile-focus" 
+                          title="Copy Number"
+                        >
+                          {copied === (co._id || co.id) ? 
+                            <Check className="h-4 w-4 text-green-600" /> : 
+                            <Copy className="h-4 w-4 text-gray-400" />
+                          }
+                        </button>
+                        <button 
+                          onClick={() => handleFavorite(co._id || co.id)} 
+                          className="p-1.5 rounded-lg hover:bg-orange-100 transition-colors mobile-focus" 
+                          title="Add to Favorites"
+                        >
+                          {favoriteIds.includes(co._id || co.id) ? 
+                            <Heart className="h-4 w-4 text-orange-500 fill-orange-100" /> : 
+                            <Heart className="h-4 w-4 text-gray-400" />
+                          }
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Contact Number - JustDial Style */}
+                    <div className="bg-orange-50 rounded-lg p-3 mb-3 border border-orange-100">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-orange-600" />
+                          <span className="font-bold text-gray-900 text-sm">{co.phone}</span>
+                        </div>
+                        <span className="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                          FREE
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Action Buttons - Amazon Style */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => window.open(`tel:${co.phone}`)}
+                        className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 text-sm mobile-call-button mobile-focus"
+                      >
+                        <Phone className="h-4 w-4" /> 
+                        <span>Call Now</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (co.slug) {
+                            const route = `/category/banking-services/${co.slug}/contactnumber`;
+                            navigate(route);
+                          } else if (co._id) {
+                            const route = `/company/${co._id}/contactnumber`;
+                            navigate(route);
+                          } else {
+                            const route = `/company/${co.id}/contactnumber`;
+                            navigate(route);
+                          }
+                        }}
+                        className="flex-1 bg-white border border-orange-200 text-orange-600 font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-orange-50 transition-all duration-200 text-sm mobile-focus"
+                      >
+                        <span>View Details</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Enhanced Explore All Categories Button */}
+              <div className="flex justify-center mt-6 pt-4 border-t border-gray-100">
+                <button 
+                  className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl hover:from-orange-600 hover:to-orange-700 transition-all duration-200 text-sm mobile-focus"
+                  onClick={() => navigate('/category')}
+                >
+                  <Newspaper className="h-4 w-4" />
+                  Explore All Categories
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 

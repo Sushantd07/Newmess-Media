@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { Helmet } from 'react-helmet-async';
+import SeoFloatingButton from '../components/SeoFloatingButton.jsx';
+import DynamicSEO from '../components/DynamicSEO.jsx';
+import SeoDebugPanel from '../components/SeoDebugPanel.jsx';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ImageThumbnail from "../components/ImageThumbnail";
@@ -61,6 +65,7 @@ import {
 import CommentSection from '../components/CommentSection';
 import ComplaintsTab from '../components/ComplaintsTab';
 import AdminToggle from '../components/admin/AdminToggle';
+import { useAuth } from '../contexts/AuthContext.jsx';
 import InlineEditor from '../components/admin/InlineEditor';
 import CanvaStyleEditor from '../components/admin/CanvaStyleEditor';
 import LivePageInlineEditor from '../components/admin/LivePageInlineEditor';
@@ -241,8 +246,91 @@ const ContactNumbersTabs = ({ data, isAdminMode, onSave }) => {
     );
   };
 
+  const { companySlug, companyId } = useParams();
+  const pageIdentifier = companySlug || companyId || companyData?.slug || companyData?._id || 'jp-morgan';
+
+  // Debug: trace SEO gear prerequisites
+  useEffect(() => {
+    try {
+      console.log('[SEO] CompanyPage debug', {
+        path: location?.pathname,
+        pageIdentifier,
+        internalTabId,
+        companyData: companyData ? {
+          slug: companyData.slug,
+          _id: companyData._id,
+          name: companyData.name,
+          allKeys: Object.keys(companyData)
+        } : null,
+        companySlug,
+        companyId,
+        computedPageIdentifier: companyData?.slug || companySlug || companyId || companyData?._id || '',
+        // Debug the computation step by step
+        step1: companyData?.slug,
+        step2: companySlug,
+        step3: companyId,
+        step4: companyData?._id,
+        final: companyData?.slug || companySlug || companyId || companyData?._id || ''
+      });
+    } catch {}
+  }, [pageIdentifier, internalTabId, location?.pathname, companyData, companySlug, companyId]);
+
+  // Force re-render when pageIdentifier changes
+  useEffect(() => {
+    console.log('[CompanyPage] pageIdentifier changed:', pageIdentifier);
+  }, [pageIdentifier]);
+
+  // Clear any cached 'pending' SEO data when real identifier becomes available
+  useEffect(() => {
+    if (pageIdentifier && pageIdentifier !== 'pending') {
+      try {
+        // Clear any cached data for 'pending' identifier
+        const pendingKeys = ['seo:key:company:pending:', 'seo:key:company:pending:contactnumber', 'seo:key:company:pending:complain', 'seo:key:company:pending:quickhelp', 'seo:key:company:pending:videoguide', 'seo:key:company:pending:overview'];
+        pendingKeys.forEach(key => {
+          localStorage.removeItem(key);
+        });
+        console.log('[SEO] Cleared pending SEO cache for identifier:', pageIdentifier);
+      } catch (error) {
+        console.error('[SEO] Error clearing pending cache:', error);
+      }
+    }
+  }, [pageIdentifier]);
+
   return (
     <div className="space-y-6">
+      {pageIdentifier && (
+        <SeoFloatingButton
+          type="company"
+          identifier={pageIdentifier}
+          positionClass="top-[100px] left-4"
+          tab={currentTabUrlSlug}
+        />
+      )}
+      
+      {/* DynamicSEO is now handled globally with auto-detection */}
+      
+      {/* Debug: Log what's being passed to DynamicSEO */}
+      {console.log('[CompanyPage] DynamicSEO props:', {
+        type: 'company',
+        identifier: pageIdentifier || 'jp-morgan',
+        tab: currentTabUrlSlug,
+        pageIdentifier,
+        currentTabUrlSlug,
+        computedPageIdentifier: companyData?.slug || companySlug || companyId || companyData?._id || '',
+        companyData: companyData ? {
+          slug: companyData.slug,
+          _id: companyData._id,
+          name: companyData.name
+        } : null
+      })}
+      
+      {/* SEO Debug Panel - remove this after fixing the issue */}
+      <SeoDebugPanel 
+        type="company" 
+        identifier={pageIdentifier || 'jp-morgan'} 
+        tab={currentTabUrlSlug} 
+      />
+      
       <h3 className="text-xl font-semibold text-gray-900">Contact Numbers</h3>
       
       {data ? (
@@ -455,6 +543,8 @@ const CompanyPage = () => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [copiedSms, setCopiedSms] = useState(null);
   const [isAdminMode, setIsAdminMode] = useState(false);
+  const { role } = useAuth();
+  const isAdmin = role === 'admin';
   const [showCanvaEditor, setShowCanvaEditor] = useState(false);
   const [showLivePageEditor, setShowLivePageEditor] = useState(false);
 
@@ -567,6 +657,12 @@ const CompanyPage = () => {
     return filteredTabs;
   })();
 
+  // Compute current tab URL slug for SEO (contactnumber/complain/quickhelp/videoguide/overview)
+  const allowedTabSlugs = ["contactnumber", "complain", "quickhelp", "videoguide", "overview"];
+  const currentTabUrlSlug = allowedTabSlugs.includes(lastSegment)
+    ? lastSegment
+    : (tabIdToUrl[activeTab] || "contactnumber");
+
   // Fetch company page data from API
   const fetchCompanyPageData = async (isManualRefresh = false) => {
     if (isManualRefresh) {
@@ -616,7 +712,12 @@ const CompanyPage = () => {
         }
         
         setContactNumbersData(combinedData);
-        setCompanyData(combinedData);
+        // Ensure slug is set for SEO
+        const dataWithSlug = {
+          ...combinedData,
+          slug: combinedData.slug || companySlug || companyId
+        };
+        setCompanyData(dataWithSlug);
         setLastUpdated(new Date());
         
         // Force a re-render by updating a state variable
@@ -664,15 +765,30 @@ const CompanyPage = () => {
           console.log('✅ Combined data with structured complaints for dynamic company:', combinedData);
           console.log('📝 Structured content length:', structuredContent.length);
           setContactNumbersData(combinedData);
-          setCompanyData(combinedData);
+          // Ensure slug is set for SEO
+          const dataWithSlug = {
+            ...combinedData,
+            slug: combinedData.slug || companySlug || companyId
+          };
+          setCompanyData(dataWithSlug);
         } else {
-      setContactNumbersData(companyData);
-      setCompanyData(companyData);
+          setContactNumbersData(companyData);
+          // Ensure slug is set for SEO
+          const dataWithSlug = {
+            ...companyData,
+            slug: companyData.slug || companySlug || companyId
+          };
+          setCompanyData(dataWithSlug);
         }
       } catch (structuredError) {
         console.warn('⚠️ Could not fetch structured complaints data for dynamic company:', structuredError);
         setContactNumbersData(companyData);
-        setCompanyData(companyData);
+        // Ensure slug is set for SEO
+        const dataWithSlug = {
+          ...companyData,
+          slug: companyData.slug || companySlug || companyId
+        };
+        setCompanyData(dataWithSlug);
       }
       
           setLastUpdated(new Date());
@@ -722,12 +838,30 @@ const CompanyPage = () => {
             console.log('✅ Combined data with structured complaints for slug:', combinedData);
             console.log('📝 Structured content length:', structuredContent.length);
             setContactNumbersData(combinedData);
+            // Ensure slug is set for SEO
+            const dataWithSlug = {
+              ...combinedData,
+              slug: combinedData.slug || companySlug || companyId
+            };
+            setCompanyData(dataWithSlug);
           } else {
-        setContactNumbersData(companyData);
+            setContactNumbersData(companyData);
+            // Ensure slug is set for SEO
+            const dataWithSlug = {
+              ...companyData,
+              slug: companyData.slug || companySlug || companyId
+            };
+            setCompanyData(dataWithSlug);
           }
         } catch (structuredError) {
           console.warn('⚠️ Could not fetch structured complaints data for slug:', structuredError);
           setContactNumbersData(companyData);
+          // Ensure slug is set for SEO
+          const dataWithSlug = {
+            ...companyData,
+            slug: companyData.slug || companySlug || companyId
+          };
+          setCompanyData(dataWithSlug);
         }
         
             setLastUpdated(new Date());
@@ -747,8 +881,8 @@ const CompanyPage = () => {
       if (isObjectIdRoute) {
         fetchCompanyPageData();
       } else if (companySlug) {
-        // For all company pages, fetch from company API first
-        fetchCompanyPageData();
+        // Slug-based route should use dynamic company fetcher
+        fetchDynamicCompanyData();
       } else {
         fetchContactNumbersData();
       }
@@ -1183,65 +1317,6 @@ const CompanyPage = () => {
   };
 
   // Handle structured complaints data save
-  // Debug function to test data fetching
-  const debugFetchStructuredComplaints = async () => {
-    try {
-      console.log('🔍 Debug: Testing structured complaints fetch for:', companySlug || companyIdentifier);
-      
-      const result = await structuredComplaintsService.getStructuredComplaints(companySlug || companyIdentifier);
-      console.log('📊 Debug: Structured complaints result:', result);
-      
-      if (result.success && result.data) {
-        console.log('📝 Debug: richTextContent length:', result.data.richTextContent?.length || 0);
-        console.log('📝 Debug: richTextContent preview:', result.data.richTextContent?.substring(0, 200) || 'No content');
-      }
-    } catch (error) {
-      console.error('❌ Debug: Error fetching structured complaints:', error);
-    }
-  };
-
-  // Test function to save and immediately fetch data
-  const testSaveAndFetch = async () => {
-    try {
-      console.log('🧪 Test: Saving test content...');
-      
-      const testData = {
-        richTextContent: '<h1>Test Content</h1><p>This is a test content saved at ' + new Date().toISOString() + '</p>',
-        mainHeading: {
-          title: 'Test Complaint Process',
-          description: 'Test complaint process for debugging'
-        },
-        processingStatus: 'completed',
-        lastProcessed: new Date()
-      };
-      
-      // Save test data
-      const saveResult = await structuredComplaintsService.saveStructuredComplaints(companySlug || companyIdentifier, testData);
-      console.log('✅ Test: Save result:', saveResult);
-      
-      // Wait a moment
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Fetch the data back
-      const fetchResult = await structuredComplaintsService.getStructuredComplaints(companySlug || companyIdentifier);
-      console.log('📊 Test: Fetch result:', fetchResult);
-      
-      if (fetchResult.success && fetchResult.data) {
-        console.log('📝 Test: Retrieved content length:', fetchResult.data.richTextContent?.length || 0);
-        console.log('📝 Test: Retrieved content:', fetchResult.data.richTextContent);
-        
-        // Update the state immediately
-        setContactNumbersData(prevData => ({
-          ...prevData,
-          complaintContent: fetchResult.data.richTextContent
-        }));
-        
-        console.log('🔄 Test: Updated state with test content');
-      }
-    } catch (error) {
-      console.error('❌ Test: Error in save and fetch test:', error);
-    }
-  };
 
   const handleSaveStructuredComplaintsData = async (structuredData) => {
     console.log('🚀 CompanyPage handleSaveStructuredComplaintsData STARTED');
@@ -1394,33 +1469,19 @@ const CompanyPage = () => {
       </AnimatePresence>
       
       {/* Admin Toggle */}
-      <AdminToggle 
-        companyData={unifiedData}
-        onSave={handleSaveCompanyData}
-        onInlineSave={handleInlineSave}
-        isAdminMode={isAdminMode}
-        setIsAdminMode={setIsAdminMode}
-        onOpenCanvaEditor={() => setShowLivePageEditor(true)}
-        onRefresh={() => fetchCompanyPageData(true)}
-      />
-
-      {/* Debug Button - Only show in admin mode */}
-      {isAdminMode && (
-        <div className="fixed top-20 right-4 z-50 space-y-2">
-          <button
-            onClick={debugFetchStructuredComplaints}
-            className="bg-purple-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-purple-700 transition-colors block w-full"
-          >
-            🔍 Debug Fetch
-          </button>
-          <button
-            onClick={testSaveAndFetch}
-            className="bg-orange-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-orange-700 transition-colors block w-full"
-          >
-            🧪 Test Save & Fetch
-          </button>
-        </div>
+      {isAdmin && (
+        <AdminToggle 
+          companyData={unifiedData}
+          onSave={handleSaveCompanyData}
+          onInlineSave={handleInlineSave}
+          isAdminMode={isAdminMode}
+          setIsAdminMode={setIsAdminMode}
+          onOpenCanvaEditor={() => setShowLivePageEditor(true)}
+          onRefresh={() => fetchCompanyPageData(true)}
+        />
       )}
+
+
 
       
 

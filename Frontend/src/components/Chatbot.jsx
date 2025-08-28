@@ -27,7 +27,6 @@ function Chatbot() {
 
   const navigateToRoute = (route) => {
     // This function would handle navigation in your application
-    console.log(`Navigation requested to: ${route}`);
     window.location.href = route; // Uncomment this if you want actual navigation
   };
 

@@ -18,26 +18,41 @@ import CategoryPage from './pages/CategoryPage.jsx';
 import CompanyPage from './pages/CompanyPage.jsx';
 import StateWiseSection from './components/StateWiseSection';
 import MaharashtraHelplinePage from './pages/MaharashtraHelpline';
+import StateDetail from './pages/StateDetail.jsx';
+import StatewiseList from './pages/StatewiseList.jsx';
 import AboutUs from './pages/AboutUs.jsx';
 import AdminPanel from './pages/AdminPanel.jsx';
-import CanvaEditorTest from './pages/CanvaEditorTest.jsx';
-import LiveEditorTest from './pages/LiveEditorTest.jsx';
-import InlineEditorTest from './pages/InlineEditorTest.jsx';
-import LivePageDebugTest from './pages/LivePageDebugTest.jsx';
-import ErrorTestPage from './pages/ErrorTestPage.jsx';
-import TinyMCETest from './pages/TinyMCETest.jsx';
-import ICICIContentTest from './pages/ICICIContentTest.jsx';
-import LiveTabEditingDemo from './pages/LiveTabEditingDemo.jsx';
+import ContactNumbersAdmin from './pages/ContactNumbersAdmin.jsx';
+
+import { Helmet } from 'react-helmet-async';
+import Login from './pages/Login.jsx';
+import Signup from './pages/Signup.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import Profile from './pages/Profile.jsx';
+import { PrivateRoute, AdminRoute } from './routes';
+import SeoFloatingButton from './components/SeoFloatingButton.jsx';
+import DynamicSEO from './components/DynamicSEO.jsx';
+import SafeBoundary from './components/SafeBoundary.jsx';
+import { computeDefaultsFromDom } from './components/DynamicSEO.jsx';
+import { useAuth } from './contexts/AuthContext.jsx';
 
 function App() {
+  const { role } = useAuth();
+  const isAdmin = role === 'admin';
   return (
     <div className="min-h-screen bg-gray-100">
       <ScrollToTop />
+      
+      {/* Global DynamicSEO wrapped to prevent app crash on errors */}
+      <SafeBoundary>
+        <DynamicSEO type="global" identifier="auto" />
+      </SafeBoundary>
       
       <Routes>
         {/* Home Page */}
         <Route path="/" element={
           <>
+            {isAdmin && <SeoFloatingButton type="home" identifier="home" />}
             <Header />
             <TrendingTicker />
             <HeroSection />
@@ -45,7 +60,7 @@ function App() {
             <StateWiseSection/>
             <ContactUs />
             <FAQSection/>
-            <Chatbot />
+            {/* <Chatbot /> */}
             <Footer />
           </>
         } />
@@ -53,6 +68,7 @@ function App() {
         {/* About Us Page */}
         <Route path="/about" element={
           <>
+            {isAdmin && <SeoFloatingButton type="route" identifier={window.location.pathname} defaults={computeDefaultsFromDom()} />}
             <Header />
             <TrendingTicker />
             <AboutUs />
@@ -61,36 +77,84 @@ function App() {
           </>
         } />
 
+        {/* Auth */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        {/* Dashboard - any logged in user */}
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <>
+                <Header />
+                <TrendingTicker />
+                <Dashboard />
+                <Footer />
+              </>
+            </PrivateRoute>
+          }
+        />
+
+        {/* Profile - default for regular users after login */}
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <>
+                <Header />
+                <TrendingTicker />
+                <Profile />
+                <Footer />
+              </>
+            </PrivateRoute>
+          }
+        />
+
         {/* Admin Panel */}
-        <Route path="/admin/*" element={<AdminPanel />} />
+        <Route
+          path="/admin/*"
+          element={
+            <AdminRoute>
+              <AdminPanel />
+            </AdminRoute>
+          }
+        />
 
-        {/* Canva Editor Test */}
-        <Route path="/canva-editor-test" element={<CanvaEditorTest />} />
+        {/* Contact Numbers Admin Panel */}
+        <Route
+          path="/admin/contact-numbers"
+          element={
+            <AdminRoute>
+              <ContactNumbersAdmin />
+            </AdminRoute>
+          }
+        />
 
-        {/* Live Editor Test */}
-        <Route path="/live-editor-test" element={<LiveEditorTest />} />
 
-        {/* Inline Editor Test */}
-        <Route path="/inline-editor-test" element={<InlineEditorTest />} />
 
-        {/* Live Page Debug Test */}
-        <Route path="/live-page-debug-test" element={<LivePageDebugTest />} />
-
-        {/* Error Test Page */}
-        <Route path="/error-test" element={<ErrorTestPage />} />
-
-        {/* TinyMCE Test Page */}
-        <Route path="/tinymce-test" element={<TinyMCETest />} />
-
-        {/* ICICI Content Test Page */}
-        <Route path="/icici-content-test" element={<ICICIContentTest />} />
-
-        {/* Live Tab Editing Demo */}
-        <Route path="/live-tab-editing-demo" element={<LiveTabEditingDemo />} />
+        {/* Statewise Pages */}
+        <Route path="/statewise-numbers" element={
+          <>
+            <Header />
+            <TrendingTicker />
+            <StatewiseList />
+            <Footer />
+          </>
+        } />
+        <Route path="/state/:stateId" element={
+          <>
+            <Header />
+            <TrendingTicker />
+            <StateDetail />
+            <Footer />
+          </>
+        } />
 
         {/* All Categories Page */}
         <Route path="/category" element={
           <>
+            {isAdmin && <SeoFloatingButton type="all-categories" identifier="all-categories" />}
             <Header />
             <TrendingTicker />
             <AllCategories />

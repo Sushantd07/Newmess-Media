@@ -258,7 +258,7 @@ const CompanyManager = () => {
     }
 
     try {
-      console.log('Submitting data:', submitData); // Debug log
+      
       
       let response;
       
@@ -332,7 +332,7 @@ const CompanyManager = () => {
       }
 
       const data = await response.json();
-      console.log('Response:', data); // Debug log
+      
 
       if (data.success) {
         setMessage({ 

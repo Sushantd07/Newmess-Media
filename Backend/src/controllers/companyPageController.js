@@ -165,6 +165,18 @@ export const getAllCompanyPages = async (req, res) => {
   }
 };
 
+// Lightweight list for admin dropdown – no pagination
+export const listAllCompaniesLite = async (req, res) => {
+  try {
+    const companies = await CompanyPage.find({}, { name: 1, slug: 1, _id: 1 })
+      .sort({ name: 1 })
+      .lean();
+    res.status(200).json({ success: true, data: companies });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 // Get Company Page by Slug
 export const getCompanyPageBySlug = async (req, res) => {
   try {

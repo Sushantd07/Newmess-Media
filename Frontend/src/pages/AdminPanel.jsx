@@ -5,7 +5,8 @@ import Dashboard from '../components/admin/Dashboard';
 import ComplaintEditor from '../components/admin/ComplaintEditor';
 import CompanyManager from '../components/admin/CompanyManager';
 import CategoryManager from '../components/admin/CategoryManager';
-import DndFormBuilderPage from './DndFormBuilderPage';
+
+import DynamicPageStudio from './DynamicPageStudio.jsx';
 
 function AdminPanel() {
   return (
@@ -15,7 +16,9 @@ function AdminPanel() {
         <Route path="/complaint-editor" element={<ComplaintEditor />} />
         <Route path="/companies" element={<CompanyManager />} />
         <Route path="/categories" element={<CategoryManager />} />
-        <Route path="/dnd-form-builder" element={<DndFormBuilderPage />} />
+
+        <Route path="/dynamic-pages" element={<DynamicPageStudio />} />
+        <Route path="/dynamic-pages/:pageId" element={<DynamicPageStudio />} />
       </Routes>
     </Layout>
   );

@@ -8,6 +8,7 @@ import {
   createContactNumbersTab,
   addContactNumbersToCompany,
   getAllCompanyPages,
+  listAllCompaniesLite,
   getCompanyPageBySlug,
   getCompanyPagesByCategory,
   updateCompanyPage,
@@ -30,6 +31,7 @@ router.post("/create-contact-numbers", createContactNumbersTab);
 // 🟡 Add Tabs to Existing Company Page
 router.post("/:slug/add-contact-numbers", addContactNumbersToCompany);
 router.get("/", getAllCompanyPages);
+router.get("/all-lite", listAllCompaniesLite);
 router.get("/search", searchCompanyPages);
 router.get("/:slug", getCompanyPageBySlug);
 router.put("/:slug", updateCompanyPage);
