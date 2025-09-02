@@ -54,7 +54,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-gray-900 text-white py-5">
+    <footer className="bg-gray-900 text-white py-5 pb-24 md:pb-5">
       {/* Trust Indicators Bar */}
       {/* <div className="bg-gradient-to-r from-orange-500 to-orange-600 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

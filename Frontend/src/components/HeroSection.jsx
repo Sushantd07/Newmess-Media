@@ -351,7 +351,7 @@ const HeroSection = () => {
     .map(({ topic }) => topic);
 
   return (
-         <div className="overflow-hidden border-amber-800 b-[10px] w-full min-h-[250px] sm:min-h-[500px] lg:h-[542px] bg-gradient-to-b from-[#F28C28] via-[#FDFDFC] to-[#1D8052] md:from-[#F28C28] md:via-[#FDFDFC] md:to-[#1D8052] px-1 sm:px-6 lg:px-12 py-6 sm:py-8 flex items-center justify-center shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
+         <div className="overflow-hidden w-full min-h-[180px] sm:min-h-[500px] lg:h-[542px] bg-gradient-to-b from-[#F28C28] via-[#FDFDFC] to-[#1D8052] md:from-[#F28C28] md:via-[#FDFDFC] md:to-[#1D8052] px-1 sm:px-6 lg:px-12 py-3 sm:py-8 pb-12 md:pb-8 flex items-center justify-center shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
 
       {/* Premium Top Shadow */}
       <div className="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-black/10 to-transparent pointer-events-none z-10"></div>
@@ -360,7 +360,7 @@ const HeroSection = () => {
       <div className="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-black/10 to-transparent pointer-events-none z-10"></div>
 
       {/* Your original content starts here */}
-      <div className="w-full max-w-9xl mx-auto flex flex-col md:flex-row gap-6 h-full items-stretch">
+      <div className="w-full max-w-7xl mx-auto flex flex-col md:flex-row gap-6 h-full items-stretch">
                 {/* NEW: Left Help Topics Container */}
         {/* Desktop vertical sidebar */}
         <div className="hidden md:flex flex-col w-[23%] h-[479px] rounded-xl shadow-xl border border-orange-100/70 overflow-hidden bg-white">

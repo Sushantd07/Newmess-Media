@@ -11,6 +11,7 @@ import ContactUs from './components/ContactUs';
 import ScrollToTop from './components/ScrollToTop';
 import FAQSection from './components/FAQSection.jsx'
 import Chatbot from './components/Chatbot.jsx';
+import MobileNavigation from './components/MobileNavigation.jsx';
 
 
 import AllCategories from './pages/AllCategories.jsx';
@@ -30,7 +31,7 @@ import ICICIContentTest from './pages/ICICIContentTest.jsx';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 overflow-x-hidden">
       <ScrollToTop />
       
       <Routes>
@@ -44,8 +45,9 @@ function App() {
             <StateWiseSection/>
             <ContactUs />
             <FAQSection/>
-            <Chatbot />
+            {/* <Chatbot /> */}
             <Footer />
+            <MobileNavigation />
           </>
         } />
 
@@ -57,6 +59,7 @@ function App() {
             <AboutUs />
             <Chatbot />
             <Footer />
+            <MobileNavigation />
           </>
         } />
 
@@ -91,6 +94,7 @@ function App() {
             <TrendingTicker />
             <AllCategories />
             <Footer />
+            <MobileNavigation />
           </>
         } />
 
@@ -101,6 +105,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
         <Route path="/category/:categoryId/:companySlug/complain" element={
@@ -109,6 +114,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
         <Route path="/category/:categoryId/:companySlug/quickhelp" element={
@@ -117,6 +123,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
         <Route path="/category/:categoryId/:companySlug/videoguide" element={
@@ -125,6 +132,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
         <Route path="/category/:categoryId/:companySlug/overview" element={
@@ -133,6 +141,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
 
@@ -143,6 +152,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
         
@@ -153,6 +163,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
 
@@ -163,6 +174,7 @@ function App() {
             <TrendingTicker />
             <CategoryPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
 
@@ -173,6 +185,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
         <Route path="/company/:companyId/contactnumber" element={
@@ -181,6 +194,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
         <Route path="/company/:companyId/complain" element={
@@ -189,6 +203,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
         <Route path="/company/:companyId/quickhelp" element={
@@ -197,6 +212,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
         <Route path="/company/:companyId/videoguide" element={
@@ -205,6 +221,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
         <Route path="/company/:companyId/overview" element={
@@ -213,6 +230,7 @@ function App() {
             <TrendingTicker />
             <CompanyPage />
             <Footer />
+            <MobileNavigation />
           </>
         } />
         {/* <Route path="/home/state-wise" element={<StateWiseCreative />} /> */}

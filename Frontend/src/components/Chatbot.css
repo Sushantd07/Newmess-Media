@@ -2,7 +2,7 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  z-index: 50;
+  z-index: 1000;
   font-family: 'Ubuntu', sans-serif;
 }
 
@@ -320,7 +320,7 @@
   }
   
   .chat-container {
-    bottom: 10px;
+    bottom: 80px;
     right: 10px;
   }
   
@@ -332,5 +332,18 @@
   .chat-toggle-button .chat-icon {
     width: 40px;
     height: 40px;
+  }
+}
+
+/* Tablet responsive design */
+@media (min-width: 481px) and (max-width: 768px) {
+  .chat-container {
+    bottom: 20px;
+    right: 15px;
+  }
+  
+  .chat-box {
+    width: 350px;
+    height: 550px;
   }
 }
