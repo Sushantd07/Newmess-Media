@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /
+
+# Block private/auth-only areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /account
+Disallow: /dashboard
+Disallow: /login
+Disallow: /logout
+Disallow: /signup
+Disallow: /profile
+Disallow: /user/
+
+# Permit framework/static asset directories (important for SSR/Next.js and React builds)
+Allow: /_next/
+Allow: /static/
+Allow: /assets/
+Allow: /images/
+
+# Avoid indexing preview/debug parameterized URLs
+Disallow: /*?preview=*
+Disallow: /*?draft=*
+Disallow: /*?debug=*
+
+Sitemap: https://indiacustomerhelp.com/sitemap.xml

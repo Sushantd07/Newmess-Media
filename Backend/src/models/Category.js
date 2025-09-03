@@ -31,14 +31,17 @@ const CategorySchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+      index: true, // Add index for active filtering
     },
     featured: {
       type: Boolean,
       default: false,
+      index: true, // Add index for featured filtering
     },
     order: {
       type: Number,
       default: 0,
+      index: true, // Add index for sorting
     },
     // Frontend display control
     displayLimit: {
@@ -62,6 +65,11 @@ const CategorySchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// ✅ Add compound indexes for better query performance
+CategorySchema.index({ isActive: 1, order: 1 }); // For main grid query
+CategorySchema.index({ isActive: 1, featured: 1, order: 1 }); // For featured categories
+CategorySchema.index({ slug: 1, isActive: 1 }); // For slug-based queries
 
 const Category = mongoose.model('Category', CategorySchema);
 export default Category;

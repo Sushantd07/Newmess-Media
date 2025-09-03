@@ -30,6 +30,42 @@ export const createSubcategory = async (req, res) => {
   }
 };
 
+// ✅ Delete Contact Numbers Tab from Company by Slug
+export const deleteContactNumbersFromCompanyBySlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    // Find the subcategory by slug or id
+    const subcategory = await Subcategory.findOne({
+      $or: [
+        { slug },
+        { id: slug }
+      ]
+    });
+
+    if (!subcategory) {
+      return res.status(404).json({ success: false, message: 'Company not found' });
+    }
+
+    const tabId = subcategory.tabs?.numbers;
+    if (!tabId) {
+      return res.status(404).json({ success: false, message: 'Contact numbers tab not linked' });
+    }
+
+    // Delete the tab document
+    await ContactNumbersTab.findByIdAndDelete(tabId);
+
+    // Unlink from company and remove selection
+    subcategory.tabs.numbers = undefined;
+    subcategory.selectedTabs = (subcategory.selectedTabs || []).filter((t) => t !== 'numbers');
+    await subcategory.save();
+
+    res.status(200).json({ success: true, message: 'Contact numbers tab deleted and unlinked' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error deleting contact numbers tab', error: err.message });
+  }
+};
+
 // Create Company Page with Complete Data
 export const createCompanyPage = async (req, res) => {
   try {
@@ -328,86 +364,15 @@ export const createCompanyPage = async (req, res) => {
 
     try {
 
-      // Create Contact Numbers Tab if selected
+      // Create Contact Numbers Tab if selected (empty skeleton, no hardcoded data)
       if (selectedTabs.includes('numbers') && !contactTabId) {
-        const defaultContactNumbersData = {
+        const emptyContactNumbersData = {
           tabTitle: "Contact Numbers",
-          tabDescription: `Contact information for ${name}`,
-          
-          // Top Contact Cards
-          topContactCards: {
-            heading: { key: 'topContactCards', text: 'Top Contact Cards', subText: 'Main contact numbers' },
-            cards: [
-              {
-                title: 'Customer Care',
-                number: phone,
-                subtitle: '24x7 Support',
-                icon: 'phone',
-                colors: { cardBg: '#3B82F6', iconBg: '#1E40AF', textColor: '#FFFFFF' }
-              },
-              {
-                title: 'Main Office',
-                number: mainPhone || phone,
-                subtitle: 'General Inquiries',
-                icon: 'building',
-                colors: { cardBg: '#10B981', iconBg: '#047857', textColor: '#FFFFFF' }
-              }
-            ]
-          },
-
-          // Helpline Numbers Section
-          helplineNumbersSection: {
-            heading: { key: 'helplineNumbers', text: 'Helpline Numbers', subText: '24x7 customer support' },
-            table: {
-              heading: { key: 'helplineTable', text: 'Customer Support', subText: 'Available 24x7' },
-              headers: ['Service', 'Number'],
-              rows: [
-                ['Customer Care', phone],
-                ['General Support', mainPhone || phone]
-              ]
-            }
-          },
-
-          // All India Numbers Section
-          allIndiaNumbersSection: {
-            heading: { key: 'allIndiaNumbers', text: 'All India Numbers', subText: 'National customer support' },
-            table: {
-              heading: { key: 'allIndiaTable', text: 'National Support', subText: 'Available across India' },
-              headers: ['Service', 'Number'],
-              rows: [
-                ['Toll Free', phone],
-                ['Customer Service', mainPhone || phone]
-              ]
-            }
-          },
-
-          // SMS Services Section
-          smsServicesSection: {
-            heading: { key: 'smsServices', text: 'SMS Services', subText: 'Text-based support' },
-            services: [
-              {
-                code: 'HELP',
-                number: phone,
-                description: 'Get help via SMS'
-              }
-            ]
-          },
-
-          // Email Support Section
-          emailSupportSection: {
-            heading: { key: 'emailSupport', text: 'Email Support', subText: 'Written communication' },
-            table: {
-              heading: { key: 'emailTable', text: 'Email Support', subText: 'Response within 24 hours' },
-              headers: ['Service', 'Email'],
-              rows: [
-                ['General Support', 'support@company.com'],
-                ['Customer Care', 'care@company.com']
-              ]
-            }
-          }
+          tabDescription: `Contact information for ${name}`
+          // Intentionally leaving all sections empty; admin will fill via panel
         };
 
-        const contactNumbersTab = await ContactNumbersTab.create(defaultContactNumbersData);
+        const contactNumbersTab = await ContactNumbersTab.create(emptyContactNumbersData);
         contactNumbersTabId = contactNumbersTab._id;
         console.log('✅ Contact Numbers Tab created:', contactNumbersTabId);
       }
@@ -1596,86 +1561,12 @@ export const createDefaultTabsForCompany = async (req, res) => {
     let createdTabs = {};
     let updatedTabs = { ...companyPage.tabs };
 
-    // Create default Contact Numbers Tab if it doesn't exist
+    // Create Contact Numbers Tab if it doesn't exist (empty by default)
     if (!companyPage.tabs.numbers) {
-      const defaultContactNumbersData = {
+      const contactNumbersTab = await ContactNumbersTab.create({
         tabTitle: "Contact Numbers",
-        tabDescription: `Contact information for ${companyPage.name}`,
-        
-        // Top Contact Cards
-        topContactCards: {
-          heading: { key: 'topContactCards', text: 'Top Contact Cards', subText: 'Main contact numbers' },
-          cards: [
-            {
-              title: 'Customer Care',
-              number: companyPage.phone,
-              subtitle: '24x7 Support',
-              icon: 'phone',
-              colors: { cardBg: '#3B82F6', iconBg: '#1E40AF', textColor: '#FFFFFF' }
-            },
-            {
-              title: 'Main Office',
-              number: companyPage.mainPhone || companyPage.phone,
-              subtitle: 'General Inquiries',
-              icon: 'building',
-              colors: { cardBg: '#10B981', iconBg: '#047857', textColor: '#FFFFFF' }
-            }
-          ]
-        },
-
-        // Helpline Numbers Section
-        helplineNumbersSection: {
-          heading: { key: 'helplineNumbers', text: 'Helpline Numbers', subText: '24x7 customer support' },
-          table: {
-            heading: { key: 'helplineTable', text: 'Customer Support', subText: 'Available 24x7' },
-            headers: ['Service', 'Number'],
-            rows: [
-              ['Customer Care', companyPage.phone],
-              ['General Support', companyPage.mainPhone || companyPage.phone]
-            ]
-          }
-        },
-
-        // All India Numbers Section
-        allIndiaNumbersSection: {
-          heading: { key: 'allIndiaNumbers', text: 'All India Numbers', subText: 'National customer support' },
-          table: {
-            heading: { key: 'allIndiaTable', text: 'National Support', subText: 'Available across India' },
-            headers: ['Service', 'Number'],
-            rows: [
-              ['Toll Free', companyPage.phone],
-              ['Customer Service', companyPage.mainPhone || companyPage.phone]
-            ]
-          }
-        },
-
-        // SMS Services Section
-        smsServicesSection: {
-          heading: { key: 'smsServices', text: 'SMS Services', subText: 'Text-based support' },
-          services: [
-            {
-              code: 'HELP',
-              number: companyPage.phone,
-              description: 'Get help via SMS'
-            }
-          ]
-        },
-
-        // Email Support Section
-        emailSupportSection: {
-          heading: { key: 'emailSupport', text: 'Email Support', subText: 'Written communication' },
-          table: {
-            heading: { key: 'emailTable', text: 'Email Support', subText: 'Response within 24 hours' },
-            headers: ['Service', 'Email'],
-            rows: [
-              ['General Support', 'support@company.com'],
-              ['Customer Care', 'care@company.com']
-            ]
-          }
-        }
-      };
-
-      const contactNumbersTab = await ContactNumbersTab.create(defaultContactNumbersData);
+        tabDescription: `Contact information for ${companyPage.name}`
+      });
       updatedTabs.numbers = contactNumbersTab._id;
       createdTabs.contactNumbers = contactNumbersTab._id;
       console.log('✅ Default Contact Numbers Tab created for existing company:', contactNumbersTab._id);

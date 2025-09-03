@@ -21,6 +21,18 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 setPersistence(auth, browserLocalPersistence).catch(() => {});
 const googleProvider = new GoogleAuthProvider();
+// Encourage account selector and consent each time for clarity while debugging
+try {
+  googleProvider.setCustomParameters({ prompt: 'select_account consent' });
+  // Optional: request profile/email scopes explicitly
+  // googleProvider.addScope('profile');
+  // googleProvider.addScope('email');
+  // eslint-disable-next-line no-console
+  console.log('[Firebase] Google provider configured with custom parameters');
+} catch (e) {
+  // eslint-disable-next-line no-console
+  console.warn('[Firebase] Failed to set Google provider params:', e);
+}
 
 // Firestore
 const db = getFirestore(app);

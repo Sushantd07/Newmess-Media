@@ -1,15 +1,21 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/index.js",
+
+    "dev": "node start-dev.js",
     "start": "node src/index.js",
+    "start:simple": "node src/index.js",
     "ngrok": "ngrok http 3000",
     "ngrok:start": "node start-ngrok.js",
     "dev:ngrok": "concurrently \"npm run dev\" \"npm run ngrok\"",
-    "dev:ngrok:start": "concurrently \"npm run dev\" \"npm run ngrok:start\""
+    "dev:ngrok:start": "concurrently \"npm run dev\" \"npm run ngrok:start\"",
+    "check:env": "node -e \"console.log('Environment check:'); console.log('MONGODB_URL:', process.env.MONGODB_URL || 'NOT SET'); console.log('PORT:', process.env.PORT || '3000 (default)'); console.log('NODE_ENV:', process.env.NODE_ENV || 'development (default)');\""
+  },
+  "engines": {
+    "node": "20.x"
   },
   "author": "sushant",
   "license": "ISC",
@@ -22,7 +28,7 @@
     "express": "^5.1.0",
     "mongoose": "^8.17.0",
     "multer": "^1.4.5-lts.1",
-    "sharp": "^0.32.6"
+    "sharp": "^0.33.5"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

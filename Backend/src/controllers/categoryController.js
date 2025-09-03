@@ -224,24 +224,67 @@ const convertIconPathToContent = async (category) => {
   return category;
 };
 
-// GET /api/categories → Basic data for /home/category
+// GET /api/categories → Basic data for /home/category (OPTIMIZED)
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find({ isActive: true }).sort({ order: 1 }).lean();
+    // Add caching headers for better performance
+    res.set({
+      'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
+      'ETag': `categories-${Date.now()}`,
+      'Vary': 'Accept-Encoding'
+    });
 
+    // Use aggregation pipeline for better performance - single query instead of N+1
+    const categoriesWithCounts = await Category.aggregate([
+      { $match: { isActive: true } },
+      { $sort: { order: 1 } },
+      {
+        $lookup: {
+          from: 'subcategories', // Collection name in MongoDB
+          localField: '_id',
+          foreignField: 'parentCategory',
+          pipeline: [
+            { $match: { isActive: true } }
+          ],
+          as: 'subcategories'
+        }
+      },
+      {
+        $addFields: {
+          subcategoryCount: { $size: '$subcategories' }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          slug: 1,
+          description: 1,
+          icon: 1,
+          iconName: 1,
+          order: 1,
+          isActive: 1,
+          featured: 1,
+          metaTitle: 1,
+          metaDescription: 1,
+          keywords: 1,
+          color: 1,
+          badges: 1,
+          subcategoryCount: 1,
+          createdAt: 1,
+          updatedAt: 1
+        }
+      }
+    ]);
+
+    // Process icons in parallel (if needed)
     const updatedCategories = await Promise.all(
-      categories.map(async (category) => {
-        const count = await Subcategory.countDocuments({ 
-          parentCategory: category._id,
-          isActive: true 
-        });
-        
+      categoriesWithCounts.map(async (category) => {
         // Convert icon path to content if needed
         const categoryWithIcon = await convertIconPathToContent(category);
         
         return {
           ...categoryWithIcon,
-          subcategoryCount: count,
           badges: categoryWithIcon.badges || []
         };
       })
@@ -253,6 +296,7 @@ export const getCategories = async (req, res) => {
       data: updatedCategories 
     });
   } catch (err) {
+    console.error('Error in getCategories:', err);
     res.status(500).json({ 
       success: false,
       message: 'Error fetching categories',
@@ -261,36 +305,68 @@ export const getCategories = async (req, res) => {
   }
 };
 
-// Get Categories with Subcategories (Efficient for CategoryGrid)
+// Get Categories with Subcategories (OPTIMIZED - Single aggregation query)
 export const getCategoriesWithSubcategories = async (req, res) => {
   try {
-    const categories = await Category.find({ isActive: true })
-      .sort({ order: 1 })
-      .lean();
+    // Use aggregation pipeline for better performance - single query instead of N+1
+    const categoriesWithSubs = await Category.aggregate([
+      { $match: { isActive: true } },
+      { $sort: { order: 1 } },
+      {
+        $lookup: {
+          from: 'subcategories',
+          localField: '_id',
+          foreignField: 'parentCategory',
+          pipeline: [
+            { $match: { isActive: true } },
+            { $sort: { order: 1 } },
+            {
+              $project: {
+                _id: 1,
+                id: 1,
+                name: 1,
+                slug: 1,
+                phone: 1,
+                logo: 1,
+                verified: 1,
+                tags: 1,
+                address: 1,
+                timing: 1,
+                order: 1
+              }
+            }
+          ],
+          as: 'subcategories'
+        }
+      },
+      {
+        $addFields: {
+          subcategoryCount: { $size: '$subcategories' }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          slug: 1,
+          icon: 1,
+          iconType: 1,
+          badges: 1,
+          subcategoryCount: 1,
+          subcategories: 1
+        }
+      }
+    ]);
 
-    // Get subcategories for each category efficiently
-    const categoriesWithSubs = await Promise.all(
-      categories.map(async (category) => {
-        const subcategories = await Subcategory.find({
-          parentCategory: category._id,
-          isActive: true
-        })
-        .select('_id id name slug phone logo verified tags address timing order')
-        .sort({ order: 1 })
-        .lean();
-
+    // Process icons in parallel (if needed)
+    const updatedCategories = await Promise.all(
+      categoriesWithSubs.map(async (category) => {
         // Convert icon path to content if needed
         const categoryWithIcon = await convertIconPathToContent(category);
-
+        
         return {
-          _id: categoryWithIcon._id,
-          name: categoryWithIcon.name,
-          slug: categoryWithIcon.slug,
-          icon: categoryWithIcon.icon,
-          iconType: categoryWithIcon.iconType,
-          badges: categoryWithIcon.badges || [],
-          subcategoryCount: subcategories.length,
-          subcategories: subcategories
+          ...categoryWithIcon,
+          badges: categoryWithIcon.badges || []
         };
       })
     );
@@ -298,9 +374,10 @@ export const getCategoriesWithSubcategories = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Categories with subcategories fetched successfully',
-      data: categoriesWithSubs
+      data: updatedCategories
     });
   } catch (error) {
+    console.error('Error in getCategoriesWithSubcategories:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching categories with subcategories',
@@ -309,38 +386,79 @@ export const getCategoriesWithSubcategories = async (req, res) => {
   }
 };
 
-// Get Category Grid Data (Optimized for frontend)
+// Get Category Grid Data (OPTIMIZED - Single aggregation query with caching)
 export const getCategoryGridData = async (req, res) => {
   try {
-    // Get top 10 categories with their subcategories
-    const categories = await Category.find({ isActive: true })
-      .sort({ order: 1 })
-      .limit(10)
-      .lean();
+    // Add caching headers for better performance
+    res.set({
+      'Cache-Control': 'public, max-age=600', // Cache for 10 minutes
+      'ETag': `grid-data-${Date.now()}`,
+      'Vary': 'Accept-Encoding'
+    });
 
-    const categoriesWithSubs = await Promise.all(
-      categories.map(async (category) => {
-        const subcategories = await Subcategory.find({
-          parentCategory: category._id,
-          isActive: true
-        })
-        .select('_id id name slug phone logo verified tags address timing order mainPhone website')
-        .sort({ order: 1 })
-        .limit(20) // Limit subcategories for performance
-        .lean();
+    // Use aggregation pipeline for better performance - single query instead of N+1
+    const categoriesWithSubs = await Category.aggregate([
+      { $match: { isActive: true } },
+      { $sort: { order: 1 } },
+      { $limit: 10 }, // Limit to top 10 categories
+      {
+        $lookup: {
+          from: 'subcategories',
+          localField: '_id',
+          foreignField: 'parentCategory',
+          pipeline: [
+            { $match: { isActive: true } },
+            { $sort: { order: 1 } },
+            { $limit: 20 }, // Limit subcategories for performance
+            {
+              $project: {
+                _id: 1,
+                id: 1,
+                name: 1,
+                slug: 1,
+                phone: 1,
+                logo: 1,
+                verified: 1,
+                tags: 1,
+                address: 1,
+                timing: 1,
+                order: 1,
+                mainPhone: 1,
+                website: 1
+              }
+            }
+          ],
+          as: 'subcategories'
+        }
+      },
+      {
+        $addFields: {
+          subcategoryCount: { $size: '$subcategories' }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          slug: 1,
+          icon: 1,
+          iconType: 1,
+          badges: 1,
+          subcategoryCount: 1,
+          subcategories: 1
+        }
+      }
+    ]);
 
+    // Process icons in parallel for better performance
+    const updatedCategories = await Promise.all(
+      categoriesWithSubs.map(async (category) => {
         // Convert icon path to content if needed
         const categoryWithIcon = await convertIconPathToContent(category);
-
+        
         return {
-          _id: categoryWithIcon._id,
-          name: categoryWithIcon.name,
-          slug: categoryWithIcon.slug,
-          icon: categoryWithIcon.icon,
-          iconType: categoryWithIcon.iconType,
-          badges: categoryWithIcon.badges || [],
-          subcategoryCount: subcategories.length,
-          subcategories: subcategories
+          ...categoryWithIcon,
+          badges: categoryWithIcon.badges || []
         };
       })
     );
@@ -348,9 +466,10 @@ export const getCategoryGridData = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Category grid data fetched successfully',
-      data: categoriesWithSubs
+      data: updatedCategories
     });
   } catch (error) {
+    console.error('Error in getCategoryGridData:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching category grid data',

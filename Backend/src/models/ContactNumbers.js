@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 
 const contactNumbersSchema = new mongoose.Schema({
   companySlug: { type: String, required: true, index: true },
+  // Flexible structured payload following Backend/src/models/common/Common.js
+  data: { type: mongoose.Schema.Types.Mixed, default: {} },
   helpline: [{
     service: { type: String, required: true },
     number: { type: String, required: true },

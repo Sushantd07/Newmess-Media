@@ -13,6 +13,10 @@ export default defineConfig({
     tailwindcss(),
     
   ],
+  build: {
+    manifest: true,
+    outDir: 'dist'
+  },
   // Ensure only a single copy of React is used to avoid "Invalid hook call"
   resolve: {
     dedupe: ['react', 'react-dom'],
@@ -38,6 +42,22 @@ server: {
         changeOrigin: true,
         secure: false,
       },
+      // Serve dynamic sitemap from backend while developing frontend
+      '/sitemap.xml': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/sitemap.json': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/robots.txt': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+      },
       '/category-icons': {
         target: 'http://localhost:3000',
         changeOrigin: true,
@@ -52,12 +72,7 @@ server: {
     cors: {
       origin: [
         'http://localhost:5173',
-        'http://localhost:5174',
-        'http://localhost:3000',
-        'https://2b812e3cf734.ngrok-free.app',
-        'https://gzd2rl1g-5173.inc1.devtunnels.ms',
-        'https://5c488ddea99b.ngrok-free.app/',
-        'https://*.ngrok-free.app'
+     
       ],
       credentials: true
     },

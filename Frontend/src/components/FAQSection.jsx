@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronDown, HelpCircle, Phone, Shield, Clock } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { ChevronDown, HelpCircle, Phone, Shield, Clock, Search } from 'lucide-react';
 
 const faqs = [
   {
@@ -45,32 +45,71 @@ const features = [
 
 const FAQSection = () => {
   const [openIndex, setOpenIndex] = useState(null);
+  const [query, setQuery] = useState('');
+
+  // Derived, memoized list for efficient filtering on low-end mobiles
+  const filteredFaqs = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return faqs;
+    return faqs.filter(item =>
+      item.question.toLowerCase().includes(q) || item.answer.toLowerCase().includes(q)
+    );
+  }, [query]);
 
   return (
-    <section className="relative py-24 bg-gradient-to-br from-orange-50/50 via-white to-rose-50/30 overflow-hidden">
+    <section className="relative py-12 sm:py-16 md:py-20 bg-gradient-to-br from-orange-50/50 via-white to-rose-50/30 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(251,146,60,0.1),transparent_50%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(249,115,22,0.08),transparent_50%)]" />
       
       <div className="relative max-w-7xl mx-auto px-4 md:px-8">
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-start">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-start">
           
           <div className="space-y-8">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-3 bg-gradient-to-r from-orange-100 to-orange-200 text-orange-700 px-5 py-3 rounded-full text-sm font-semibold shadow-sm">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="inline-flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-orange-100 to-orange-200 text-orange-700 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold shadow-sm">
                 <HelpCircle className="w-4 h-4" />
                 Frequently Asked Questions
               </div>
               
-              <h2 className="text-4xl lg:text-4xl font-black text-gray-900 leading-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 leading-tight">
                 Your Trusted Source for 
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-rose-600">
                   Customer Helplines
                 </span>
               </h2>
               
-              <p className="text-lg text-gray-600 leading-relaxed max-w-lg">
+              <p className="text-sm sm:text-base md:text-lg text-gray-600 leading-relaxed max-w-lg">
                 Find verified helpline numbers, emergency contacts, and customer support for companies and services across India. Our mission is to make help accessible, reliable, and easy to find for everyone.
               </p>
+              {/* Mobile-first FAQ search */}
+              <div className="relative w-full max-w-lg">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="search"
+                  inputMode="search"
+                  value={query}
+                  onChange={e => setQuery(e.target.value)}
+                  placeholder="Search FAQs..."
+                  aria-label="Search FAQs"
+                  className="w-full pl-9 pr-24 py-2.5 rounded-xl border border-orange-200 bg-white shadow-sm focus:ring-2 focus:ring-orange-500 outline-none text-sm md:text-base"
+                />
+                <div className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setOpenIndex(null)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700"
+                  >
+                    Collapse All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOpenIndex(0)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    Expand First
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -97,9 +136,9 @@ const FAQSection = () => {
           </div>
 
           <div className="space-y-4">
-            <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-5 shadow-xl border border-orange-100">
-              <div className="space-y-3">
-                {faqs.map((faq, idx) => {
+            <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-3 sm:p-4 md:p-5 shadow-xl border border-orange-100">
+              <div className="space-y-2 sm:space-y-3">
+                {filteredFaqs.map((faq, idx) => {
                   const isOpen = openIndex === idx;
                   return (
                     <div 
@@ -111,21 +150,23 @@ const FAQSection = () => {
                       }`}
                     >
                       <button
-                        className={`w-full flex items-center justify-between py-4 px-4 text-left focus:outline-none transition-all duration-300 ${
+                        className={`w-full flex items-center justify-between py-3 sm:py-4 px-3 sm:px-4 text-left focus:outline-none transition-all duration-300 ${
                           isOpen ? 'text-orange-700' : 'text-gray-800 hover:text-orange-600'
                         }`}
                         onClick={() => setOpenIndex(isOpen ? null : idx)}
                         aria-expanded={isOpen}
                         aria-controls={`faq-panel-${idx}`}
+                        role="button"
+                        tabIndex={0}
                       >
-                        <span className="text-lg font-semibold pr-4">{faq.question}</span>
-                        <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                        <span className="text-sm sm:text-base md:text-lg font-semibold pr-3 sm:pr-4">{faq.question}</span>
+                        <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                           isOpen 
                             ? 'bg-gradient-to-r from-orange-500 to-rose-500 shadow-lg' 
                             : 'bg-gray-100 hover:bg-orange-100'
                         }`}>
                           <ChevronDown 
-                            className={`w-5 h-5 transition-all duration-300 ${
+                            className={`w-4 h-4 sm:w-5 sm:h-5 transition-all duration-300 ${
                               isOpen ? 'rotate-180 text-white' : 'text-gray-600'
                             }`}
                           />
@@ -134,7 +175,7 @@ const FAQSection = () => {
                       
                       <div
                         id={`faq-panel-${idx}`}
-                        className={`px-6 transition-all duration-300 ease-in-out ${
+                        className={`px-4 sm:px-6 transition-all duration-300 ease-in-out ${
                           isOpen 
                             ? 'max-h-96 pb-6 opacity-100' 
                             : 'max-h-0 overflow-hidden opacity-0'
@@ -142,7 +183,7 @@ const FAQSection = () => {
                         aria-hidden={!isOpen}
                       >
                         <div className="pt-2 pb-2">
-                          <p className="text-gray-700 leading-relaxed">
+                          <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                             {faq.answer}
                           </p>
                         </div>
@@ -150,6 +191,11 @@ const FAQSection = () => {
                     </div>
                   );
                 })}
+                {!filteredFaqs.length && (
+                  <div className="p-4 sm:p-6 text-center text-gray-600 text-sm">
+                    No results for "{query}". Try different keywords.
+                  </div>
+                )}
               </div>
             </div>
           </div>

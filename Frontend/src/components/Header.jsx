@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import CompanySeoGear from './CompanySeoGear.jsx';
+// import CompanySeoGear from './CompanySeoGear.jsx';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -224,22 +224,22 @@ const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white text-gray-800  h-[74px] max-[400px]:h-auto transition-shadow duration-300">
+      <header className="sticky top-0 z-50 bg-white text-gray-800 h-[74px] max-[400px]:h-auto transition-shadow duration-300 overflow-hidden">
         {/* Floating SEO button is injected by pages, not here */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 max-[400px]:px-2">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 max-[400px]:px-2">
           <div className="flex items-center justify-between py-3 max-[400px]:py-2">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-3 max-[400px]:space-x-2 group flex-1 min-w-0">
+            <Link to="/" className="flex items-center space-x-2 md:space-x-3 max-[400px]:space-x-1 group flex-1 min-w-0">
               <img
                 src="/logo3-Photoroom.png"
                 alt="ICH logo"
-                className="w-15 h-15 max-[400px]:w-10 max-[400px]:h-10 object-contain shrink-0"
+                className="w-12 h-12 max-[400px]:w-8 max-[400px]:h-8 md:w-15 md:h-15 object-contain shrink-0"
               />
               <div className="min-w-0">
-                <h1 className="text-2xl max-[400px]:text-lg font-bold text-orange-600 tracking-tight leading-tight">
+                <h1 className="text-lg md:text-2xl max-[400px]:text-sm font-bold text-orange-600 tracking-tight leading-tight">
                   India Customer Help
                 </h1>
-                <p className="text-sm text-slate-500 font-medium max-[400px]:hidden">
+                <p className="text-xs md:text-sm text-slate-500 font-medium max-[400px]:hidden">
                   India's Trusted Business Directory
                 </p>
               </div>
@@ -525,7 +525,7 @@ const Header = () => {
             </div>
           )}
         </div>
-        <CompanySeoGear />
+        {/* <CompanySeoGear /> */}
       </header>
 
       {/* Desktop Sidebar */}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import DynamicSEO from '../components/DynamicSEO.jsx';
+// DynamicSEO is now handled globally - no need to import here
 import SafeBoundary from '../components/SafeBoundary.jsx';
 import SeoFloatingButton from '../components/SeoFloatingButton.jsx';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -348,7 +348,7 @@ const CategoryPage = () => {
         lang: 'en',
       }} />
       <SafeBoundary>
-        <DynamicSEO type="category" identifier={categoryId} />
+        {/* DynamicSEO is now handled globally */}
       </SafeBoundary>
       {/* Header Section */}
       <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white">

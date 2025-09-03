@@ -23,6 +23,7 @@ import StatewiseList from './pages/StatewiseList.jsx';
 import AboutUs from './pages/AboutUs.jsx';
 import AdminPanel from './pages/AdminPanel.jsx';
 import ContactNumbersAdmin from './pages/ContactNumbersAdmin.jsx';
+import SitemapPage from './pages/SitemapPage.jsx';
 
 import { Helmet } from 'react-helmet-async';
 import Login from './pages/Login.jsx';
@@ -31,28 +32,61 @@ import Dashboard from './pages/Dashboard.jsx';
 import Profile from './pages/Profile.jsx';
 import { PrivateRoute, AdminRoute } from './routes';
 import SeoFloatingButton from './components/SeoFloatingButton.jsx';
-import DynamicSEO from './components/DynamicSEO.jsx';
+import DynamicSEO from './components/DynamicSEO-Safe.jsx';
 import SafeBoundary from './components/SafeBoundary.jsx';
 import { computeDefaultsFromDom } from './components/DynamicSEO.jsx';
 import { useAuth } from './contexts/AuthContext.jsx';
+import SeoDebugger from './components/SeoDebugger.jsx';
+import AuthDebugger from './components/AuthDebugger.jsx';
+import MobileBottomNav from './components/MobileBottomNav.jsx';
+import Listing from './pages/Listing.jsx';
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-function App() {
-  const { role } = useAuth();
-  const isAdmin = role === 'admin';
+function App({ seoData }) {
+  const { role, user, loading } = useAuth();
+  const email = (user?.email || '').toLowerCase();
+  const fallbackAdmin = ['indiacustomerhelp05@gmail.com', 'newmess1231@gmail.com', 'abhishekuniyal282@gmail.com'].includes(email);
+  const showAdminUI = !!user && (role === 'admin' || fallbackAdmin);
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Global: after login via redirect, if we land on /login while authenticated, send user to destination
+  useEffect(() => {
+    if (loading) return;
+    if (location.pathname === '/login' && user) {
+      const email = (user?.email || '').toLowerCase();
+      const fallbackAdmin = ['indiacustomerhelp05@gmail.com', 'newmess1231@gmail.com', 'abhishekuniyal282@gmail.com'].includes(email);
+      const target = role === 'admin' || fallbackAdmin ? '/admin' : '/profile';
+      console.log('[App] Global auth redirect from /login to', target, 'role:', role, 'email:', email);
+      navigate(target, { replace: true });
+    }
+  }, [location.pathname, user, role, loading, navigate]);
+  
+  // Log SSR data if provided
+  if (seoData) {
+    console.log('[App] SSR SEO data received:', seoData);
+  }
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 overflow-x-hidden pb-16 md:pb-0">
       <ScrollToTop />
       
       {/* Global DynamicSEO wrapped to prevent app crash on errors */}
       <SafeBoundary>
-        <DynamicSEO type="global" identifier="auto" />
+        <DynamicSEO type="global" identifier="auto" ssrData={seoData} />
       </SafeBoundary>
+      
+      {/* SEO Debugger - uncomment for debugging */}
+      {/* <SeoDebugger /> */}
+      
+      {/* Auth Debugger - uncomment for debugging */}
+      {/* <AuthDebugger /> */}
       
       <Routes>
         {/* Home Page */}
         <Route path="/" element={
-          <>
-            {isAdmin && <SeoFloatingButton type="home" identifier="home" />}
+          <div className="overflow-x-hidden">
+            {!loading && showAdminUI && <SeoFloatingButton type="home" identifier="home" />}
             <Header />
             <TrendingTicker />
             <HeroSection />
@@ -62,17 +96,27 @@ function App() {
             <FAQSection/>
             {/* <Chatbot /> */}
             <Footer />
-          </>
+          </div>
         } />
 
         {/* About Us Page */}
         <Route path="/about" element={
           <>
-            {isAdmin && <SeoFloatingButton type="route" identifier={window.location.pathname} defaults={computeDefaultsFromDom()} />}
+            {!loading && showAdminUI && <SeoFloatingButton type="route" identifier={window.location.pathname} />}
             <Header />
             <TrendingTicker />
             <AboutUs />
             <Chatbot />
+            <Footer />
+          </>
+        } />
+
+        {/* Sitemap Page */}
+        <Route path="/sitemap" element={
+          <>
+            <Header />
+            <TrendingTicker />
+            <SitemapPage />
             <Footer />
           </>
         } />
@@ -154,7 +198,7 @@ function App() {
         {/* All Categories Page */}
         <Route path="/category" element={
           <>
-            {isAdmin && <SeoFloatingButton type="all-categories" identifier="all-categories" />}
+            {!loading && showAdminUI && <SeoFloatingButton type="all-categories" identifier="all-categories" />}
             <Header />
             <TrendingTicker />
             <AllCategories />
@@ -283,9 +327,20 @@ function App() {
             <Footer />
           </>
         } />
+        {/* Listing entry */}
+        <Route path="/home/listing" element={
+          <>
+            <Header />
+            <TrendingTicker />
+            <Listing />
+            <Footer />
+          </>
+        } />
         {/* <Route path="/home/state-wise" element={<StateWiseCreative />} /> */}
         {/* <Route path="/home/state-wise/maharashtra" element={<MaharashtraHelplinePage />} /> */}
       </Routes>
+      {/* Global mobile bottom navigation */}
+      <MobileBottomNav />
     </div>
   );
 }

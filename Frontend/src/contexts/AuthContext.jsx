@@ -4,6 +4,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
   updateProfile,
 } from 'firebase/auth';
@@ -16,6 +18,8 @@ const AuthContext = createContext(null);
 const ADMIN_EMAILS = [
   // Project admins
   'indiacustomerhelp05@gmail.com',
+  'newmess1231@gmail.com',
+  'abhishekuniyal282@gmail.com',
 ];
 
 export const AuthProvider = ({ children }) => {
@@ -29,8 +33,19 @@ export const AuthProvider = ({ children }) => {
   // Ensure a user doc exists with a role; if not, assign based on ADMIN_EMAILS
   const ensureUserDoc = async (firebaseUser) => {
     if (!firebaseUser) return null;
-    // Fast path: determine role without any Firestore read to avoid Listen RPC
-    const derivedRole = ADMIN_EMAILS.includes((firebaseUser.email || '').toLowerCase()) ? 'admin' : 'user';
+    
+    const userEmail = firebaseUser.email || '';
+    const lowerEmail = userEmail.toLowerCase();
+    const derivedRole = ADMIN_EMAILS.includes(lowerEmail) ? 'admin' : 'user';
+    
+    console.log('[AuthContext] ensureUserDoc:', {
+      email: userEmail,
+      lowerEmail,
+      isAdminEmail: ADMIN_EMAILS.includes(lowerEmail),
+      derivedRole,
+      adminEmails: ADMIN_EMAILS
+    });
+    
     // Fire-and-forget write to persist role; do not block login
     if (FIRESTORE_ENABLED) {
       try {
@@ -38,38 +53,64 @@ export const AuthProvider = ({ children }) => {
           doc(db, 'users', firebaseUser.uid),
           {
             uid: firebaseUser.uid,
-            email: firebaseUser.email || null,
+            email: userEmail,
             displayName: firebaseUser.displayName || null,
             role: derivedRole,
             createdAt: new Date().toISOString(),
           },
           { merge: true }
         );
-      } catch (_) {
-        // ignore
+        console.log('[AuthContext] User doc saved to Firestore');
+      } catch (error) {
+        console.error('[AuthContext] Error saving user doc to Firestore:', error);
       }
     }
+    
     return derivedRole;
   };
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log('[AuthContext] Auth state changed:', firebaseUser?.email);
+      
       if (!firebaseUser) {
+        console.log('[AuthContext] No user, clearing state');
         setUser(null);
         setRole(null);
         setLoading(false);
         return;
       }
+      
+      console.log('[AuthContext] User found, setting user state');
       setUser(firebaseUser);
+      
       try {
+        console.log('[AuthContext] Ensuring user doc and role...');
         const currentRole = await ensureUserDoc(firebaseUser);
+        console.log('[AuthContext] Role assigned:', currentRole);
         setRole(currentRole);
-      } catch (_) {
+      } catch (error) {
+        console.error('[AuthContext] Error ensuring user doc:', error);
         setRole('user');
       } finally {
         setLoading(false);
       }
     });
+    // Handle redirect sign-in result (if popup blocked)
+    (async () => {
+      try {
+        const res = await getRedirectResult(auth);
+        if (res?.user) {
+          console.log('[AuthContext] Redirect result found:', res.user.email);
+          const role = await ensureUserDoc(res.user);
+          console.log('[AuthContext] Redirect user role assigned:', role);
+        } else {
+          console.log('[AuthContext] No redirect result available');
+        }
+      } catch (error) {
+        console.error('[AuthContext] Error handling redirect result:', error);
+      }
+    })();
     return () => unsub();
   }, []);
 
@@ -78,7 +119,7 @@ export const AuthProvider = ({ children }) => {
     if (displayName) {
       await updateProfile(cred.user, { displayName });
     }
-    const assignedRole = ADMIN_EMAILS.includes(email) ? 'admin' : 'user';
+    const assignedRole = ADMIN_EMAILS.includes((email || '').toLowerCase()) ? 'admin' : 'user';
     if (FIRESTORE_ENABLED) {
       try {
         await setDoc(doc(db, 'users', cred.user.uid), {
@@ -98,9 +139,86 @@ export const AuthProvider = ({ children }) => {
   const loginWithEmail = (email, password) => signInWithEmailAndPassword(auth, email, password);
 
   const loginWithGoogle = async () => {
-    const cred = await signInWithPopup(auth, googleProvider);
-    try { await ensureUserDoc(cred.user); } catch (_) {}
-    return cred.user;
+    try {
+      // Decide strategy based on environment/host to avoid popup/COOP issues
+      const host = (typeof window !== 'undefined' && window.location && window.location.hostname) || '';
+      const isDevHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.ngrok-free.app') || host.endsWith('.devtunnels.ms');
+      const forcePopup = (() => {
+        try { return new URLSearchParams(window.location.search).get('forcePopup') === '1'; } catch (_) { return false; }
+      })();
+
+      // Check if popup is likely to be blocked
+      const isPopupBlocked = () => {
+        try {
+          const testPopup = window.open('', '_blank', 'width=1,height=1');
+          if (testPopup) {
+            testPopup.close();
+            return false;
+          }
+          return true;
+        } catch {
+          return true;
+        }
+      };
+
+      // Force redirect on dev hosts or if popup likely blocked/COOP sensitive browsers
+      const shouldUseRedirect = (!forcePopup && (isDevHost || isPopupBlocked() || 
+        window.navigator.userAgent.includes('Safari') ||
+        window.navigator.userAgent.includes('Firefox')));
+
+      if (shouldUseRedirect) {
+        console.log('[AuthContext] Using redirect flow (env or popup/COOP)');
+        await signInWithRedirect(auth, googleProvider);
+        return null; // Will be handled by redirect result
+      }
+
+      // Try popup
+      try {
+        const cred = await signInWithPopup(auth, googleProvider);
+        console.log('[AuthContext] Google sign-in successful:', cred.user.email);
+        try { 
+          const role = await ensureUserDoc(cred.user);
+          console.log('[AuthContext] User role assigned:', role);
+        } catch (error) {
+          console.error('[AuthContext] Error ensuring user doc:', error);
+        }
+        return cred.user;
+      } catch (popupError) {
+        console.error('[AuthContext] Google popup failed:', popupError);
+        const isPopupBlockedError = popupError.code === 'auth/popup-blocked' || 
+          popupError.code === 'auth/popup-closed-by-user' ||
+          popupError.message.includes('Cross-Origin-Opener-Policy') ||
+          popupError.message.includes('COOP');
+        if (isPopupBlockedError) {
+          console.log('[AuthContext] Popup blocked, falling back to redirect');
+          await signInWithRedirect(auth, googleProvider);
+          return null;
+        }
+        throw popupError;
+      }
+    } catch (error) {
+      console.error('[AuthContext] Google authentication failed:', {
+        code: error?.code,
+        message: error?.message,
+        name: error?.name,
+        stack: error?.stack,
+      });
+      // Final fallback to redirect
+      if (error.code !== 'auth/popup-closed-by-user') {
+        try {
+          console.log('[AuthContext] Final fallback to redirect');
+          await signInWithRedirect(auth, googleProvider);
+          return null;
+        } catch (redirectError) {
+          console.error('[AuthContext] All Google auth methods failed:', {
+            code: redirectError?.code,
+            message: redirectError?.message,
+          });
+          throw error; // Throw original error
+        }
+      }
+      throw error;
+    }
   };
 
   const logout = () => signOut(auth);
