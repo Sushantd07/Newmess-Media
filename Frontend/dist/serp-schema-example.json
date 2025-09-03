@@ -1,0 +1,239 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://newmessmedia.com/#organization",
+      "name": "Newmess Media",
+      "alternateName": "India's Most Trusted Business Directory",
+      "url": "https://newmessmedia.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://newmessmedia.com/logo3-Photoroom.png",
+        "width": 200,
+        "height": 60
+      },
+      "description": "India's Most Trusted Business Directory. Connecting millions of Indians with verified toll-free numbers and authentic business information since 2022.",
+      "foundingDate": "2022",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Mumbai",
+        "addressRegion": "Maharashtra",
+        "addressCountry": "IN"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+91-1800-123-4567",
+        "contactType": "customer service",
+        "availableLanguage": ["English", "Hindi"],
+        "areaServed": "IN"
+      },
+      "email": "support@newmessmedia.com",
+      "sameAs": [
+        "https://facebook.com/newmessmedia",
+        "https://twitter.com/newmessmedia",
+        "https://linkedin.com/company/newmessmedia",
+        "https://instagram.com/newmessmedia"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "15000",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://newmessmedia.com/#website",
+      "url": "https://newmessmedia.com",
+      "name": "Newmess Media - Business Directory",
+      "description": "Find verified toll-free numbers, business contacts, and essential services across India. Trusted by millions for authentic business information.",
+      "publisher": {
+        "@id": "https://newmessmedia.com/#organization"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://newmessmedia.com/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      "inLanguage": ["en-IN", "hi-IN"],
+      "dateModified": "2024-01-15T10:30:00Z"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://newmessmedia.com/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://newmessmedia.com"
+        }
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://newmessmedia.com/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I find a business contact number?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You can search for any business by name, category, or location. Our directory contains verified toll-free numbers and contact information for businesses across India."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are all the contact numbers verified?",
+          "answer": {
+            "@type": "Answer",
+            "text": "Yes, we maintain a 99.9% verification rate. All contact numbers are regularly updated and verified to ensure accuracy."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What categories of businesses do you cover?",
+          "answer": {
+            "@type": "Answer",
+            "text": "We cover all major categories including Banking Services, Telecom Services, Healthcare, Shopping, Insurance, and many more business sectors across India."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://newmessmedia.com/#top-categories",
+      "name": "Top Business Categories",
+      "description": "Popular business categories with verified contact information",
+      "numberOfItems": 8,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "item": {
+            "@type": "Service",
+            "name": "Banking Services",
+            "url": "https://newmessmedia.com/category/banking-services",
+            "description": "Find contact numbers for major banks, credit cards, and financial services"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "item": {
+            "@type": "Service",
+            "name": "Telecom Services",
+            "url": "https://newmessmedia.com/category/telecom-services",
+            "description": "Mobile operators, broadband services, and customer support numbers"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "item": {
+            "@type": "Service",
+            "name": "Healthcare Services",
+            "url": "https://newmessmedia.com/category/healthcare-services",
+            "description": "Hospitals, clinics, and emergency medical services"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "item": {
+            "@type": "Service",
+            "name": "Shopping & Retail",
+            "url": "https://newmessmedia.com/category/shopping-retail",
+            "description": "Online stores, retail chains, and customer service contacts"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "item": {
+            "@type": "Service",
+            "name": "Insurance Services",
+            "url": "https://newmessmedia.com/category/insurance-services",
+            "description": "Life insurance, health insurance, and motor insurance providers"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 6,
+          "item": {
+            "@type": "Service",
+            "name": "Travel & Tourism",
+            "url": "https://newmessmedia.com/category/travel-tourism",
+            "description": "Airlines, hotels, travel agencies, and booking services"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 7,
+          "item": {
+            "@type": "Service",
+            "name": "Education Services",
+            "url": "https://newmessmedia.com/category/education-services",
+            "description": "Schools, colleges, universities, and educational institutions"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 8,
+          "item": {
+            "@type": "Service",
+            "name": "Government Services",
+            "url": "https://newmessmedia.com/category/government-services",
+            "description": "Government departments, public services, and helpline numbers"
+          }
+        }
+      ]
+    },
+    {
+      "@type": "LocalBusiness",
+      "@id": "https://newmessmedia.com/#local-business",
+      "name": "Newmess Media",
+      "image": "https://newmessmedia.com/logo3-Photoroom.png",
+      "telephone": "+91-1800-123-4567",
+      "email": "support@newmessmedia.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Business District",
+        "addressLocality": "Mumbai",
+        "addressRegion": "Maharashtra",
+        "postalCode": "400001",
+        "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 19.0760,
+        "longitude": 72.8777
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+          "Sunday"
+        ],
+        "opens": "00:00",
+        "closes": "23:59"
+      },
+      "priceRange": "Free",
+      "serviceArea": {
+        "@type": "Country",
+        "name": "India"
+      }
+    }
+  ]
+}
+

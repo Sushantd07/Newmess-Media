@@ -89,6 +89,24 @@ router.delete('/:companySlug/section/:sectionKey', async (req, res) => {
   }
 });
 
+// Upsert full structured payload for a company (non-coder friendly)
+router.put('/:companySlug', async (req, res) => {
+  try {
+    const { companySlug } = req.params;
+    const payload = req.body || {};
+    const update = { companySlug, ...payload };
+    const doc = await ContactNumbers.findOneAndUpdate(
+      { companySlug },
+      update,
+      { upsert: true, new: true }
+    );
+    res.json({ message: 'Saved', data: doc });
+  } catch (error) {
+    console.error('Error upserting contact numbers:', error);
+    res.status(500).json({ message: 'Error saving contact numbers' });
+  }
+});
+
 export default router;
 
 

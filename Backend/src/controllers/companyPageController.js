@@ -177,6 +177,36 @@ export const listAllCompaniesLite = async (req, res) => {
   }
 };
 
+// Get all companies by category slug (unpaginated)
+export const listCompaniesByCategorySlug = async (req, res) => {
+  try {
+    const { categorySlug } = req.params;
+    if (!categorySlug) {
+      return res.status(400).json({ success: false, message: 'categorySlug is required' });
+    }
+
+    // Resolve the Category by slug to handle both slug and ObjectId storage styles
+    let categoryIds = [categorySlug];
+    try {
+      const Category = (await import('../models/Category.js')).default;
+      const cat = await Category.findOne({ slug: categorySlug }).lean();
+      if (cat?._id) {
+        categoryIds.push(String(cat._id));
+        categoryIds.push(cat._id); // just in case it was stored as ObjectId
+        if (cat.name) categoryIds.push(cat.name); // some datasets use name
+      }
+    } catch (_) {}
+
+    const companies = await CompanyPage.find({ categoryId: { $in: categoryIds } })
+      .select('name slug logo')
+      .sort({ name: 1 })
+      .lean();
+    return res.status(200).json({ success: true, data: companies });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 // Get Company Page by Slug
 export const getCompanyPageBySlug = async (req, res) => {
   try {

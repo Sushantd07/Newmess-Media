@@ -166,5 +166,10 @@ SubcategorySchema.index({ verified: 1 });
 SubcategorySchema.index({ isActive: 1 });
 SubcategorySchema.index({ order: 1 });
 
+// ✅ Add compound indexes for better query performance
+SubcategorySchema.index({ parentCategory: 1, isActive: 1, order: 1 }); // For category grid queries
+SubcategorySchema.index({ isActive: 1, verified: 1, order: 1 }); // For verified active items
+SubcategorySchema.index({ parentCategory: 1, isActive: 1, verified: 1 }); // For category + status filtering
+
 const Subcategory = mongoose.model('Subcategory', SubcategorySchema);
 export default Subcategory;

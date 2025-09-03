@@ -1,0 +1,17 @@
+RewriteEngine On
+
+# Proxy sitemap.xml to backend (Render) - Fixed proxy rule
+RewriteRule ^sitemap\.xml$ https://newmess-media-backend.onrender.com/sitemap.xml [P,L]
+
+# Alternative: If proxy doesn't work, redirect instead
+# RewriteRule ^sitemap\.xml$ https://newmess-media-backend.onrender.com/sitemap.xml [R=302,L]
+
+# Optional: proxy API via same domain
+#RewriteCond %{REQUEST_URI} ^/api/
+#RewriteRule ^(.*)$ https://newmess-media-backend.onrender.com/ [P,L]
+
+# SPA fallback for React Router
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+

@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SnameMap from '../assets/lastMap.svg?react';
+import SnameMap from '../../assets/lastMap.svg?react';
 import { MapPin, ArrowRight, Users, Shield, Phone, Lock, Unlock } from 'lucide-react';
+import MobileStatesGrid from './MobileStatesGrid';
 
 export const statesData = [
 	{
 		id: 'maharashtra',
 		svgId: 'INMH',
 		name: 'Maharashtra',
-		image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop',
+		image: '/images/states/maharahstra.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1800-222-111' },
 			{ label: 'Electricity', value: '1912' },
@@ -21,7 +22,7 @@ export const statesData = [
 		id: 'delhi',
 		svgId: 'Delhi',
 		name: 'Delhi',
-		image: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=300&h=200&fit=crop',
+		image: '/images/states/delhi.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1800-110-001' },
 			{ label: 'Electricity', value: '19123' },
@@ -34,7 +35,7 @@ export const statesData = [
 		id: 'karnataka',
 		svgId: 'Karnataka',
 		name: 'Karnataka',
-		image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop',
+		image: '/images/states/karnataka.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1800-425-9339' },
 			{ label: 'Electricity', value: '1912' },
@@ -47,7 +48,7 @@ export const statesData = [
 		id: 'tamil_nadu',
 		svgId: 'Tamil_Nadu',
 		name: 'Tamil Nadu',
-		image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop',
+		image: '/images/states/tamil-nadu.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1800-425-0111' },
 			{ label: 'Electricity', value: '1912' },
@@ -60,7 +61,7 @@ export const statesData = [
 		id: 'andhra_pradesh',
 		svgId: 'Andhra_Pradesh',
 		name: 'Andhra Pradesh',
-		image: 'https://images.unsplash.com/photo-1583663848692-6b3f4764cf0b?fit=crop&w=300&h=200',
+		image: '/images/states/andhra-pradesh.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1902' },
 			{ label: 'Electricity', value: '1912' },
@@ -73,7 +74,7 @@ export const statesData = [
 		id: 'arunachal_pradesh',
 		svgId: 'Arunachal_Pradesh',
 		name: 'Arunachal Pradesh',
-		image: 'https://images.unsplash.com/photo-1625121342044-b3b94fd3f3b9?fit=crop&w=300&h=200',
+		image: '/images/states/arunachal-pradesh.webp',
 		info: [
 			{ label: 'CM Helpline', value: '155250' },
 			{ label: 'Electricity', value: '0370-2290065' },
@@ -86,7 +87,7 @@ export const statesData = [
 		id: 'assam',
 		svgId: 'Assam',
 		name: 'Assam',
-		image: 'https://images.unsplash.com/photo-1595847135932-27cba8e90d2b?fit=crop&w=300&h=200',
+		image: '/images/states/assam.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1100' },
 			{ label: 'Electricity', value: '1912' },
@@ -99,7 +100,7 @@ export const statesData = [
 		id: 'bihar',
 		svgId: 'Bihar',
 		name: 'Bihar',
-		image: 'https://images.unsplash.com/photo-1598003789764-2a6d5272ab6c?fit=crop&w=300&h=200',
+		image: '/images/states/bihar.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1905' },
 			{ label: 'Electricity', value: '1912' },
@@ -112,7 +113,7 @@ export const statesData = [
 		id: 'chhattisgarh',
 		svgId: 'Chhattisgarh',
 		name: 'Chhattisgarh',
-		image: 'https://images.unsplash.com/photo-1620733100472-27c87b8e76ae?fit=crop&w=300&h=200',
+		image: '/images/states/chattisgarh.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1100' },
 			{ label: 'Electricity', value: '1912' },
@@ -125,7 +126,7 @@ export const statesData = [
 		id: 'goa',
 		svgId: 'Goa',
 		name: 'Goa',
-		image: 'https://images.unsplash.com/photo-1601275802430-4b7b8d7932c0?fit=crop&w=300&h=200',
+		image: '/images/states/goa.webp',
 		info: [
 			{ label: 'CM Helpline', value: '155250' },
 			{ label: 'Electricity', value: '1912' },
@@ -138,7 +139,7 @@ export const statesData = [
 		id: 'gujarat',
 		svgId: 'Gujarat',
 		name: 'Gujarat',
-		image: 'https://images.unsplash.com/photo-1582721052784-4cc5df1944ec?fit=crop&w=300&h=200',
+		image: '/images/states/gujarat.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1100' },
 			{ label: 'Electricity', value: '1800-233-3003' },
@@ -151,7 +152,7 @@ export const statesData = [
 		id: 'haryana',
 		svgId: 'Haryana',
 		name: 'Haryana',
-		image: 'https://images.unsplash.com/photo-1646792006724-3cf61c56d93f?fit=crop&w=300&h=200',
+		image: '/images/states/haryana.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1100' },
 			{ label: 'Electricity', value: '1912' },
@@ -164,7 +165,7 @@ export const statesData = [
 		id: 'himachal_pradesh',
 		svgId: 'Himachal_Pradesh',
 		name: 'Himachal Pradesh',
-		image: 'https://images.unsplash.com/photo-1548013146-72479768bada?fit=crop&w=300&h=200',
+		image: '/images/states/himachal-pradesh.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1100' },
 			{ label: 'Electricity', value: '1912' },
@@ -177,7 +178,7 @@ export const statesData = [
 		id: 'jharkhand',
 		svgId: 'Jharkhand',
 		name: 'Jharkhand',
-		image: 'https://images.unsplash.com/photo-1580137189272-c9379b0f6d0a?fit=crop&w=300&h=200',
+		image: '/images/states/jharkhand.webp',
 		info: [
 			{ label: 'CM Helpline', value: '181' },
 			{ label: 'Electricity', value: '1912' },
@@ -190,7 +191,7 @@ export const statesData = [
 		id: 'kerala',
 		svgId: 'Kerala',
 		name: 'Kerala',
-		image: 'https://images.unsplash.com/photo-1628164603882-80ae51cd74cc?fit=crop&w=300&h=200',
+		image: '/images/states/kerala.webp',
 		info: [
 			{ label: 'CM Helpline', value: '155300' },
 			{ label: 'Electricity', value: '1912' },
@@ -203,7 +204,7 @@ export const statesData = [
 		id: 'madhya_pradesh',
 		svgId: 'Madhya_Pradesh',
 		name: 'Madhya Pradesh',
-		image: 'https://images.unsplash.com/photo-1603701973586-2c2acacdb138?fit=crop&w=300&h=200',
+		image: '/images/states/madhya-pradesh.webp',
 		info: [
 			{ label: 'CM Helpline', value: '181' },
 			{ label: 'Electricity', value: '1912' },
@@ -216,7 +217,7 @@ export const statesData = [
 		id: 'manipur',
 		svgId: 'Manipur',
 		name: 'Manipur',
-		image: 'https://images.unsplash.com/photo-1582223151283-877dc7b2b8aa?fit=crop&w=300&h=200',
+		image: '/images/states/manipur.webp',
 		info: [
 			{ label: 'CM Helpline', value: '181' },
 			{ label: 'Electricity', value: '1912' },
@@ -229,7 +230,7 @@ export const statesData = [
 		id: 'meghalaya',
 		svgId: 'Meghalaya',
 		name: 'Meghalaya',
-		image: 'https://images.unsplash.com/photo-1608710449164-4a7cf6ea45fb?fit=crop&w=300&h=200',
+		image: '/images/states/meghalaya.webp',
 		info: [
 			{ label: 'CM Helpline', value: '14410' },
 			{ label: 'Electricity', value: '1912' },
@@ -242,7 +243,7 @@ export const statesData = [
 		id: 'mizoram',
 		svgId: 'Mizoram',
 		name: 'Mizoram',
-		image: 'https://images.unsplash.com/photo-1616052488425-2a785b42abbb?fit=crop&w=300&h=200',
+		image: '/images/states/mizoram.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1098' },
 			{ label: 'Electricity', value: '1912' },
@@ -255,7 +256,7 @@ export const statesData = [
 		id: 'nagaland',
 		svgId: 'Nagaland',
 		name: 'Nagaland',
-		image: 'https://images.unsplash.com/photo-1617032023622-3859651d4623?fit=crop&w=300&h=200',
+		image: '/images/states/nagaland.webp',
 		info: [
 			{ label: 'CM Helpline', value: '112' },
 			{ label: 'Electricity', value: '1912' },
@@ -268,7 +269,7 @@ export const statesData = [
 		id: 'odisha',
 		svgId: 'Odisha',
 		name: 'Odisha',
-		image: 'https://images.unsplash.com/photo-1574169207510-8c4f5e6ffeb6?fit=crop&w=300&h=200',
+		image: '/images/states/odisha.webp',
 		info: [
 			{ label: 'CM Helpline', value: '155335' },
 			{ label: 'Electricity', value: '1912' },
@@ -281,7 +282,7 @@ export const statesData = [
 		id: 'punjab',
 		svgId: 'Punjab',
 		name: 'Punjab',
-		image: 'https://images.unsplash.com/photo-1606813817202-7ff21d7d011a?fit=crop&w=300&h=200',
+		image: '/images/states/punjab.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1100' },
 			{ label: 'Electricity', value: '1912' },
@@ -294,7 +295,7 @@ export const statesData = [
 		id: 'rajasthan',
 		svgId: 'Rajasthan',
 		name: 'Rajasthan',
-		image: 'https://images.unsplash.com/photo-1585155777343-92a6e7422db5?fit=crop&w=300&h=200',
+		image: '/images/states/rajasthan.webp',
 		info: [
 			{ label: 'CM Helpline', value: '181' },
 			{ label: 'Electricity', value: '1912' },
@@ -307,7 +308,7 @@ export const statesData = [
 		id: 'sikkim',
 		svgId: 'Sikkim',
 		name: 'Sikkim',
-		image: 'https://images.unsplash.com/photo-1624110052441-d1f7d01f55cb?fit=crop&w=300&h=200',
+		image: '/images/states/sikkim.webp',
 		info: [
 			{ label: 'CM Helpline', value: '181' },
 			{ label: 'Electricity', value: '03592-202233' },
@@ -320,7 +321,7 @@ export const statesData = [
 		id: 'telangana',
 		svgId: 'Telangana',
 		name: 'Telangana',
-		image: 'https://images.unsplash.com/photo-1600346025101-7c210c0cb2d4?fit=crop&w=300&h=200',
+		image: '/images/states/telangana.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1902' },
 			{ label: 'Electricity', value: '1912' },
@@ -333,7 +334,7 @@ export const statesData = [
 		id: 'tripura',
 		svgId: 'Tripura',
 		name: 'Tripura',
-		image: 'https://images.unsplash.com/photo-1632445487276-d75db8579c8c?fit=crop&w=300&h=200',
+		image: '/images/states/tripura.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1905' },
 			{ label: 'Electricity', value: '1912' },
@@ -346,7 +347,7 @@ export const statesData = [
 		id: 'uttar_pradesh',
 		svgId: 'Uttar_Pradesh',
 		name: 'Uttar Pradesh',
-		image: 'https://images.unsplash.com/photo-1594810909394-eae57a1808d5?fit=crop&w=300&h=200',
+		image: '/images/states/uttar-pradesh.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1076' },
 			{ label: 'Electricity', value: '1912' },
@@ -359,7 +360,7 @@ export const statesData = [
 		id: 'uttarakhand',
 		svgId: 'Uttarakhand',
 		name: 'Uttarakhand',
-		image: 'https://images.unsplash.com/photo-1612110806494-bc2b1e75c9cc?fit=crop&w=300&h=200',
+		image: '/images/states/uttarakhand.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1905' },
 			{ label: 'Electricity', value: '1912' },
@@ -372,7 +373,7 @@ export const statesData = [
 		id: 'west_bengal',
 		svgId: 'West_Bengal',
 		name: 'West Bengal',
-		image: 'https://images.unsplash.com/photo-1606464714196-c4cc6615f4fa?fit=crop&w=300&h=200',
+		image: '/images/states/west-bengal.webp',
 		info: [
 			{ label: 'CM Helpline', value: '100' },
 			{ label: 'Electricity', value: '1912' },
@@ -387,7 +388,7 @@ export const statesData = [
 		id: 'chandigarh',
 		svgId: 'Chandigarh',
 		name: 'Chandigarh',
-		image: 'https://images.unsplash.com/photo-1606112219348-204d7d8b94ee?fit=crop&w=300&h=200',
+		image: '/images/states/chandigarh.webp',
 		info: [
 			{ label: 'CM Helpline', value: '112' },
 			{ label: 'Electricity', value: '1912' },
@@ -400,7 +401,7 @@ export const statesData = [
 		id: 'jammu_kashmir',
 		svgId: 'Jammu_and_Kashmir_disp',
 		name: 'Jammu & Kashmir',
-		image: 'https://images.unsplash.com/photo-1570696164395-426b7f3d5a70?fit=crop&w=300&h=200',
+		image: '/images/states/jammu-kashmir.webp',
 		info: [
 			{ label: 'CM Helpline', value: '155255' },
 			{ label: 'Electricity', value: '1912' },
@@ -413,7 +414,7 @@ export const statesData = [
 		id: 'ladakh',
 		svgId: 'Ladakh_disp',
 		name: 'Ladakh',
-		image: 'https://images.unsplash.com/photo-1623160937084-9a4c55dc5986?fit=crop&w=300&h=200',
+		image: '/images/states/ladakh.webp',
 		info: [
 			{ label: 'CM Helpline', value: '100' },
 			{ label: 'Electricity', value: '1912' },
@@ -426,7 +427,7 @@ export const statesData = [
 		id: 'andaman_nicobar',
 		svgId: 'Andaman_and_Nicobar_Islands',
 		name: 'Andaman & Nicobar',
-		image: 'https://images.unsplash.com/photo-1608806307311-26c2c3f7926a?fit=crop&w=300&h=200',
+		image: '/images/states/andaman-nicobar.webp',
 		info: [
 			{ label: 'CM Helpline', value: '112' },
 			{ label: 'Electricity', value: '1912' },
@@ -439,7 +440,7 @@ export const statesData = [
 		id: 'puducherry',
 		svgId: 'Puducherry',
 		name: 'Puducherry',
-		image: 'https://images.unsplash.com/photo-1601034874029-3c04643f9e8f?fit=crop&w=300&h=200',
+		image: '/images/states/puducherry.webp',
 		info: [
 			{ label: 'CM Helpline', value: '1031' },
 			{ label: 'Electricity', value: '1912' },
@@ -452,7 +453,7 @@ export const statesData = [
 		id: 'dadra_nagar_haveli',
 		svgId: 'Dadra_and_Nagar_Haveli_and_Daman_and_Diu',
 		name: 'Dadra & Nagar Haveli',
-		image: 'https://images.unsplash.com/photo-1543832977-85db68f1b4df?fit=crop&w=300&h=200',
+		image: '/images/states/dadra-nagar-haveli.webp',
 		info: [
 			{ label: 'CM Helpline', value: '100' },
 			{ label: 'Electricity', value: '1912' },
@@ -504,6 +505,7 @@ const InteractiveMap = ({ onStateHover, onStateLeave, onStateClick, hoveredState
         // Store function references for cleanup
         const mouseEnterHandler = () => {
           const stateId = svgIdToStateId[svgId];
+          console.log('Hovered:', stateId);
           onStateHover(stateId);
           
           // Add hover visual effect (only if not clicked)
@@ -530,6 +532,7 @@ const InteractiveMap = ({ onStateHover, onStateLeave, onStateClick, hoveredState
 
         const clickHandler = () => {
           const stateId = svgIdToStateId[svgId];
+          console.log('Clicked:', stateId);
           onStateClick(stateId);
           
           // Visual feedback for click - dark colors
@@ -598,15 +601,26 @@ const InteractiveMap = ({ onStateHover, onStateLeave, onStateClick, hoveredState
   );
 };
 
+
+
 const StatewiseSection = () => {
-  const navigate = useNavigate();
+  console.log('StatewiseSection component rendering...');
   const [hoveredState, setHoveredState] = useState(null);
   const [clickedState, setClickedState] = useState(null);
   const [isTableLocked, setIsTableLocked] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const navigate = useNavigate();
   
   // Determine which state data to show
   const activeState = clickedState || hoveredState;
   const activeStateData = activeState ? statesData.find(s => s.id === activeState) : null;
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.matchMedia('(max-width: 767px)').matches);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleStateHover = (stateId) => {
     setHoveredState(stateId);
@@ -619,7 +633,17 @@ const StatewiseSection = () => {
   };
 
   const handleStateClick = (stateId) => {
-    navigate(`/state/${stateId}`);
+    if (isMobile) {
+      navigate(`/state/${stateId}`);
+      return;
+    }
+    if (clickedState === stateId) {
+      setClickedState(null);
+      setIsTableLocked(false);
+    } else {
+      setClickedState(stateId);
+      setIsTableLocked(true);
+    }
   };
 
   const unlockTable = () => {
@@ -629,26 +653,34 @@ const StatewiseSection = () => {
   };
 
   return (
-    <section className="py-10 bg-gradient-to-br from-orange-50 via-white to-orange-100">
-      {/* Section Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+    <section className="py-6 md:py-10 bg-gradient-to-br from-orange-50 via-white to-orange-100 overflow-hidden">
+      
+      {/* Section Header - hidden on mobile to save vertical space */}
+      <div className="hidden md:block max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mb-4 md:mb-8">
         <div className="flex flex-col items-center text-center">
-          <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-[15px] font-semibold mb-3">
-            <MapPin className="h-4 w-4" />
+          <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-[15px] font-semibold mb-2 md:mb-3">
+            <MapPin className="h-3 w-3 md:h-4 md:w-4" />
             State Directory
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 leading-tight">
+          <h2 className="text-lg sm:text-xl md:text-3xl lg:text-4xl font-bold md:font-extrabold text-gray-900 mb-2 md:mb-3 leading-tight">
             Find Numbers by <span className="text-orange-600">Indian States</span>
-          </h1>
-          <p className="text-lg md:text-lg text-gray-600 max-w-2xl mx-auto mb-2">
+          </h2>
+          <p className="text-xs sm:text-sm md:text-lg text-gray-600 max-w-2xl mx-auto mb-2">
             Access state-specific toll-free numbers, emergency services, and government helplines organized by location across India.
           </p>
-          <div className="w-24 h-1 bg-orange-400 rounded-full mt-4 mb-2" />
+          <div className="w-16 md:w-24 h-0.5 md:h-1 bg-orange-400 rounded-full mt-2 md:mt-4 mb-2" />
         </div>
       </div>
 
-      {/* Card Container */}
-      <div className="max-w-9xl mx-auto px-2 sm:px-4 lg:px-8">
+      {/* Mobile View - States Grid */}
+      <div className="block md:hidden max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="bg-white/90 rounded-2xl overflow-hidden p-3 shadow-sm border border-gray-100">
+          <MobileStatesGrid />
+        </div>
+      </div>
+
+      {/* Desktop View - Original Map Layout */}
+      <div className="hidden md:block max-w-9xl mx-auto px-2 sm:px-4 lg:px-8">
         <div className="bg-white/90 rounded-3xl shadow-2xl border border-orange-200 overflow-hidden flex flex-col md:flex-row h-auto md:h-[600px]">
           
           {/* Left column */}

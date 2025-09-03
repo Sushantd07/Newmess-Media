@@ -12,6 +12,7 @@ import commentRoutes from './routes/commentRoutes.js';
 import structuredComplaintsRoutes from './routes/structuredComplaintsRoutes.js';
 import dynamicPageRoutes from './routes/dynamicPageRoutes.js';
 import contactNumbersRoutes from './routes/contactNumbersRoutes.js';
+import sitemapRoutes from './routes/sitemapRoutes.js';
 
 // Import all models to register them with Mongoose
 import './models/Category.js';
@@ -45,12 +46,20 @@ import './models/ContactNumbers.js';
     "https://127.0.0.1:5173",
     "https://127.0.0.1:5174",
     "https://gzd2rl1g-5173.inc1.devtunnels.ms",
-    "https://ca0ad85c14cc.ngrok-free.app"
+    "https://ca0ad85c14cc.ngrok-free.app",
+    // Production frontend domains
+    "https://indiacustomerhelp.com",
+    "https://www.indiacustomerhelp.com"
   ];
 
   // Add ngrok domains to allowed origins
   if (process.env.NGROK_URL) {
     allowedOrigins.push(process.env.NGROK_URL);
+  }
+
+  // Include FRONTEND_ORIGIN from env if provided
+  if (process.env.FRONTEND_ORIGIN) {
+    allowedOrigins.push(process.env.FRONTEND_ORIGIN);
   }
 
   // Allow all ngrok.io domains
@@ -62,7 +71,8 @@ import './models/ContactNumbers.js';
       // Allow localhost and ngrok domains
       if (allowedOrigins.includes(origin) || 
           origin.includes('ngrok.io') || 
-          origin.includes('ngrok-free.app')) {
+          origin.includes('ngrok-free.app') ||
+          origin.includes('indiacustomerhelp.com')) {
         return callback(null, true);
       }
       
@@ -120,6 +130,11 @@ import './models/ContactNumbers.js';
   app.use('/api/structured-complaints', structuredComplaintsRoutes);
   app.use('/api/dynamic-pages', dynamicPageRoutes);
   app.use('/api/contact-numbers', contactNumbersRoutes);
+  // Alias route under /tabs for non-coder friendly admin operations
+  app.use('/tabs', contactNumbersRoutes);
+  
+  // ✅ Sitemap Routes
+  app.use('/', sitemapRoutes);
 
   // ✅ Error handling middleware
   app.use((err, req, res, next) => {
@@ -142,7 +157,9 @@ import './models/ContactNumbers.js';
   connectDB()
     .then(() => {
       const port = process.env.PORT || 3000;
-      app.listen(port, () => {
+      
+      // Add timeout protection
+      const server = app.listen(port, () => {
         console.log(`🚀 Server is running on port ${port}`);
         console.log(`🌐 Local: http://localhost:${port}`);
         console.log(`🔗 Health check: http://localhost:${port}/health`);
@@ -150,7 +167,44 @@ import './models/ContactNumbers.js';
           console.log(`🌍 Ngrok URL: ${process.env.NGROK_URL}`);
         }
       });
+      
+      // Add server error handling
+      server.on('error', (error) => {
+        if (error.code === 'EADDRINUSE') {
+          console.error(`❌ Port ${port} is already in use`);
+          console.log(`💡 Try using a different port or kill the process using port ${port}`);
+        } else {
+          console.error('❌ Server error:', error);
+        }
+        process.exit(1);
+      });
+      
+      // Add graceful shutdown
+      process.on('SIGTERM', () => {
+        console.log('🔄 SIGTERM received, shutting down gracefully');
+        server.close(() => {
+          console.log('✅ Server closed');
+          mongoose.connection.close(false, () => {
+            console.log('✅ MongoDB connection closed');
+            process.exit(0);
+          });
+        });
+      });
+      
+      process.on('SIGINT', () => {
+        console.log('🔄 SIGINT received, shutting down gracefully');
+        server.close(() => {
+          console.log('✅ Server closed');
+          mongoose.connection.close(false, () => {
+            console.log('✅ MongoDB connection closed');
+            process.exit(0);
+          });
+        });
+      });
+      
     })
     .catch((err) => {
       console.error('❌ Database connection failed:', err);
+      console.log('💡 Please check your MongoDB connection and .env file');
+      process.exit(1);
     });

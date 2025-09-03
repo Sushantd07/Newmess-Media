@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import SeoService from '../../services/seoService.js';
 
 const defaultState = {
@@ -29,7 +29,7 @@ const SeoSettingsPanel = ({ type, identifier, onClose, defaults, tab }) => {
       return allowed.has(seg) ? seg : undefined;
     } catch { return undefined; }
   };
-  const tabSlug = tab || deriveTabFromPath();
+  const tabSlug = useMemo(() => tab || deriveTabFromPath(), [tab]);
 
   useEffect(() => {
     let mounted = true;
@@ -76,7 +76,7 @@ const SeoSettingsPanel = ({ type, identifier, onClose, defaults, tab }) => {
       }
     })();
     return () => { mounted = false; };
-  }, [type, identifier, tabSlug, defaults]);
+  }, [type, identifier, tabSlug]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -92,7 +92,12 @@ const SeoSettingsPanel = ({ type, identifier, onClose, defaults, tab }) => {
       }
       
       setSaving(true);
+      console.log('[SeoSettingsPanel] ===== SAVE PROCESS STARTED =====');
       console.log('[SeoSettingsPanel] Saving SEO data for:', { type, identifier, tab: tabSlug });
+      console.log('[SeoSettingsPanel] Current form state:', form);
+      console.log('[SeoSettingsPanel] Tab slug determined:', tabSlug);
+      console.log('[SeoSettingsPanel] Window location pathname:', window.location.pathname);
+      
       const payload = {
         type,
         identifier,
@@ -100,38 +105,86 @@ const SeoSettingsPanel = ({ type, identifier, onClose, defaults, tab }) => {
         keywords: form.keywords.split(',').map((k) => k.trim()).filter(Boolean),
       };
       if (tabSlug) payload.tab = tabSlug;
+      
+      console.log('[SeoSettingsPanel] Final payload being sent to backend:', payload);
+      console.log('[SeoSettingsPanel] Payload JSON stringified:', JSON.stringify(payload, null, 2));
+      
       if (form.structuredData) {
-        try { payload.structuredData = JSON.parse(form.structuredData); } catch { /* ignore */ }
+        try { 
+          payload.structuredData = JSON.parse(form.structuredData); 
+          console.log('[SeoSettingsPanel] Structured data parsed successfully');
+        } catch (e) { 
+          console.warn('[SeoSettingsPanel] Failed to parse structured data:', e);
+        }
       }
+      
+      console.log('[SeoSettingsPanel] Calling SeoService.upsert...');
       const saved = await SeoService.upsert(payload);
-      console.log('[SeoSettingsPanel] Save response:', saved);
+      console.log('[SeoSettingsPanel] Save response received:', saved);
+      console.log('[SeoSettingsPanel] Save response type:', typeof saved);
+      console.log('[SeoSettingsPanel] Save response keys:', saved ? Object.keys(saved) : 'null');
+      
       // Update form with saved normalized values
       if (saved) {
+        console.log('[SeoSettingsPanel] Processing saved response...');
         // If backend returned container document with tabs, flatten the current tab to detail for consumers
         const flattened = (() => {
           if (saved?.tabs && tabSlug && saved.tabs[tabSlug]) {
+            console.log('[SeoSettingsPanel] Flattening response with tab data');
             return { ...saved, ...saved.tabs[tabSlug], tab: tabSlug };
           }
+          console.log('[SeoSettingsPanel] No tab data found, returning saved response as is');
           return { ...saved, tab: tabSlug };
         })();
+        
+        console.log('[SeoSettingsPanel] Flattened response:', flattened);
+        
         setForm((prev) => ({
           ...prev,
           ...flattened,
           keywords: (flattened.keywords || []).join(', '),
           structuredData: flattened.structuredData ? JSON.stringify(flattened.structuredData, null, 2) : prev.structuredData,
         }));
+        
         // Notify DynamicSEO to refresh immediately (Helmet will manage DOM updates)
         console.log('[SeoSettingsPanel] Dispatching seo-updated event:', flattened);
         window.dispatchEvent(new CustomEvent('seo-updated', { detail: flattened }));
         // Let DynamicSEO handle all DOM updates - don't manually set document.title or meta tags
+      } else {
+        console.warn('[SeoSettingsPanel] No saved response received');
       }
+      
+      console.log('[SeoSettingsPanel] ===== SAVE PROCESS COMPLETED =====');
       onClose?.();
+    } catch (error) {
+      console.error('[SeoSettingsPanel] Save failed:', error);
+      console.error('[SeoSettingsPanel] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      alert(`Failed to save SEO settings: ${error.message}`);
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div className="fixed top-4 left-4 z-[1000] w-[360px] max-w-[92vw] bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden">
+        <div className="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+          <div className="font-semibold">SEO Settings</div>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✕</button>
+        </div>
+        <div className="p-6 flex items-center justify-center">
+          <div className="flex items-center gap-3 text-gray-600">
+            <div className="animate-spin h-5 w-5 rounded-full border-2 border-gray-300 border-t-orange-500" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed top-4 left-4 z-[1000] w-[360px] max-w-[92vw] bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden">
@@ -157,6 +210,13 @@ const SeoSettingsPanel = ({ type, identifier, onClose, defaults, tab }) => {
             <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
             {name === 'description' || name === 'ogDescription' ? (
               <textarea name={name} value={form[name]} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" rows={3} />
+            ) : name === 'twitterCard' ? (
+              <select name={name} value={form[name]} onChange={handleChange} className="w-full border rounded-lg px-3 py-2">
+                <option value="summary">Summary</option>
+                <option value="summary_large_image">Summary Large Image</option>
+                <option value="app">App</option>
+                <option value="player">Player</option>
+              </select>
             ) : (
               <input name={name} value={form[name]} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" />
             )}

@@ -102,9 +102,25 @@ const handleSubmit = async (e) => {
   ];
 
   return (
-    <section className="py-8 bg-gradient-to-b from-[#F5F7FA] to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8 flex flex-col items-center">
+    <section className="py-6 md:py-8 bg-gradient-to-b from-[#F5F7FA] to-white">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        {/* Mobile Header - Compact */}
+        <div className="md:hidden text-center mb-4">
+          <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-3 py-1.5 rounded-full text-xs font-semibold mb-3 shadow-sm">
+            <Mail className="h-3 w-3" />
+            Contact Directory
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
+            Get in Touch
+          </h2>
+          <p className="text-xs text-gray-600 mb-2">
+            Reach out for business listings, support, or general queries
+          </p>
+          <div className="w-16 h-0.5 bg-orange-500 rounded-full mx-auto" />
+        </div>
+
+        {/* Desktop Header */}
+        <div className="hidden md:flex text-center mb-8 flex-col items-center">
           <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-[15px] font-semibold mb-4 shadow-sm">
             <Mail className="h-4 w-4" />
             Contact Directory
@@ -118,7 +134,180 @@ const handleSubmit = async (e) => {
           <div className="w-20 h-1 bg-orange-500 rounded-full mt-1 mb-1" />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-12">
+        {/* Mobile Layout - Compact Grid */}
+        <div className="md:hidden space-y-4">
+          {/* Contact Info - Compact Grid */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
+            <h3 className="text-sm font-semibold text-gray-800 mb-3">Contact Information</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {contactInfo.map((item, index) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={index}
+                    className="flex items-start gap-2 p-2 rounded-lg bg-gray-50 hover:bg-orange-50 transition-colors group cursor-pointer"
+                  >
+                    <div className="flex-shrink-0 w-8 h-8 bg-orange-100 rounded-md flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                      <Icon className="h-4 w-4 text-orange-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-medium text-gray-900 text-xs mb-0.5">{item.title}</h4>
+                      <p className="text-orange-600 font-medium text-xs mb-0.5 truncate">{item.details}</p>
+                      <p className="text-xs text-gray-500 truncate">{item.description}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Contact Form - Compact */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
+            {!isSubmitted ? (
+              <>
+                <h3 className="text-sm font-semibold text-gray-800 mb-3">Send us a Message</h3>
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <input type="hidden" name="from_name" value="India Customer Help" />
+                  
+                  {/* Name and Email - Side by side on mobile */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Name *</label>
+                      <div className="relative">
+                        <User className="absolute left-2 top-2 h-3 w-3 text-gray-400" />
+                        <input
+                          type="text"
+                          name="name"
+                          required
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          className="w-full pl-7 pr-2 py-2 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-orange-500 focus:border-transparent outline-none transition-colors"
+                          placeholder="Full name"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Email *</label>
+                      <div className="relative">
+                        <Mail className="absolute left-2 top-2 h-3 w-3 text-gray-400" />
+                        <input
+                          type="email"
+                          name="email"
+                          required
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          className="w-full pl-7 pr-2 py-2 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-orange-500 focus:border-transparent outline-none transition-colors"
+                          placeholder="Email"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Phone and Company - Side by side */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Phone</label>
+                      <div className="relative">
+                        <Phone className="absolute left-2 top-2 h-3 w-3 text-gray-400" />
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          className="w-full pl-7 pr-2 py-2 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-orange-500 focus:border-transparent outline-none transition-colors"
+                          placeholder="+91 98765 43210"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Company</label>
+                      <div className="relative">
+                        <Building2 className="absolute left-2 top-2 h-3 w-3 text-gray-400" />
+                        <input
+                          type="text"
+                          name="company"
+                          value={formData.company}
+                          onChange={handleInputChange}
+                          className="w-full pl-7 pr-2 py-2 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-orange-500 focus:border-transparent outline-none transition-colors"
+                          placeholder="Company name"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Subject */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Subject *</label>
+                    <select
+                      name="subject"
+                      required
+                      value={formData.subject}
+                      onChange={handleInputChange}
+                      className="w-full px-2 py-2 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-orange-500 focus:border-transparent outline-none transition-colors"
+                    >
+                      <option value="">Select subject</option>
+                      {subjects.map((subject, index) => (
+                        <option key={index} value={subject}>{subject}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Message */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Message *</label>
+                    <textarea
+                      name="message"
+                      required
+                      rows={3}
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      className="w-full px-2 py-2 text-xs border border-gray-300 rounded-md focus:ring-1 focus:ring-orange-500 focus:border-transparent outline-none transition-colors resize-none"
+                      placeholder="Tell us how we can help..."
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <motion.button
+                    type="submit"
+                    disabled={isSubmitting}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium py-2.5 px-4 rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        Send Message
+                        <Send className="h-3 w-3" />
+                      </>
+                    )}
+                  </motion.button>
+                </form>
+              </>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-6"
+              >
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Message Sent!</h3>
+                <p className="text-xs text-gray-600">
+                  We'll get back to you within 24 hours.
+                </p>
+              </motion.div>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop Layout */}
+        <div className="hidden md:grid lg:grid-cols-3 gap-12">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -306,7 +495,7 @@ const handleSubmit = async (e) => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-center mt-16"
+          className="text-center mt-12 md:mt-16"
         >
         
         </motion.div>

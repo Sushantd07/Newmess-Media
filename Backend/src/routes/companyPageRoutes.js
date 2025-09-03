@@ -9,6 +9,7 @@ import {
   addContactNumbersToCompany,
   getAllCompanyPages,
   listAllCompaniesLite,
+  listCompaniesByCategorySlug,
   getCompanyPageBySlug,
   getCompanyPagesByCategory,
   updateCompanyPage,
@@ -32,6 +33,7 @@ router.post("/create-contact-numbers", createContactNumbersTab);
 router.post("/:slug/add-contact-numbers", addContactNumbersToCompany);
 router.get("/", getAllCompanyPages);
 router.get("/all-lite", listAllCompaniesLite);
+router.get("/category/:categorySlug/all", listCompaniesByCategorySlug);
 router.get("/search", searchCompanyPages);
 router.get("/:slug", getCompanyPageBySlug);
 router.put("/:slug", updateCompanyPage);

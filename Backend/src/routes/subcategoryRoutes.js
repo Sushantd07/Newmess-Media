@@ -20,6 +20,7 @@ import {
   addComplaintsToCompanyBySlug,
   updateCompanyPage,
   createDefaultTabsForCompany,
+  deleteContactNumbersFromCompanyBySlug,
 } from "../controllers/subcategoryController.js";
 
 const router = express.Router();
@@ -52,6 +53,7 @@ router.post("/company/:slug/add-contact-numbers", addContactNumbersToCompanyBySl
 router.post("/company/:slug/add-complaints", addComplaintsToCompanyBySlug);
 router.post("/company/:slug/create-default-tabs", createDefaultTabsForCompany);
 router.get("/company/:companyId", getCompanyPageData);
+router.delete("/company/:slug/contact-numbers", deleteContactNumbersFromCompanyBySlug);
 
 
 
